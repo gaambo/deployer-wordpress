@@ -1,0 +1,24 @@
+{
+  "name": "gaambo/deployer-wordpress",
+  "description": "Deployer tasks for deploying WordPress Sites",
+  "version": "1.0.0",
+  "type": "library",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Fabian Todt",
+      "email": "fabian@fabiantodt.at"
+    }
+  ],
+  "require": {},
+  "require-dev": {
+    "php": "^7.0",
+    "deployer/deployer": "^6.4",
+    "deployer/recipes": "^6.2"
+  },
+  "autoload": {
+    "files": [
+      "autoload.php"
+    ]
+  }
+}
