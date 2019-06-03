@@ -32,7 +32,7 @@ A collection of [Deployer](https://deployer.org) Tasks/Recipes to deploy WordPre
 
 ## Installation
 
-1. Run `composer install gaambo/deployer-wordpress --dev` in your root directory
+1. Run `composer require gaambo/deployer-wordpress --dev` in your root directory
 2. Choose one of the [recipes](#recipes) and copy the corresponding recipe file (`deploy*.php`) and example host file (`hosts*.example.yml`) from `recipes` into your root directory - **or** write your own.
 3. Read through the recipe and customize it to your needs - here's a checklist:
    - [ ] Check localhost configuration
