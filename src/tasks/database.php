@@ -23,9 +23,8 @@ task('db:remote:backup', function () {
     $localDumpPath = \Gaambo\DeployerWordpress\Utils\Localhost\getLocalhostConfig('dump_path');
     $remotePath = getRemotePath();
     $now = date('Y-m-d_H-i', time());
-    set('dump_path', '{{deploy_path}}/shared');
     set('dump_file', "db_backup-$now.sql");
-    set('dump_filepath', get('dump_path') . get('dump_file'));
+    set('dump_filepath', get('dump_path') . '/' . get('dump_file'));
 
     run('mkdir -p ' . get('dump_path'));
     run("cd $remotePath && {{bin/wp}} db export {{dump_filepath}} --add-drop-table");
@@ -47,7 +46,6 @@ task('db:local:backup', function () {
     $localWp = \Gaambo\DeployerWordpress\Utils\Localhost\getLocalhostConfig('bin/wp');
     $localDumpPath = \Gaambo\DeployerWordpress\Utils\Localhost\getLocalhostConfig('dump_path');
     $now = date('Y-m-d_H-i', time());
-    set('dump_path', '{{deploy_path}}/shared');
     set('dump_file', "db_backup-$now.sql");
     set('dump_filepath', '{{dump_path}}/{{dump_file}}');
 
