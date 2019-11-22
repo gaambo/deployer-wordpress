@@ -18,6 +18,8 @@ set('bin/wp', function () {
     return locateBinaryPath('wp');
 });
 
+set('composer_options', 'install --no-dev');
+
 // PATHS & FILES CONFIGURATION
 
 // if you want to further define options for rsyncing files
