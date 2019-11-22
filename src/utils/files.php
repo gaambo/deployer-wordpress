@@ -58,7 +58,7 @@ function pushFiles(string $source, string $destination, array $rsyncOptions)
  * @param array $rsyncOptions Array of command-line arguments for rsync to pass to Deployers download
  * @return void
  */
-function pullFiles(string $source, string $destination, array $rsyncOption)
+function pullFiles(string $source, string $destination, array $rsyncOptions)
 {
     $localPath = getLocalhostConfig('document_root');
     $remotePath = getRemotePath();
