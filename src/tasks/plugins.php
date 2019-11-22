@@ -28,7 +28,6 @@ task('plugins:push', function () {
         'filters' => get("plugins/filters"),
         'flags' => 'rz',
         'filter-perdir'=> '.deployfilter', // allows excluding files on a per-dir basis in a .deployfilter file
-        'options' => [],
     ]);
     pushFiles('{{plugins/dir}}', '{{plugins/dir}}', $rsyncOptions);
 })->desc('Push plugins from local to remote');
@@ -46,7 +45,6 @@ task('plugins:pull', function () {
         'filters' => get("plugins/filters"),
         'flags' => 'rz',
         'filter-perdir'=> '.deployfilter', // allows excluding files on a per-dir basis in a .deployfilter file
-        'options' => [],
     ]);
     pullFiles('{{plugins/dir}}', '{{plugins/dir}}', $rsyncOptions);
 })->desc('Pull plugins from remote to local');

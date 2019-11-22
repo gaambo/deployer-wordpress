@@ -32,7 +32,6 @@ task('wp:push', function () {
     $rsyncOptions = \Gaambo\DeployerWordpress\Utils\Rsync\buildOptionsArray([
         'filters' => get("wp/filter"),
         'flags' => 'rz',
-        'options' => [],
     ]);
     \Gaambo\DeployerWordpress\Utils\Files\pushFiles('{{wp/dir}}', '{{wp/dir}}', $rsyncOptions);
 })->desc('Push WordPress core files from local to remote');
@@ -48,7 +47,6 @@ task('wp:pull', function () {
     $rsyncOptions = \Gaambo\DeployerWordpress\Utils\Rsync\buildOptionsArray([
         'filters' => get("wp/filter"),
         'flags' => 'rz',
-        'options' => [],
     ]);
     \Gaambo\DeployerWordpress\Utils\Files\pullFiles('{{wp/dir}}', '{{wp/dir}}', $rsyncOptions);
 })->desc('Pull WordPress core files from remote to local');

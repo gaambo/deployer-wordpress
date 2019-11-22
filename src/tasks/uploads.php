@@ -29,7 +29,6 @@ task('uploads:push', function () {
         'filters' => get("uploads/filters"),
         'flags' => 'rz',
         'filter-perdir'=> '.deployfilter', // allows excluding files on a per-dir basis in a .deployfilter file
-        'options' => [],
     ]);
     upload("$localPath/{{uploads/dir}}/", '{{uploads/path}}/{{uploads/dir}}/', ['options' => $rsyncOptions]);
 })->desc('Push uploads from local to remote');
@@ -48,7 +47,6 @@ task('uploads:pull', function () {
         'filters' => get("uploads/filters"),
         'flags' => 'rz',
         'filter-perdir'=> '.deployfilter', // allows excluding files on a per-dir basis in a .deployfilter file
-        'options' => [],
     ]);
     download('{{uploads/path}}/{{uploads/dir}}/', "$localPath/{{uploads/dir}}/", ['options' => $rsyncOptions]);
 })->desc('Pull uploads from remote to local');

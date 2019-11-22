@@ -82,7 +82,6 @@ task('themes:push', function () {
         'filters' => get("themes/filters"),
         'flags' => 'rz',
         'filter-perdir'=> '.deployfilter', // allows excluding files on a per-dir basis in a .deployfilter file
-        'options' => [],
     ]);
     pushFiles('{{themes/dir}}', '{{themes/dir}}', $rsyncOptions);
 })->desc('Push themes from local to remote');
@@ -100,7 +99,6 @@ task('themes:pull', function () {
         'filters' => get("themes/filters"),
         'flags' => 'rz',
         'filter-perdir'=> '.deployfilter', // allows excluding files on a per-dir basis in a .deployfilter file
-        'options' => [],
     ]);
     pullFiles('{{themes/dir}}', '{{themes/dir}}', $rsyncOptions);
 })->desc('Pull themes from remote to local');

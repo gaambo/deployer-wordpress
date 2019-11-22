@@ -50,7 +50,6 @@ task('mu-plugins:push', function () {
         'filters' => get("mu-plugins/filters"),
         'flags' => 'rz',
         'filter-perdir'=> '.deployfilter', // allows excluding files on a per-dir basis in a .deployfilter file
-        'options' => [],
     ]);
     pushFiles('{{mu-plugins/dir}}', '{{mu-plugins/dir}}', $rsyncOptions);
 })->desc('Push mu-plugins from local to remote');
@@ -68,7 +67,6 @@ task('mu-plugins:pull', function () {
         'filters' => get("mu-plugins/filters"),
         'flags' => 'rz',
         'filter-perdir'=> '.deployfilter', // allows excluding files on a per-dir basis in a .deployfilter file
-        'options' => [],
     ]);
     pullFiles('{{mu-plugins/dir}}', '{{mu-plugins/dir}}', $rsyncOptions);
 })->desc('Pull mu-plugins from remote to local');
