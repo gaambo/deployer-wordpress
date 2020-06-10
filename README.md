@@ -49,7 +49,7 @@ A collection of [Deployer](https://deployer.org) Tasks/Recipes to deploy WordPre
 Obviously:
 
 - [PHP](https://php.net/) and [composer](https://getcomposer.org) for installing and using Deployer
-- [Deployer](https://deployer.org) core (`deployer/deployer`) and recipes (`deployer/recipes`) are required dependencies of this package defined in `composer.json`
+- [Deployer](https://deployer.org) core (`deployer/deployer`) is required dependencies of this package defined in `composer.json`
 - WordPress installation + local web server and database to use it
 
 Most of the tasks only run in *nix shells - so a *nix **operating system** is preferred. If you run Windows have a look at [WSL](https://docs.microsoft.com/en-us/windows/wsl/install-win10) to run Ubuntu Bash inside Windows.
