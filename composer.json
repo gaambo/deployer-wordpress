@@ -1,7 +1,7 @@
 {
   "name": "gaambo/deployer-wordpress",
   "description": "Deployer tasks for deploying WordPress Sites",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "type": "library",
   "license": "MIT",
   "homepage": "https://github.com/gaambo/deployer-wordpress",
@@ -14,8 +14,7 @@
   "require-dev": {},
   "require": {
     "php": "^7.0",
-    "deployer/deployer": "^6.4",
-    "deployer/recipes": "^6.2"
+    "deployer/deployer": "^6.8"
   },
   "autoload": {
     "files": [
