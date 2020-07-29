@@ -88,7 +88,7 @@ set('remote_url', '{{public_url}}'); // public_url must be set on host
 // used by all *:push/*:pull tasks and in `src/utils/rsync.php:buildOptionsArray`
 set('rsync', function () {
     $config = [
-        'excludes'      => ['.deployfilter'],
+        'excludes'      => [], // do NOT exclude .deployfilter files - remote should be aware of them
         'exclude-file' => false,
         'includes'      => [],
         'include-file' => false,
@@ -97,7 +97,7 @@ set('rsync', function () {
         // Allows specifying (=excluding/including/filtering) files to sync per directory in a `.deployfilter` file - See README directory for examples
         'filter-perdir'=> '.deployfilter',
         'flags'        => 'rz', // Recursive, with compress
-        'options'      => ['delete'],
+        'options'      => ['delete-after'], // needed so deployfilter files are send and delete is checked afterwards
         'timeout'      => 60,
     ];
 

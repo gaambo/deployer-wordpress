@@ -120,10 +120,10 @@ function buildOptionsArray(array $config = []) : array
             'filters' => [],
             'filter-file' => false,
             'filter-perdir' => false,
-            'options' => ['delete'],
+            'options' => ['delete-after'], // needed so deployfilter files are send and delete is checked afterwards
         ];
     }
-    
+
 
     $mergedConfig = array_merge($defaultConfig, $config);
 
