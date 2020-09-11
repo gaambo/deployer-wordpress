@@ -50,7 +50,7 @@ set('mu-plugin/name', 'core-functionality');
 // TASKS
 
 // Overwrite deployment with rsync (instead of git)
-// Just set release_path to document_root in hosts.yml/hosts config - so it will just pusth these files
+// Just set release_path to document_root in hosts.yml/hosts config - so it will just push these files
 task('deploy:update_code', ['wp:push', 'themes:push', 'mu-plugins:push', 'plugins:push']); // does not include uploads & database (see below)
 
 // install theme vendors and run theme assets (npm) build script LOCAL
