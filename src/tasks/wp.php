@@ -10,6 +10,16 @@ require_once 'utils/localhost.php';
 require_once 'utils/rsync.php';
 
 /**
+ * Install WP Cli
+ */
+task('wp:install-cli', function () {
+    $remotePath = Gaambo\DeployerWordpress\Utils\Files\getRemotePath();
+    run("cd $remotePath && curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar");
+    run("chmod +x wp-cli.phar");
+    run("{{sudo_cmd}} mv wp-cli.phar /usr/local/bin/wp", ['tty' => true] );
+})->desc('Installs WP Cli on remote server');
+
+/**
  * Installs WordPress core via WP CLI
  * Needs the following variables:
  *  - deploy_path or release_path: to build remote path
