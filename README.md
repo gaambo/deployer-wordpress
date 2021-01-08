@@ -163,6 +163,7 @@ You can also run `dep --list` to see all available tasks and their description.
 
 #### WordPress Tasks (`tasks/wp.php`)
 
+- `wp:install-cli`: Installs WP CLI on remote machine
 - `wp:install`: Installs WordPress core via WP CLI
 - `wp:push`: Pushes WordPress core files via rsync
 - `wp:pull`: Pulls WordPress core files via rsync
