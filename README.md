@@ -20,6 +20,7 @@ A collection of [Deployer](https://deployer.org) Tasks/Recipes to deploy WordPre
       - [Plugin Tasks (`tasks/plugins.php`)](#plugin-tasks-taskspluginsphp)
       - [MU Plugin Tasks (`tasks/mu-plugins.php`)](#mu-plugin-tasks-tasksmu-pluginsphp)
       - [WordPress Tasks (`tasks/wp.php`)](#wordpress-tasks-taskswpphp)
+        - [WP-CLI](#wp-cli)
       - [Simple Tasks (`tasks/simple.php`)](#simple-tasks-taskssimplephp)
   - [Recipes](#recipes)
     - [Default aka Vanilla - `deploy.php`](#default-aka-vanilla---deployphp)
@@ -163,11 +164,14 @@ You can also run `dep --list` to see all available tasks and their description.
 
 #### WordPress Tasks (`tasks/wp.php`)
 
-- `wp:install-cli`: Installs WP CLI on remote machine
-- `wp:install`: Installs WordPress core via WP CLI
+- `wp:download-core`: Installs WordPress core via WP CLI
 - `wp:push`: Pushes WordPress core files via rsync
 - `wp:pull`: Pulls WordPress core files via rsync
 - `wp:info`: Runs the --info command via WP CLI - just a helper/test task
+
+##### WP-CLI
+
+You can set the `bin/wp` variable to the existing path of your WP-CLI binary or let the default `bin/wp` function download it to `{{deploy_path}}/.dep/wp-cli.phar`. So without setting the variable the binary will be downloaded on the first usage of WP-CLI. There's a task for downloading core and `--info`. You can generate your own tasks to handle other WP-CLI commands, there's a util function `Gaambo\DeployerWordpress\Utils\WPCLI\runCommand` (`src/utils/wp-cli.php`);
 
 #### Simple Tasks (`tasks/simple.php`)
 

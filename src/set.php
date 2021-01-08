@@ -6,16 +6,33 @@
 
 namespace Deployer;
 
+use function \Gaambo\DeployerWordpress\Utils\WPCLI\installWPCLI;
+
 require_once 'utils/localhost.php';
+require_once 'utils/wp-cli.php';
 
 // BINARIES
 set('bin/npm', function () {
     return locateBinaryPath('npm');
 });
 
+// can be overwritten if you eg. use wpcli in a docker container
 set('bin/wp', function () {
-    // can be overwritten if you eg. use wpcli in a docker container
-    return locateBinaryPath('wp');
+    if (commandExist('wp')) {
+        return locateBinaryPath('wp');
+    }
+
+    $installPath = '{{deploy_path}}/.dep';
+    $binaryFile = 'wp-cli.phar';
+
+    if (test("[ -f $installPath/$binaryFile ]")) {
+        return "{{bin/php}} $installPath/$binaryFile";
+    }
+
+
+    writeln("WP-CLI binary wasn't found. Installing latest wp-cli to \"$installPath/$binaryFile\".");
+    installWPCLI($installPath, $binaryFile);
+    return "$installPath/$binaryFile";
 });
 
 set('composer_options', 'install --no-dev');

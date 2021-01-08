@@ -5,30 +5,23 @@
 
 namespace Deployer;
 
+use function Gaambo\DeployerWordpress\Utils\WPCLI\runCommand;
+
 require_once 'utils/files.php';
 require_once 'utils/localhost.php';
 require_once 'utils/rsync.php';
+require_once 'utils/wp-cli.php';
 
 /**
- * Install WP Cli
- */
-task('wp:install-cli', function () {
-    $remotePath = Gaambo\DeployerWordpress\Utils\Files\getRemotePath();
-    run("cd $remotePath && curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar");
-    run("chmod +x wp-cli.phar");
-    run("{{sudo_cmd}} mv wp-cli.phar /usr/local/bin/wp", ['tty' => true] );
-})->desc('Installs WP Cli on remote server');
-
-/**
- * Installs WordPress core via WP CLI
+ * Downloads WordPress core via WP CLI
  * Needs the following variables:
  *  - deploy_path or release_path: to build remote path
  *  - bin/wp: WP CLI binary/command to use (has a default)
  *  - wp/version: WordPress verstion to install
  */
-task('wp:install', function () {
-    $remotePath = Gaambo\DeployerWordpress\Utils\Files\getRemotePath();
-    run("cd $remotePath && {{bin/wp}} core download --version={{wp/version}}");
+task('wp:download-core', function () {
+    $wpVersion = get('wp/version', 'latest');
+    runCommand("core download --version=$wpVersion");
 })->desc('Installs a WordPress version via WP CLI');
 
 /**
@@ -69,6 +62,5 @@ task('wp:pull', function () {
  *  - bin/wp: WP CLI binary/command to use (has a default)
  */
 task('wp:info', function () {
-    $remotePath = Gaambo\DeployerWordpress\Utils\Files\getRemotePath();
-    run("cd $remotePath && {{bin/wp}} --info");
+    runCommand("--info");
 });
