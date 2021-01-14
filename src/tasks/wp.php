@@ -5,6 +5,7 @@
 
 namespace Deployer;
 
+use function Gaambo\DeployerWordpress\Utils\WPCLI\installWPCLI;
 use function Gaambo\DeployerWordpress\Utils\WPCLI\runCommand;
 
 require_once 'utils/files.php';
@@ -63,4 +64,17 @@ task('wp:pull', function () {
  */
 task('wp:info', function () {
     runCommand("--info");
+});
+
+/**
+ * Installs the WP-CLI binary - for usage via CLI
+ * Pass installPath, binaryFile and sudo via CLI like so:
+ * `dep wp:install-wpcli production -o installPath='{{deploy_path}}/.bin -o binaryFile=wp -o sudo=true`
+ */
+task('wp:install-wpcli', function () {
+    $installPath = get('installPath');
+    $binaryFile = get('binaryFile', 'wp-cli.phar');
+    $sudo = get('sudo', false);
+
+    installWPCLI($installPath, $binaryFile, $sudo);
 });
