@@ -69,7 +69,7 @@ task('wp:info', function () {
 /**
  * Installs the WP-CLI binary - for usage via CLI
  * Pass installPath, binaryFile and sudo via CLI like so:
- * `dep wp:install-wpcli production -o installPath='{{deploy_path}}/.bin -o binaryFile=wp -o sudo=true`
+ * `dep wp:install-wpcli production -o installPath=/usr/local/bin -o binaryFile=wp -o sudo=true`
  */
 task('wp:install-wpcli', function () {
     $installPath = get('installPath');
