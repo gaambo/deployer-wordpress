@@ -5,20 +5,24 @@
 
 namespace Deployer;
 
+use function Gaambo\DeployerWordpress\Utils\WPCLI\installWPCLI;
+use function Gaambo\DeployerWordpress\Utils\WPCLI\runCommand;
+
 require_once 'utils/files.php';
 require_once 'utils/localhost.php';
 require_once 'utils/rsync.php';
+require_once 'utils/wp-cli.php';
 
 /**
- * Installs WordPress core via WP CLI
+ * Downloads WordPress core via WP CLI
  * Needs the following variables:
  *  - deploy_path or release_path: to build remote path
  *  - bin/wp: WP CLI binary/command to use (has a default)
  *  - wp/version: WordPress verstion to install
  */
-task('wp:install', function () {
-    $remotePath = Gaambo\DeployerWordpress\Utils\Files\getRemotePath();
-    run("cd $remotePath && {{bin/wp}} core download --version={{wp/version}}");
+task('wp:download-core', function () {
+    $wpVersion = get('wp/version', 'latest');
+    runCommand("core download --version=$wpVersion");
 })->desc('Installs a WordPress version via WP CLI');
 
 /**
@@ -59,6 +63,18 @@ task('wp:pull', function () {
  *  - bin/wp: WP CLI binary/command to use (has a default)
  */
 task('wp:info', function () {
-    $remotePath = Gaambo\DeployerWordpress\Utils\Files\getRemotePath();
-    run("cd $remotePath && {{bin/wp}} --info");
+    runCommand("--info");
+});
+
+/**
+ * Installs the WP-CLI binary - for usage via CLI
+ * Pass installPath, binaryFile and sudo via CLI like so:
+ * `dep wp:install-wpcli production -o installPath=/usr/local/bin -o binaryFile=wp -o sudo=true`
+ */
+task('wp:install-wpcli', function () {
+    $installPath = get('installPath');
+    $binaryFile = get('binaryFile', 'wp-cli.phar');
+    $sudo = get('sudo', false);
+
+    installWPCLI($installPath, $binaryFile, $sudo);
 });

@@ -13,14 +13,15 @@ A collection of [Deployer](https://deployer.org) Tasks/Recipes to deploy WordPre
     - [wp-config.php](#wp-configphp)
     - [Rsync filters/excludes/includes](#rsync-filtersexcludesincludes)
   - [Tasks](#tasks)
-      - [Database Tasks (`tasks/database.php`)](#database-tasks-tasksdatabasephp)
-      - [File Tasks (`tasks/files.php`)](#file-tasks-tasksfilesphp)
-      - [Theme Tasks (`tasks/theme.php`)](#theme-tasks-tasksthemephp)
-      - [Uploads Tasks (`tasks/uploads.php`)](#uploads-tasks-tasksuploadsphp)
-      - [Plugin Tasks (`tasks/plugins.php`)](#plugin-tasks-taskspluginsphp)
-      - [MU Plugin Tasks (`tasks/mu-plugins.php`)](#mu-plugin-tasks-tasksmu-pluginsphp)
-      - [WordPress Tasks (`tasks/wp.php`)](#wordpress-tasks-taskswpphp)
-      - [Simple Tasks (`tasks/simple.php`)](#simple-tasks-taskssimplephp)
+    - [Database Tasks (`tasks/database.php`)](#database-tasks-tasksdatabasephp)
+    - [File Tasks (`tasks/files.php`)](#file-tasks-tasksfilesphp)
+    - [Theme Tasks (`tasks/theme.php`)](#theme-tasks-tasksthemephp)
+    - [Uploads Tasks (`tasks/uploads.php`)](#uploads-tasks-tasksuploadsphp)
+    - [Plugin Tasks (`tasks/plugins.php`)](#plugin-tasks-taskspluginsphp)
+    - [MU Plugin Tasks (`tasks/mu-plugins.php`)](#mu-plugin-tasks-tasksmu-pluginsphp)
+    - [WordPress Tasks (`tasks/wp.php`)](#wordpress-tasks-taskswpphp)
+      - [WP-CLI](#wp-cli)
+    - [Simple Tasks (`tasks/simple.php`)](#simple-tasks-taskssimplephp)
   - [Recipes](#recipes)
     - [Default aka Vanilla - `deploy.php`](#default-aka-vanilla---deployphp)
       - [Custom Theme](#custom-theme)
@@ -29,6 +30,7 @@ A collection of [Deployer](https://deployer.org) Tasks/Recipes to deploy WordPre
       - [Custom Theme](#custom-theme-1)
       - [Custom MU-Plugin](#custom-mu-plugin-1)
   - [Contributing](#contributing)
+  - [Built by](#built-by)
 
 ## Installation
 
@@ -108,7 +110,7 @@ This prevents any development files/development tools from syncing. I strongly r
 All tasks reside in the `src/tasks` directory and are documented well. Here's a summary of all tasks - for details (eg required variables/config) see their source.
 You can also run `dep --list` to see all available tasks and their description.
 
-#### Database Tasks (`tasks/database.php`)
+### Database Tasks (`tasks/database.php`)
 
 - `db:remote:backup`: Backup remote database and download to localhost
 - `db:local:backup`: Backup local database and upload to remote host
@@ -117,12 +119,12 @@ You can also run `dep --list` to see all available tasks and their description.
 - `db:push`: Pushes local database to remote host (combines `db:local:backup` and `db:remote:import`)
 - `db:pull`: Pulls remote database to localhost (combines `db:remote:backup` and `db:local:import`)
 
-#### File Tasks (`tasks/files.php`)
+### File Tasks (`tasks/files.php`)
 
 - `files:push`: Pushes all files from local to remote host (combines `wp:push`, `uploads:push`, `plugins:push`, `mu-plugins:push`, `themes:push`)
 - `files:pull`: Pulls all files from remote to local host (combines `wp:pull`, `uploads:pull`, `plugins:pull`, `mu-plugins:pull`, `themes:pull`)
 
-#### Theme Tasks (`tasks/theme.php`)
+### Theme Tasks (`tasks/theme.php`)
 
 - `theme:assets:vendors`: Install theme assets vendors/dependencies (npm), can be run locally or remote
 - `theme:assets:build`: Run theme assets (npm) build script, can be run locally or remote
@@ -135,7 +137,7 @@ You can also run `dep --list` to see all available tasks and their description.
 - `themes:backup:remote`: Backup themes on remote host and download zip
 - `themes:backup:local`: Backup themes on localhost
 
-#### Uploads Tasks (`tasks/uploads.php`)
+### Uploads Tasks (`tasks/uploads.php`)
 
 - `uploads:push`: Push uploads from local to remote
 - `uploads:pull`: Pull uploads from remote to local
@@ -143,7 +145,7 @@ You can also run `dep --list` to see all available tasks and their description.
 - `uploads:backup:remote`: Backup uploads on remote host and download zip
 - `uploads:backup:local`: Backup uploads on localhost
 
-#### Plugin Tasks (`tasks/plugins.php`)
+### Plugin Tasks (`tasks/plugins.php`)
 
 - `plugins:push`: Push plugins from local to remote
 - `plugins:pull`: Pull plugins from remote to local
@@ -151,7 +153,7 @@ You can also run `dep --list` to see all available tasks and their description.
 - `plugins:backup:remote`: Backup plugins on remote host and download zip
 - `plugins:backup:local`: Backup plugins on localhost
 
-#### MU Plugin Tasks (`tasks/mu-plugins.php`)
+### MU Plugin Tasks (`tasks/mu-plugins.php`)
 
 - `mu-plugin:vendors`: Install mu-plugin vendors (composer), can be run locally or remote
 - `mu-plugin`: A combined tasks - at the moment only runs mu-plugin:vendors task
@@ -161,14 +163,39 @@ You can also run `dep --list` to see all available tasks and their description.
 - `mu-plugins:backup:remote`: Backup mu-plugins on remote host and download zip
 - `mu-plugins:backup:local`: Backup mu-plugins on localhost
 
-#### WordPress Tasks (`tasks/wp.php`)
+### WordPress Tasks (`tasks/wp.php`)
 
-- `wp:install`: Installs WordPress core via WP CLI
+- `wp:download-core`: Installs WordPress core via WP CLI
 - `wp:push`: Pushes WordPress core files via rsync
 - `wp:pull`: Pulls WordPress core files via rsync
 - `wp:info`: Runs the --info command via WP CLI - just a helper/test task
 
-#### Simple Tasks (`tasks/simple.php`)
+#### WP-CLI
+
+Handling and installing the WP-CLI binary can be done in one of multiple ways: 
+
+1. The default `bin/wp` in `set.php` checks for a usable WP-CLI binary and if none is found it downloads and installs it to `{{deploy_path}}/.dep/wp-cli.phar` (this path is checked in the future as well).
+2. If you want this behaviour (check if installed, else install) but in another path, overwrite the `bin/wp` variable with a function: 
+    ```php
+    set('bin/wp', function() {
+        if($path = getWPCLIBinary()) {
+            return $path;
+        }
+        return installWPCLI('/usr/local/bin', 'wp', true);
+    }
+    ```
+    This would install the WP-CLI binary into `/usr/local/bin` with sudo, since this path is probably in $PATH it's found via `getWPCLIBinary` the next time.
+
+3. Set the `bin/wp` variable path on the host configuration, if WP-CLI is already installed.
+4. Install the WP-CLI binary manually with the `wp:install-wpcli` task and set the path as `/bin/wp` afterwards.
+You can pass the installPath, binaryFile and sudo usage via CLI: 
+`dep wp:install-wpcli production -o installPath='{{deploy_path}}/.bin -o binaryFile=wp -o sudo=true`
+
+See [original PR](https://github.com/gaambo/deployer-wordpress/pull/5) for more information.
+
+There's a task for downloading core and `--info`. You can generate your own tasks to handle other WP-CLI commands, there's a util function `Gaambo\DeployerWordpress\Utils\WPCLI\runCommand` (`src/utils/wp-cli.php`);
+
+### Simple Tasks (`tasks/simple.php`)
 
 - Contains some overwrites of Deployer default `deploy:*` tasks to be used in a "simple" recipe without release paths. See [Simple Recipe](#simple)
 
@@ -223,4 +250,8 @@ Installing PHP/composer vendors/dependencies is done on the server. The `mu-plug
 ## Contributing
 
 If you have feature requests, find bugs or need help just open an issue on [GitHub](https://github.com/gaambo/deployer-wordpress).
-Pull requests are always welcome. PSR2 coding standard are used I try to adhere to Deployer best-practices.
+Pull requests are always welcome. PSR2 coding standard are used and I try to adhere to Deployer best-practices.
+
+## Built by
+
+[Gaambo](https://github.com/gaambo) and [Contributors](https://github.com/gaambo/deployer-wordpress/graphs/contributors)
