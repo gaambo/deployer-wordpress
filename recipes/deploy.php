@@ -1,4 +1,5 @@
 <?php
+
 /**
  * A Deployer recipe to be used with vanilla WordPress installations (with a normal WP installation = not Bedrock/Cobblestone)
  * For more Information see README.md
@@ -51,6 +52,7 @@ task('deploy:update_code', ['wp:push', 'themes:push', 'mu-plugins:push', 'plugin
 // set theme:assets tasks to run local
 task('theme:assets:vendors')->local();
 task('theme:assets:build')->local();
+task('theme:assets', ['theme:assets:build']); // remove "theme:assets:vendors" - prevent npm installing every time (takes long)
 before('deploy:update_code', 'theme:assets');
 
 // install theme vendors (composer) on server
@@ -64,6 +66,15 @@ after('deploy:update_code', 'mu-plugin:vendors'); // defined in tasks/mu-plugin.
 
 // OPTIONAL: push database to server, have to wait for wp-config-local.php to be symlinked from shared
 // after('deploy:shared', 'db:push');
+
+// CHOWN files with http_user and set file permissions according to WP best practices
+task('deploy:writeable', function () {
+    if (has('http_user')) {
+        run("cd {{release_path}} && chown -R {{http_user}} .");
+    }
+    run("cd {{release_path}} && find . -type d -exec chmod 755 {} \;");
+    run("cd {{release_path}} && find . -type f -exec chmod 644 {} \;");
+});
 
 // MAIN TASK
 // very similar to Deployer default deploy flow
