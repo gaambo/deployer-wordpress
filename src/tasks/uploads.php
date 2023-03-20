@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Provides tasks for pushing, pulling, syncing and backing up uploads
  */
@@ -18,7 +19,7 @@ use function \Gaambo\DeployerWordpress\Utils\Files\pushFiles;
 /**
  * Push uploads from local to remote
  * Needs the following variables:
- *  - uploads/filters: rsync filter syntax array of files to push (has a default)
+ *  - uploads/filter: rsync filter syntax array of files to push (has a default)
  *  - uploads/dir: Path of uploads directory relative to document_root/release_path (has a default)
  *  - uploads/path: Path to directory which contains the uploads directory on remote (eg shared directory, has a default)
  *  - document_root on localhost: Path to directory which contains the public document_root
@@ -26,9 +27,7 @@ use function \Gaambo\DeployerWordpress\Utils\Files\pushFiles;
 task('uploads:push', function () {
     $localPath = getLocalhostConfig('document_root');
     $rsyncOptions = \Gaambo\DeployerWordpress\Utils\Rsync\buildOptionsArray([
-        'filters' => get("uploads/filters"),
-        'flags' => 'rz',
-        'filter-perdir'=> '.deployfilter', // allows excluding files on a per-dir basis in a .deployfilter file
+        'filter' => get("uploads/filter"),
     ]);
     upload("$localPath/{{uploads/dir}}/", '{{uploads/path}}/{{uploads/dir}}/', ['options' => $rsyncOptions]);
 })->desc('Push uploads from local to remote');
@@ -36,7 +35,7 @@ task('uploads:push', function () {
 /**
  * Pull uploads from remote to local
  * Needs the following variables:
- *  - uploads/filters: rsync filter syntax array of files to pull (has a default)
+ *  - uploads/filter: rsync filter syntax array of files to pull (has a default)
  *  - uploads/dir: Path of uploads directory relative to document_root/release_path (has a default)
  *  - uploads/path: Path to directory which contains the uploads directory on remote (eg shared directory, has a default)
  *  - document_root on localhost: Path to directory which contains the public document_root
@@ -44,9 +43,7 @@ task('uploads:push', function () {
 task('uploads:pull', function () {
     $localPath = getLocalhostConfig('document_root');
     $rsyncOptions = \Gaambo\DeployerWordpress\Utils\Rsync\buildOptionsArray([
-        'filters' => get("uploads/filters"),
-        'flags' => 'rz',
-        'filter-perdir'=> '.deployfilter', // allows excluding files on a per-dir basis in a .deployfilter file
+        'filter' => get("uploads/filter"),
     ]);
     download('{{uploads/path}}/{{uploads/dir}}/', "$localPath/{{uploads/dir}}/", ['options' => $rsyncOptions]);
 })->desc('Pull uploads from remote to local');
@@ -92,4 +89,4 @@ task('uploads:backup:local', function () {
         $localBackupPath,
         'backup_uploads'
     );
-})->local()->desc('Backup local uploads as zip');
+})->once()->desc('Backup local uploads as zip');

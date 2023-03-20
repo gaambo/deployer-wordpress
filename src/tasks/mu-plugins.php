@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Provides tasks for managing mu-plugins
  * Including pushing, pulling, syncing and backing up mu-plugins
@@ -28,28 +29,27 @@ use function \Gaambo\DeployerWordpress\Utils\Files\pushFiles;
  */
 task('mu-plugin:vendors', function () {
     \Gaambo\DeployerWordpress\Utils\Composer\runDefault('{{document_root}}/{{mu-plugins/dir}}/{{mu-plugin/name}}');
-});
+})->desc("Install mu-plugin vendors (composer)");
 
 /**
  * Install mu-plugin vendors (composer)
  * At the moment only runs mu-plugin:vendors task
  * See task definition for required variables
  */
-task('mu-plugin', ['mu-plugin:vendors']);
+task('mu-plugin', ['mu-plugin:vendors'])
+    ->desc("A combined tasks to prepare the theme");
 
 /**
  * Push mu-plugins from local to remote
  * Needs the following variables:
- *  - mu-plugins/filters: rsync filter syntax array of files to push (has a default)
+ *  - mu-plugins/filter: rsync filter syntax array of files to push (has a default)
  *  - mu-plugins/dir: Path of mu-plugins directory relative to document_root/release_path (has a default)
  *  - document_root on localhost: Path to directory which contains the public document_root
  *  - deploy_path or release_path: to build remote path
  */
 task('mu-plugins:push', function () {
     $rsyncOptions = \Gaambo\DeployerWordpress\Utils\Rsync\buildOptionsArray([
-        'filters' => get("mu-plugins/filters"),
-        'flags' => 'rz',
-        'filter-perdir'=> '.deployfilter', // allows excluding files on a per-dir basis in a .deployfilter file
+        'filter' => get("mu-plugins/filter"),
     ]);
     pushFiles('{{mu-plugins/dir}}', '{{mu-plugins/dir}}', $rsyncOptions);
 })->desc('Push mu-plugins from local to remote');
@@ -57,16 +57,14 @@ task('mu-plugins:push', function () {
 /**
  * Pull mu-plugins from remote to local
  * Needs the following variables:
- *  - mu-plugins/filters: rsync filter syntax array of files to pull (has a default)
+ *  - mu-plugins/filter: rsync filter syntax array of files to pull (has a default)
  *  - mu-plugins/dir: Path of mu-plugins directory relative to document_root/release_path (has a default)
  *  - document_root on localhost: Path to directory which contains the public document_root
  *  - deploy_path or release_path: to build remote path
  */
 task('mu-plugins:pull', function () {
     $rsyncOptions = \Gaambo\DeployerWordpress\Utils\Rsync\buildOptionsArray([
-        'filters' => get("mu-plugins/filters"),
-        'flags' => 'rz',
-        'filter-perdir'=> '.deployfilter', // allows excluding files on a per-dir basis in a .deployfilter file
+        'filter' => get("mu-plugins/filter"),
     ]);
     pullFiles('{{mu-plugins/dir}}', '{{mu-plugins/dir}}', $rsyncOptions);
 })->desc('Pull mu-plugins from remote to local');
@@ -112,4 +110,4 @@ task('mu-plugins:backup:local', function () {
         $localBackupPath,
         'backup_mu-plugins'
     );
-})->local()->desc('Backup local mu-plugins as zip');
+})->once()->desc('Backup local mu-plugins as zip');

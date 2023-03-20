@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Provides tasks for managing themes
  * Including pushing, pulling, syncing and backing up themes
@@ -29,7 +30,7 @@ use function \Gaambo\DeployerWordpress\Utils\Files\pushFiles;
  */
 task('theme:assets:vendors', function () {
     \Gaambo\DeployerWordpress\Utils\Npm\runInstall('{{document_root}}/{{themes/dir}}/{{theme/name}}', 'install');
-});
+})->desc("Install theme assets vendors/dependencies (npm)");
 
 /**
  * Run theme assets (npm) build script
@@ -42,13 +43,14 @@ task('theme:assets:vendors', function () {
  */
 task('theme:assets:build', function () {
     \Gaambo\DeployerWordpress\Utils\Npm\runScript('{{document_root}}/{{themes/dir}}/{{theme/name}}', '{{theme/build_script}}');
-});
+})->desc("Run theme assets (npm) build script");
 
 /**
  * Install theme assets vendors/dependencies (npm) and run build script
  * Runs theme:assets:vendors and theme:assets:build tasks in series
  */
-task('theme:assets', ['theme:assets:vendors', 'theme:assets:build']);
+task('theme:assets', ['theme:assets:vendors', 'theme:assets:build'])
+    ->desc("A combined task to prepare the theme  - combines `theme:assets` and `theme:vendors`");
 
 /**
  * Install theme vendors (composer)
@@ -60,28 +62,27 @@ task('theme:assets', ['theme:assets:vendors', 'theme:assets:build']);
  */
 task('theme:vendors', function () {
     \Gaambo\DeployerWordpress\Utils\Composer\runDefault('{{document_root}}/{{themes/dir}}/{{theme/name}}');
-});
+})->desc("Install theme vendors (composer), can be run locally or remote");
 
 /**
  * Install theme vendors (composer + npm) and build assets (npm)
  * Runs theme:assets and theme:vendors tasks in series
  * See tasks definitions for required variables
  */
-task('theme', ['theme:assets', 'theme:vendors']);
+task('theme', ['theme:assets', 'theme:vendors'])
+    ->desc("A combined task to prepare the theme  - combines `theme:assets` and `theme:vendors`");
 
 /**
  * Push themes from local to remote
  * Needs the following variables:
- *  - themes/filters: rsync filter syntax array of files to push (has a default)
+ *  - themes/filter: rsync filter syntax array of files to push (has a default)
  *  - themes/dir: Path of themes directory relative to document_root/release_path (has a default)
  *  - document_root on localhost: Path to directory which contains the public document_root
  *  - deploy_path or release_path: to build remote path
  */
 task('themes:push', function () {
     $rsyncOptions = \Gaambo\DeployerWordpress\Utils\Rsync\buildOptionsArray([
-        'filters' => get("themes/filters"),
-        'flags' => 'rz',
-        'filter-perdir'=> '.deployfilter', // allows excluding files on a per-dir basis in a .deployfilter file
+        'filter' => get("themes/filter"),
     ]);
     pushFiles('{{themes/dir}}', '{{themes/dir}}', $rsyncOptions);
 })->desc('Push themes from local to remote');
@@ -89,16 +90,14 @@ task('themes:push', function () {
 /**
  * Pull themes from remote to local
  * Needs the following variables:
- *  - themes/filters: rsync filter syntax array of files to pull (has a default)
+ *  - themes/filter: rsync filter syntax array of files to pull (has a default)
  *  - themes/dir: Path of themes directory relative to document_root/release_path (has a default)
  *  - document_root on localhost: Path to directory which contains the public document_root
  *  - deploy_path or release_path: to build remote path
  */
 task('themes:pull', function () {
     $rsyncOptions = \Gaambo\DeployerWordpress\Utils\Rsync\buildOptionsArray([
-        'filters' => get("themes/filters"),
-        'flags' => 'rz',
-        'filter-perdir'=> '.deployfilter', // allows excluding files on a per-dir basis in a .deployfilter file
+        'filter' => get("themes/filter"),
     ]);
     pullFiles('{{themes/dir}}', '{{themes/dir}}', $rsyncOptions);
 })->desc('Pull themes from remote to local');
@@ -144,4 +143,4 @@ task('themes:backup:local', function () {
         $localBackupPath,
         'backup_themes'
     );
-})->local()->desc('Backup local themes as zip');
+})->once()->desc('Backup local themes as zip');

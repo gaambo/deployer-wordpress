@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Provides helper functions to get configuration from localhost host
  * Localhost host configuration is used to define some local paths for local tasks
@@ -12,7 +13,7 @@ namespace Gaambo\DeployerWordpress\Utils\Localhost;
  *
  * @return \Deployer\Host\Host Localhost host
  */
-function getLocalhost() : \Deployer\Host\Host
+function getLocalhost(): \Deployer\Host\Host
 {
     return \Deployer\Deployer::get()->hosts->get('localhost');
 }
@@ -26,6 +27,6 @@ function getLocalhost() : \Deployer\Host\Host
 function getLocalhostConfig(string $key)
 {
     $localhost = getLocalhost();
-    $config = $localhost->getConfig();
+    $config = $localhost->config();
     return $config->get($key);
 }

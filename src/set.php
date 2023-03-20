@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Sets some default configuration required for all tasks.
  * All of them can be overwritten.
@@ -14,7 +15,7 @@ require_once 'utils/wp-cli.php';
 
 // BINARIES
 set('bin/npm', function () {
-    return locateBinaryPath('npm');
+    return which('npm');
 });
 
 // can be overwritten if you eg. use wpcli in a docker container
@@ -29,6 +30,10 @@ set('bin/wp', function () {
     writeln("WP-CLI binary wasn't found. Installing latest wp-cli to \"$installPath/$binaryFile\".");
 
     installWPCLI($installPath, $binaryFile);
+});
+
+set('bin/composer', function () {
+    return which('composer');
 });
 
 set('composer_options', 'install --no-dev');
@@ -70,18 +75,18 @@ set('wp/filter', [ // contains all wordpress core files excluding uploads, theme
     '- *'
 ]);
 set('uploads/dir', 'wp-content/uploads'); // relative to document root
-set('uploads/path', '{{deploy_path}}/shared'); // path in front of uploads directory
-set('uploads/filters', []); // rsync filter syntax
+set('uploads/path', '{{deploy_path}}'); // path in front of uploads directory
+set('uploads/filter', []); // rsync filter syntax
 set('mu-plugins/dir', 'wp-content/mu-plugins'); // relative to document root
-set('mu-plugins/filters', []); // rsync filter syntax
+set('mu-plugins/filter', []); // rsync filter syntax
 set('plugins/dir', 'wp-content/plugins'); // relative to document root
-set('plugins/filters', []); // rsync filter syntax
+set('plugins/filter', []); // rsync filter syntax
 set('themes/dir', 'wp-content/themes'); // relative to document root
-set('themes/filters', []); // rsync filter syntax
+set('themes/filter', []); // rsync filter syntax
 set('theme/build_script', 'build'); // custom theme npm build script
 
 set('document_root', function () {
-    // default to local document_root to be used if no host context is presetn
+    // default to local document_root to be used if no host context is present
     $localPath = \Gaambo\DeployerWordpress\Utils\Localhost\getLocalhostConfig('document_root');
     return $localPath;
 });
@@ -101,28 +106,95 @@ set('remote_url', '{{public_url}}'); // public_url must be set on host
 // used by all *:push/*:pull tasks and in `src/utils/rsync.php:buildOptionsArray`
 set('rsync', function () {
     $config = [
-        'excludes'      => [], // do NOT exclude .deployfilter files - remote should be aware of them
+        'exclude'      => [], // do NOT exclude .deployfilter files - remote should be aware of them
         'exclude-file' => false,
-        'includes'      => [],
+        'include'      => [],
         'include-file' => false,
-        'filters'       => [],
+        'filter'       => [],
         'filter-file'  => false,
         // Allows specifying (=excluding/including/filtering) files to sync per directory in a `.deployfilter` file - See README directory for examples
-        'filter-perdir'=> '.deployfilter',
+        'filter-perdir' => '.deployfilter',
         'flags'        => 'rz', // Recursive, with compress
         'options'      => ['delete-after'], // needed so deployfilter files are send and delete is checked afterwards
         'timeout'      => 60,
+        'progress_bar' => true,
     ];
 
-    if (isVerbose()) {
+    if (output()->isVerbose()) {
         $config['options'][] = 'verbose';
     }
-    if (isVeryVerbose()) {
+    if (output()->isVeryVerbose()) {
         $config['options'][] = 'verbose';
     }
-    if (isDebug()) {
+    if (output()->isDebug()) {
         $config['options'][] = 'verbose';
     }
 
     return $config;
+});
+// https://github.com/deployphp/deployer/issues/3139
+set('rsync_src', __DIR__);
+
+set('release_name', function () {
+    return date('YmdHis'); // you could also use the composer.json version here
+});
+
+/**
+ * Taken and adapted from deployer/recipe/common.php
+ */
+// Name of current user who is running deploy.
+// If not set will try automatically get git user name,
+// otherwise output of `whoami` command.
+set('user', function () {
+    if (getenv('CI') !== false) {
+        return 'ci';
+    }
+
+    try {
+        return runLocally('git config --get user.name');
+    } catch (RunException $exception) {
+        try {
+            return runLocally('whoami');
+        } catch (RunException $exception) {
+            return 'no_user';
+        }
+    }
+});
+
+// Default timeout for `run()` and `runLocally()` functions.
+//
+// Set to `null` to disable timeout.
+set('default_timeout', 300);
+
+/**
+ * Remote environment variables.
+ * ```php
+ * set('env', [
+ *     'KEY' => 'something',
+ * ]);
+ * ```
+ *
+ * It is possible to override it per `run()` call.
+ *
+ * ```php
+ * run('echo $KEY', env: ['KEY' => 'over']);
+ * ```
+ */
+set('env', []);
+
+/**
+ * Path to `.env` file which will be used as environment variables for each command per `run()`.
+ *
+ * ```php
+ * set('dotenv', '{{current_path}}/.env');
+ * ```
+ */
+set('dotenv', false);
+
+// Path to the `php` bin.
+set('bin/php', function () {
+    if (currentHost()->hasOwn('php_version')) {
+        return '/usr/bin/php{{php_version}}';
+    }
+    return which('php');
 });

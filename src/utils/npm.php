@@ -1,11 +1,14 @@
 <?php
+
 /**
  * Provides helper functions for running npm commands
  */
 
 namespace Gaambo\DeployerWordpress\Utils\Npm;
 
-use Deployer\Console\Output\VerbosityString;
+require_once 'utils/helper.php';
+
+use function Gaambo\DeployerWordpress\Utils\Composer\gerVerbosityArgument;
 
 /**
  * Run a npm script
@@ -15,7 +18,7 @@ use Deployer\Console\Output\VerbosityString;
  * @param string $arguments Command-line arguments to be passed to npm as a string
  * @return string Result/Returned output from CLI
  */
-function runScript(string $path, string $script, string $arguments = '') : string
+function runScript(string $path, string $script, string $arguments = ''): string
 {
     return runCommand($path, "run-script $script", $arguments);
 }
@@ -28,7 +31,7 @@ function runScript(string $path, string $script, string $arguments = '') : strin
  * @param string $arguments Command-line arguments to be passed to npm as a string
  * @return string Result/Returned output from CLI
  */
-function runInstall(string $path, string $arguments = '') : string
+function runInstall(string $path, string $arguments = ''): string
 {
     if (\Deployer\has('previous_release')) {
         if (\Deployer\test('[ -d {{previous_release}}/node_modules ]')) {
@@ -47,9 +50,9 @@ function runInstall(string $path, string $arguments = '') : string
  * @param string $arguments Command-line arguments to be passed to npm as a string
  * @return string Result/Returned output from CLI
  */
-function runCommand(string $path, string $action, string $arguments = '') : string
+function runCommand(string $path, string $action, string $arguments = ''): string
 {
-    $verbosityArgument = (new VerbosityString(\Deployer\output()))->__toString();
+    $verbosityArgument = gerVerbosityArgument();
     $verbosityArgument = str_replace('v', 'd', $verbosityArgument); // npm takes d for verbosity argument
     return \Deployer\run("cd $path && {{bin/npm}} $action $arguments $verbosityArgument");
 }

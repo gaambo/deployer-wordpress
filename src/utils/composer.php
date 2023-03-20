@@ -1,9 +1,14 @@
 <?php
+
 /**
  * Provides helper functions for running composer commands
  */
 
 namespace Gaambo\DeployerWordpress\Utils\Composer;
+
+use function Deployer\writeln;
+
+require_once 'utils/helper.php';
 
 /**
  * Runs the default composer command defined in {{composer_options}}
@@ -11,7 +16,7 @@ namespace Gaambo\DeployerWordpress\Utils\Composer;
  * @param string $path Path in which to run composer command
  * @return string Result/Returned output from CLI
  */
-function runDefault(string $path) : string
+function runDefault(string $path): string
 {
     return runCommand($path, '', '{{composer_options}}');
 }
@@ -24,7 +29,7 @@ function runDefault(string $path) : string
  * @param string $arguments Command-line arguments to be passed to composer as a string
  * @return string Result/Returned output from CLI
  */
-function runScript(string $path, string $script, string $arguments = '') : string
+function runScript(string $path, string $script, string $arguments = ''): string
 {
     return runCommand($path, "run-script $script", $arguments);
 }
@@ -38,8 +43,8 @@ function runScript(string $path, string $script, string $arguments = '') : strin
  * @param string $arguments Command-line arguments to be passed to composer as a string
  * @return string Result/Returned output from CLI
  */
-function runCommand(string $path, string $command, string $arguments = '') : string
+function runCommand(string $path, string $command, string $arguments = ''): string
 {
-    $verbosityArgument = \Deployer\isVerbose() ? '-v' : '';
+    $verbosityArgument = gerVerbosityArgument();
     return \Deployer\run("cd $path && {{bin/composer}} $command $arguments $verbosityArgument");
 }

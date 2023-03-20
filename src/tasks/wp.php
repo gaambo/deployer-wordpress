@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Provides tasks for using WP CLI and pulling/pushing WordPress core
  */
@@ -22,7 +23,7 @@ require_once 'utils/wp-cli.php';
  */
 task('wp:download-core', function () {
     $wpVersion = get('wp/version', 'latest');
-    runCommand("core download --version=$wpVersion");
+    runCommand("cd {{document_root}} && core download --version=$wpVersion");
 })->desc('Installs a WordPress version via WP CLI');
 
 /**
@@ -34,7 +35,7 @@ task('wp:download-core', function () {
  */
 task('wp:push', function () {
     $rsyncOptions = \Gaambo\DeployerWordpress\Utils\Rsync\buildOptionsArray([
-        'filters' => get("wp/filter"),
+        'filter' => get("wp/filter"),
         'flags' => 'rz',
     ]);
     \Gaambo\DeployerWordpress\Utils\Files\pushFiles('{{wp/dir}}', '{{wp/dir}}', $rsyncOptions);
@@ -49,7 +50,7 @@ task('wp:push', function () {
  */
 task('wp:pull', function () {
     $rsyncOptions = \Gaambo\DeployerWordpress\Utils\Rsync\buildOptionsArray([
-        'filters' => get("wp/filter"),
+        'filter' => get("wp/filter"),
         'flags' => 'rz',
     ]);
     \Gaambo\DeployerWordpress\Utils\Files\pullFiles('{{wp/dir}}', '{{wp/dir}}', $rsyncOptions);
@@ -64,7 +65,7 @@ task('wp:pull', function () {
  */
 task('wp:info', function () {
     runCommand("--info");
-});
+})->desc("Runs the --info command via WP CLI - just a helper/test task");
 
 /**
  * Installs the WP-CLI binary - for usage via CLI
@@ -73,8 +74,13 @@ task('wp:info', function () {
  */
 task('wp:install-wpcli', function () {
     $installPath = get('installPath');
+    if (empty($installPath)) {
+        throw new \RuntimeException(
+            'You have to set an installPath for WordPress via a config variable or in cli via `-o installPath=$path`.'
+        );
+    }
     $binaryFile = get('binaryFile', 'wp-cli.phar');
     $sudo = get('sudo', false);
 
     installWPCLI($installPath, $binaryFile, $sudo);
-});
+})->desc("Install the WP-CLI binary manually with the `wp:install-wpcli` task and set the path as `/bin/wp` afterwards.");

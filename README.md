@@ -29,6 +29,8 @@ A collection of [Deployer](https://deployer.org) Tasks/Recipes to deploy WordPre
     - [Simple - `deploy-simple.php`](#simple---deploy-simplephp)
       - [Custom Theme](#custom-theme-1)
       - [Custom MU-Plugin](#custom-mu-plugin-1)
+  - [Changelog](#changelog)
+    - [v2.0.0](#v200)
   - [Contributing](#contributing)
   - [Built by](#built-by)
 
@@ -78,7 +80,7 @@ My [Vanilla WordPress Boilerplate](https://github.com/gaambo/vanilla-wp/) puts t
 
 ### wp-config.php
 
-To make WordPress deployable you need to extract the host-dependent configuration (eg database access) into a seperate file which does not live in your git repository and is not deployed. I suggest using a **`wp-config-local.php`** file. This file should be required in your `wp-config.php` and be ignored by git (via `.gitignore`). This way `wp-config.php` can (should) be in your git repository and also be deployed. The default `wp/filters` configuration assumes this.
+To make WordPress deployable you need to extract the host-dependent configuration (eg database access) into a seperate file which does not live in your git repository and is not deployed. I suggest using a **`wp-config-local.php`** file. This file should be required in your `wp-config.php` and be ignored by git (via `.gitignore`). This way `wp-config.php` can (should) be in your git repository and also be deployed. The default `wp/filter` configuration assumes this.
 Another advantage of using a `wp-config-local.php` is to set `WP_DEBUG` on a per host basis.
 
 ### Rsync filters/excludes/includes
@@ -103,7 +105,7 @@ This can be handy to put int your custom theme or mu-plugin - for example:
 - package-lock.json
 ```
 
-This prevents any development files/development tools from syncing. I strongly recommend you put something like this in your custom theme and mu-plugins or overwrite any of the `themes/filters` or `mu-plugins/filters` configurations.
+This prevents any development files/development tools from syncing. I strongly recommend you put something like this in your custom theme and mu-plugins or overwrite any of the `themes/filter` or `mu-plugins/filter` configurations.
 
 ## Tasks
 
@@ -130,7 +132,7 @@ You can also run `dep --list` to see all available tasks and their description.
 - `theme:assets:build`: Run theme assets (npm) build script, can be run locally or remote
 - `theme:assets`: A combined tasks to build theme assets - combines `theme:assets:vendors` and `theme:assets:build`
 - `theme:vendors`: Install theme vendors (composer), can be run locally or remote
-- `theme`: A combined tasks to prepare the theme - combines `theme:assets` and `theme:vendors`
+- `theme`: A combined task to prepare the theme - combines `theme:assets` and `theme:vendors`
 - `themes:push`: Push themes from local to remote
 - `themes:pull`: Pull themes from remote to local
 - `themes:sync`: Syncs themes between remote and local
@@ -156,7 +158,7 @@ You can also run `dep --list` to see all available tasks and their description.
 ### MU Plugin Tasks (`tasks/mu-plugins.php`)
 
 - `mu-plugin:vendors`: Install mu-plugin vendors (composer), can be run locally or remote
-- `mu-plugin`: A combined tasks - at the moment only runs mu-plugin:vendors task
+- `mu-plugin`: A combined tasks to prepare the theme - at the moment only runs mu-plugin:vendors task
 - `mu-plugins:push`: Push mu-plugins from local to remote
 - `mu-plugins:pull`: Pull mu-plugins from remote to local
 - `mu-plugins:sync`: Syncs mu-plugins between remote and local
@@ -169,6 +171,7 @@ You can also run `dep --list` to see all available tasks and their description.
 - `wp:push`: Pushes WordPress core files via rsync
 - `wp:pull`: Pulls WordPress core files via rsync
 - `wp:info`: Runs the --info command via WP CLI - just a helper/test task
+- `wp:install-wpcli`: Install the WP-CLI binary manually with the `wp:install-wpcli` task and set the path as `/bin/wp` afterwards.
 
 #### WP-CLI
 
@@ -189,7 +192,7 @@ Handling and installing the WP-CLI binary can be done in one of multiple ways:
 3. Set the `bin/wp` variable path on the host configuration, if WP-CLI is already installed.
 4. Install the WP-CLI binary manually with the `wp:install-wpcli` task and set the path as `/bin/wp` afterwards.
 You can pass the installPath, binaryFile and sudo usage via CLI: 
-`dep wp:install-wpcli production -o installPath='{{deploy_path}}/.bin -o binaryFile=wp -o sudo=true`
+`dep wp:install-wpcli stage=production -o installPath='{{deploy_path}}/.bin -o binaryFile=wp -o sudo=true`
 
 See [original PR](https://github.com/gaambo/deployer-wordpress/pull/5) for more information.
 
@@ -211,19 +214,19 @@ Used for standard aka default aka vanilla deployments. By default it assumes the
 The recipe contains tasks for building assets for your custom theme, installing the vendors of your custom theme and installing the vendors of your custom mu-plugin (eg site-specific/core-functionality plugin).
 
 The deployment flow is based on the default [Deployer flow](https://deployer.org/docs/flow.html) and assumes a default Deployer directory structure on the remote host.
-By default this recipes overwrites the `deploy:update_code` Deployer task to deploy code via rsync instead of git - but you can change that by removing the overwrite. Or you can edit the task to just sync themes (`themes:push`) and mu-plugins (`mu-plugins:push`).
+By default this recipes overwrites the `deploy:update_code` Deployer task with a `deploy:push_code` task to deploy code via rsync instead of git - but you can change that by removing the overwrite. Or you can edit the task to just sync themes (`themes:push`) and mu-plugins (`mu-plugins:push`).
 
 #### Custom Theme
 
 Set custom theme name (= directory) in variable `theme/name`.
-By default it runs `theme:assets:vendors` and `theme:assets:build` locally and just pushes the built/dist files to the server (--> no need to install Node.js/npm on server). The `theme:assets` task (which groups the two tasks above) is hooked into _before_ `deploy:update_code`.
+By default it runs `theme:assets:vendors` and `theme:assets:build` locally and just pushes the built/dist files to the server (--> no need to install Node.js/npm on server). The `theme:assets` task (which groups the two tasks above) is hooked into _before_ `deploy:push_code`.
 
-Installing PHP/composer vendors/dependencies is done on the server. The `theme:vendors` task is therefore hooked into _after_ `deploy:update_code`.
+Installing PHP/composer vendors/dependencies is done on the server. The `theme:vendors` task is therefore hooked into _after_ `deploy:push_code`.
 
 #### Custom MU-Plugin
 
 Set custom mu-plugin name (=directory) in variable `mu-plugin/name`.
-Installing PHP/composer vendors/dependencies is done on the server. The `mu-plugin:vendors` task is therefore hooked into _after_ `deploy:update_code`.
+Installing PHP/composer vendors/dependencies is done on the server. The `mu-plugin:vendors` task is therefore hooked into _after_ `deploy:push_code`.
 
 ### Simple - `deploy-simple.php`
 
@@ -231,21 +234,40 @@ A simple task for deploying WordPress Sites on shared hosting via rsync.
 This is especially useful in case you can't put directories outside of the document root on your hosting or you don't want (for any reason) atomic deploys.
 
 The deployment flow is based on the default [Deployer flow](https://deployer.org/docs/flow.html) but overwrites/removes some of the default `deploy:*` tasks to not create handle release directories, symlinks etc.
-By default this recipes overwrites the `deploy:update_code` Deployer task to deploy code via rsync instead of git - but you can change that by removing the overwrite. Or you can edit the task to just sync themes (`themes:push`) and mu-plugins (`mu-plugins:push`).
+By default this recipes overwrites the `deploy:update_code` Deployer task with a `deploy:push_code` task to deploy code via rsync instead of git - but you can change that by removing the overwrite. Or you can edit the task to just sync themes (`themes:push`) and mu-plugins (`mu-plugins:push`).
 
 An important configuration step is to set **deploy_path**, **release_path** and **document_root** on each remote host to the same directory. This way all tasks work as usual and don't require any changes.
 
 #### Custom Theme
 
 Set custom theme name (= directory) in variable `theme/name`.
-By default it runs `theme:assets:vendors` and `theme:assets:build` locally and just pushes the built/dist files to the server (--> no need to install Node.js/npm on server). The `theme:assets` task (which groups the two tasks above) is hooked into _before_ `deploy:update_code`.
+By default it runs `theme:assets:vendors` and `theme:assets:build` locally and just pushes the built/dist files to the server (--> no need to install Node.js/npm on server). The `theme:assets` task (which groups the two tasks above) is hooked into _before_ `deploy:push_code`.
 
-Installing PHP/composer vendors/dependencies is done on the server. The `theme:vendors` task is therefore hooked into _after_ `deploy:update_code`.
+Installing PHP/composer vendors/dependencies is done on the server. The `theme:vendors` task is therefore hooked into _after_ `deploy:push_code`.
 
 #### Custom MU-Plugin
 
 Set custom mu-plugin name (=directory) in variable `mu-plugin/name`.
-Installing PHP/composer vendors/dependencies is done on the server. The `mu-plugin:vendors` task is therefore hooked into _after_ `deploy:update_code`.
+Installing PHP/composer vendors/dependencies is done on the server. The `mu-plugin:vendors` task is therefore hooked into _after_ `deploy:push_code`.
+
+## Changelog
+
+### v2.0.0
+
+- Updated from Deployer 6.x to 7.x
+  See [docs](https://deployer.org/docs/7.x/UPGRADE#upgrade-from-6x-to-7x) for more information.
+  Most notable changes:
+    - New format for yml-files which can now also include configuration.
+    - The `local` is not available any more. Instead `once` and `runLocally` should be used. For theme assets the example uses a function callback and the `on` helper to optionally run those build tasks on the local host.
+    - When deploying you can't select a host by name or stage anymore. Instead you have to use labels (eg a `stage` label). If you've used `dep deploy production` you now have to use `dep deploy stage=production` and set the stage label in your yml file.
+- Switched to a single base recipe which can be included and built upon. See `examples/deploy.php`.
+- The new recipe and examples uses yml-files for project-specific configuration so the `deploy.php` is a dropin file and has no configuration in it.
+- PHP 8 compatibility.
+- Fixes issues with rsync flags/options and `'`.
+
+**Upgrading:**
+If you've used the default recipe it's probably easiest to copy the new example `deploy.php` and update your yml-file with project-specific configuration. If you have added any other tasks/features to your `deploy.php` make sure you upgrade them too.
+If you've used most of the core functions of this library or just the examples, the upgrade should only take a few minutes.
 
 ## Contributing
 

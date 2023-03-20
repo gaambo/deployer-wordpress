@@ -1,6 +1,0 @@
-example.com:
-  stage: production
-  public_url: https://example.cloud
-  deploy_path: /var/www
-  release_path: /var/www
-  document_root: "{{release_path}}"

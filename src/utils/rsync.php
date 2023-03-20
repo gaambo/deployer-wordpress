@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Provides helper functions to build rsync options for rsync
  * Can be used with download & upload functions of Deployer too
@@ -9,82 +10,90 @@ namespace Gaambo\DeployerWordpress\Utils\Rsync;
 /**
  * Build excludes command-line arguments from array/file
  *
+ * Does not use escapeshellarg, because Rsync class from deployer uses it and that would destroy the options
+ *
  * @param array $excludes Array of paths/files to exclude
  * @param string|null $excludeFile Path to a exclude file to pass to rsync
- * @return string Excludes as command-line arguments which can be passed to rsync
+ * @return array Excludes as command-line arguments which can be passed to rsync
  */
-function buildExcludes(array $excludes = [], ?string $excludeFile = null) : string
+function buildExcludes(array $excludes = [], ?string $excludeFile = null): array
 {
-    $excludesString = '';
+    $excludesStrings = [];
     foreach ($excludes as $exclude) {
-        $excludesString .= ' --exclude=' . escapeshellarg($exclude);
+        $excludesStrings[] = '--exclude=' . $exclude;
     }
 
     if (!empty($excludeFile) && file_exists($excludeFile) && is_file($excludeFile) && is_readable($excludeFile)) {
-        $excludesString .= ' --exclude-from=' . escapeshellarg($excludeFile);
+        $excludesStrings[] = '--exclude-from=' . $excludeFile;
     }
 
-    return $excludesString;
+    return $excludesStrings;
 }
 
 /**
  * Build includes command-line arguments from array/file
  *
+ * Does not use escapeshellarg, because Rsync class from deployer uses it and that would destroy the options
+ *
  * @param array $includes Array of paths/files to include
  * @param string|null $includeFile Path to a include file to pass to rsync
- * @return string Includes as command-line arguments which can be passed to rsync
+ * @return array Includes as command-line arguments which can be passed to rsync
  */
-function buildIncludes(array $includes = [], ?string $includeFile = null) : string
+function buildIncludes(array $includes = [], ?string $includeFile = null): array
 {
-    $includesString = '';
+    $includesStrings = [];
     foreach ($includes as $include) {
-        $includesString .= ' --include=' . escapeshellarg($include);
+        $includesStrings[] = '--include=' . $include;
     }
 
     if (!empty($includeFile) && file_exists($includeFile) && is_file($includeFile) && is_readable($includeFile)) {
-        $includesString .= ' --include-from=' . escapeshellarg($includeFile);
+        $includesStrings[] .= '--include-from=' . $includeFile;
     }
 
-    return $includesString;
+    return $includesStrings;
 }
 
 /**
  * Build filter command-line arguments from array/file/filePerDir
  *
+ * Does not use escapeshellarg, because Rsync class from deployer uses it and that would destroy the options
+ *
  * @param array $filters Array of rsync filters
  * @param string|null $filterFile Path to a filterFile in rsync filter syntax
  * @param string|null $filterPerDir Filename to be used on a per directory basis for rsync filtering
- * @return string Filters as command-line arguments which can be passed to rsync
+ * @return array Filters as command-line arguments which can be passed to rsync
  */
-function buildFilter(array $filters = [], ?string $filterFile = null, ?string $filterPerDir = null) : string
+function buildFilter(array $filters = [], ?string $filterFile = null, ?string $filterPerDir = null): array
 {
-    $filtersString = '';
+    $filtersStrings = [];
     foreach ($filters as $filter) {
-        $filtersString.=" --filter='$filter'";
+        $filtersStrings[] = '--filter=' . $filter;
     }
     if (!empty($filterFile)) {
-        $filtersString .= " --filter='merge $filterFile'";
+        $filtersStrings[] = "--filter=merge " . $filterFile . "";
     }
     if (!empty($filterPerDir)) {
-        $filtersString .= " --filter='dir-merge $filterPerDir'";
+        $filtersStrings[] = "--filter=dir-merge " . $filterPerDir . "";
     }
-    return $filtersString;
+    return $filtersStrings;
 }
 
 /**
  * Build rsync options and flags
  *
+ * Does not use escapeshellarg, because Rsync class from deployer uses it and that would destroy the options
+ *
  * @param array $options Array of options/flags to be passed to rsync - do not include dashes!
- * @return string Options as command-line arguments which can be passed to rsync
+ * @return array Options as command-line arguments which can be passed to rsync
  */
-function buildOptions(array $options) : string
+function buildOptions(array $options): array
 {
-    $optionsString = '';
+    $optionsStrings = [];
     foreach ($options as $option) {
-        $optionsString .= ' --' . $option;
+        $optionsStrings[] = '--' . $option;
     }
 
-    return $optionsString;
+    return $optionsStrings;
 }
 
 /**
@@ -94,30 +103,30 @@ function buildOptions(array $options) : string
  *
  * @param array $config
  *  $config = [
- *      'excludes' => (array) Array of paths/files to exclude
+ *      'exclude' => (array) Array of paths/files to exclude
  *      'exclude-file' => (string) Path to a exclude file to pass to rsync
- *      'includes' => (array) Array of paths/files to include
+ *      'include' => (array) Array of paths/files to include
  *      'include-file' => (string) Path to a include file to pass to rsync
- *      'filters' => (array) Array of rsync filters
- *      'filters-file' => (string) Path to a filterFile in rsync filter syntax
- *      'filters-perdir' => (string) Filename to be used on a per directory basis for rsync filtering
+ *      'filter' => (array) Array of rsync filters
+ *      'filter-file' => (string) Path to a filterFile in rsync filter syntax
+ *      'filter-perdir' => (string) Filename to be used on a per directory basis for rsync filtering
  *      'options' => (array) Array of options/flags to be passed to rsync - do not include dashes!
  *  ]
  * @return array
  */
-function buildOptionsArray(array $config = []) : array
+function buildOptionsArray(array $config = []): array
 {
     $defaultConfig = \Deployer\get('rsync');
     if (!$defaultConfig || !is_array($defaultConfig)) {
         $defaultConfig = [
-            'excludes' => [
+            'exclude' => [
                 '.git',
                 'deploy.php',
             ],
             'exclude-file' => false,
-            'includes' => [],
+            'include' => [],
             'include-file' => false,
-            'filters' => [],
+            'filter' => [],
             'filter-file' => false,
             'filter-perdir' => false,
             'options' => ['delete-after'], // needed so deployfilter files are send and delete is checked afterwards
@@ -127,11 +136,14 @@ function buildOptionsArray(array $config = []) : array
 
     $mergedConfig = array_merge($defaultConfig, $config);
 
-    $options = [];
-    $options[] = buildOptions($mergedConfig['options']);
-    $options[] = buildIncludes($mergedConfig['includes'], $mergedConfig['include-file']);
-    $options[] = buildExcludes($mergedConfig['excludes'], $mergedConfig['exclude-file']);
-    $options[] = buildFilter($mergedConfig['filters'], $mergedConfig['filter-file'], $mergedConfig['filter-perdir']);
+    $options = array_merge(
+        buildOptions($mergedConfig['options']),
+        buildIncludes($mergedConfig['include'], $mergedConfig['include-file']),
+        buildExcludes($mergedConfig['exclude'], $mergedConfig['exclude-file']),
+        buildFilter($mergedConfig['filter'], $mergedConfig['filter-file'], $mergedConfig['filter-perdir'])
+    );
 
-    return $options;
+    // remove empty strings because they break rsync
+    // because Rsync class uses escapeshellarg
+    return array_filter($options);
 }

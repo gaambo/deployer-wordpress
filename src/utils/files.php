@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Provides helper functions for handling files
  * Including up- & downloads and zipping
@@ -11,7 +12,9 @@ require_once 'localhost.php';
 use function \Deployer\get;
 use function \Deployer\upload;
 use function \Deployer\download;
+use function Deployer\info;
 use function \Deployer\run;
+use function Deployer\writeln;
 use function \Gaambo\DeployerWordpress\Utils\Localhost\getLocalhostConfig;
 
 /**
@@ -21,7 +24,7 @@ use function \Gaambo\DeployerWordpress\Utils\Localhost\getLocalhostConfig;
  *
  * @return string Path to current release
  */
-function getRemotePath() : string
+function getRemotePath(): string
 {
     $remotePath = '{{deploy_path}}/current';
     $releasePath = get('release_path');
@@ -74,15 +77,15 @@ function pullFiles(string $source, string $destination, array $rsyncOptions)
  * @param string $filename Filename of the zip file - gets prefixed to a datetime
  * @return string The full path ($backupDir + full filename) to the created zip
  */
-function zipFiles(string $dir, string $backupDir, string $filename) : string
+function zipFiles(string $dir, string $backupDir, string $filename): string
 {
-    
+
     $backupFilename = $filename . '_' . date('Y-m-d_H-i-s') . '.zip';
     $backupPath = "$backupDir/$backupFilename";
     run("mkdir -p $backupDir");
 
     // dir can have a trailing slash (which means, backup only the content of the specified directory)
-    if (substr($dir, - 1) == '/') {
+    if (substr($dir, -1) == '/') {
         // Add everything from directory to zip, but exclude previous backups
         run("cd {$dir} && zip -r {$backupFilename} . {{zip_options}} && mv $backupFilename $backupPath");
     } else {

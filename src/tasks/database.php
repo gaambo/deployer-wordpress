@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Provides tasks for backing up remote/local databases and importing/exporting backups on local and remote host
  */
@@ -96,11 +97,13 @@ task('db:local:import', function () {
  * Runs db:local:backup and db:remote:import tasks in series
  * See tasks definitions for required variables
  */
-task('db:push', ['db:local:backup', 'db:remote:import']);
+task('db:push', ['db:local:backup', 'db:remote:import'])
+    ->desc("Pushes local database to remote host (combines `db:local:backup` and `db:remote:import`)");
 
 /**
  * Pulls remote database to localhost
  * Runs db:remote:backup and db:local:import tasks in series
  * See tasks definitions for required variables
  */
-task('db:pull', ['db:remote:backup', 'db:local:import']);
+task('db:pull', ['db:remote:backup', 'db:local:import'])
+    ->desc("Pulls remote database to localhost (combines `db:remote:backup` and `db:local:import`)");

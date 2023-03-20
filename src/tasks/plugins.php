@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Provides tasks for pushing, pulling, syncing and backing up plugins
  */
@@ -18,16 +19,14 @@ use function \Gaambo\DeployerWordpress\Utils\Files\pushFiles;
 /**
  * Push plugins from local to remote
  * Needs the following variables:
- *  - plugins/filters: rsync filter syntax array of files to push (has a default)
+ *  - plugins/filter: rsync filter syntax array of files to push (has a default)
  *  - plugins/dir: Path of plugins directory relative to document_root/release_path (has a default)
  *  - document_root on localhost: Path to directory which contains the public document_root
  *  - deploy_path or release_path: to build remote path
  */
 task('plugins:push', function () {
     $rsyncOptions = \Gaambo\DeployerWordpress\Utils\Rsync\buildOptionsArray([
-        'filters' => get("plugins/filters"),
-        'flags' => 'rz',
-        'filter-perdir'=> '.deployfilter', // allows excluding files on a per-dir basis in a .deployfilter file
+        'filter' => get("plugins/filter"),
     ]);
     pushFiles('{{plugins/dir}}', '{{plugins/dir}}', $rsyncOptions);
 })->desc('Push plugins from local to remote');
@@ -35,16 +34,14 @@ task('plugins:push', function () {
 /**
  * Pull plugins from remote to local
  * Needs the following variables:
- *  - plugins/filters: rsync filter syntax array of files to pull (has a default)
+ *  - plugins/filter: rsync filter syntax array of files to pull (has a default)
  *  - plugins/dir: Path of plugins directory relative to document_root/release_path (has a default)
  *  - document_root on localhost: Path to directory which contains the public document_root
  *  - deploy_path or release_path: to build remote path
  */
 task('plugins:pull', function () {
     $rsyncOptions = \Gaambo\DeployerWordpress\Utils\Rsync\buildOptionsArray([
-        'filters' => get("plugins/filters"),
-        'flags' => 'rz',
-        'filter-perdir'=> '.deployfilter', // allows excluding files on a per-dir basis in a .deployfilter file
+        'filter' => get("plugins/filter"),
     ]);
     pullFiles('{{plugins/dir}}', '{{plugins/dir}}', $rsyncOptions);
 })->desc('Pull plugins from remote to local');
@@ -90,4 +87,4 @@ task('plugins:backup:local', function () {
         $localBackupPath,
         'backup_plugins'
     );
-})->local()->desc('Backup local plugins as zip');
+})->once()->desc('Backup local plugins as zip');

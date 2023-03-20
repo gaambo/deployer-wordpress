@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Provides helper functions for running composer commands
  */
@@ -16,7 +17,7 @@ const INSTALLER_DOWNLOAD = 'https://raw.githubusercontent.com/wp-cli/builds/gh-p
  * @param string $arguments Command-line arguments to be passed to WP-CLI as a string
  * @return string Result/Returned output from CLI
  */
-function runCommand(string $command, string $path = '{{deploy_path}}', string $arguments = '') : string
+function runCommand(string $command, string $path = '{{deploy_path}}', string $arguments = ''): string
 {
     return \Deployer\run("cd $path && {{bin/wp}} $command $arguments");
 }
@@ -24,7 +25,7 @@ function runCommand(string $command, string $path = '{{deploy_path}}', string $a
 /**
  * Gets the path to the WP-CLI binary
  *
- * Uses locateBinaryPath to get a global binary
+ * Uses which to get a global binary
  * or alternatively check in a given path for a file
  *
  * Default path/file to check is {{deploy_path}}/.dep/wp-cli.phar
@@ -37,7 +38,7 @@ function runCommand(string $command, string $path = '{{deploy_path}}', string $a
 function getWPCLIBinary($path = '{{deploy_path}}/.dep', $binaryFile = 'wp-cli.phar')
 {
     if (\Deployer\commandExist('wp')) {
-        return \Deployer\locateBinaryPath('wp');
+        return \Deployer\which('wp');
     }
 
     if (\Deployer\test("[ -f $path/$binaryFile ]")) {
