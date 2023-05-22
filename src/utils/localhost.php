@@ -17,16 +17,3 @@ function getLocalhost(): \Deployer\Host\Host
 {
     return \Deployer\Deployer::get()->hosts->get('localhost');
 }
-
-/**
- * Get a specific configuration key from localhost host
- *
- * @param string $key Configuration key
- * @return mixed Configuration value
- */
-function getLocalhostConfig(string $key)
-{
-    $localhost = getLocalhost();
-    $config = $localhost->config();
-    return $config->get($key);
-}

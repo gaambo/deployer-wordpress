@@ -1,24 +1,24 @@
 {
-    "name": "gaambo/deployer-wordpress",
-    "description": "Deployer tasks for deploying WordPress Sites",
-    "version": "2.0.0",
-    "type": "library",
-    "license": "MIT",
-    "homepage": "https://github.com/gaambo/deployer-wordpress",
-    "authors": [
-        {
-            "name": "Fabian Todt",
-            "email": "fabian@fabiantodt.at"
-        }
-    ],
-    "require-dev": {},
-    "require": {
-        "php": "^8.0|^7.3",
-        "deployer/deployer": "^7.2"
-    },
-    "autoload": {
-        "files": [
-            "autoload.php"
-        ]
+  "name": "gaambo/deployer-wordpress",
+  "description": "Deployer tasks for deploying WordPress Sites",
+  "version": "2.0.0",
+  "type": "library",
+  "license": "MIT",
+  "homepage": "https://github.com/gaambo/deployer-wordpress",
+  "authors": [
+    {
+      "name": "Fabian Todt",
+      "email": "fabian@fabiantodt.at"
     }
+  ],
+  "require-dev": {},
+  "require": {
+    "php": "^8.0|^7.3",
+    "deployer/deployer": "^7.3"
+  },
+  "autoload": {
+    "files": [
+      "autoload.php"
+    ]
+  }
 }

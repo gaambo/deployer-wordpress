@@ -21,30 +21,29 @@ A collection of [Deployer](https://deployer.org) Tasks/Recipes to deploy WordPre
     - [MU Plugin Tasks (`tasks/mu-plugins.php`)](#mu-plugin-tasks-tasksmu-pluginsphp)
     - [WordPress Tasks (`tasks/wp.php`)](#wordpress-tasks-taskswpphp)
       - [WP-CLI](#wp-cli)
-    - [Simple Tasks (`tasks/simple.php`)](#simple-tasks-taskssimplephp)
   - [Recipes](#recipes)
-    - [Default aka Vanilla - `deploy.php`](#default-aka-vanilla---deployphp)
+    - [Base](#base)
+    - [Advanced](#advanced)
       - [Custom Theme](#custom-theme)
       - [Custom MU-Plugin](#custom-mu-plugin)
-    - [Simple - `deploy-simple.php`](#simple---deploy-simplephp)
-      - [Custom Theme](#custom-theme-1)
-      - [Custom MU-Plugin](#custom-mu-plugin-1)
   - [Changelog](#changelog)
+    - [v3.0.0](#v300)
     - [v2.0.0](#v200)
   - [Contributing](#contributing)
+    - [Testing](#testing)
   - [Built by](#built-by)
 
 ## Installation
 
 1. Run `composer require gaambo/deployer-wordpress --dev` in your root directory
-2. Choose one of the [recipes](#recipes) and copy the corresponding recipe file (`deploy*.php`) and example host file (`hosts*.example.yml`) from `recipes` into your root directory - **or** write your own.
+2. Choose one of the [recipes](#recipes) and copy the corresponding example files (`examples/base` or `examples/advanced`) into your root directory - **or** write your own.
 3. Read through the recipe and customize it to your needs - here's a checklist:
    - [ ] Check localhost configuration
    - [ ] Set paths to your directory structure
    - [ ] If you have a custom theme set it's name - if not remove the configuration and the theme build-tasks
    - [ ] If you have a custom mu-plugin set it's name - if not remove the configuration and the mu-plugin build-tasks
    - [ ] Check if the deployment flow meets your needs and maybe delete/add/overwrite tasks
-4. Make your remote hosts ready for deployment (install composer, WP CLI; setup paths,...)
+4. Make your remote hosts ready for deployment (install composer, WP CLI; setup paths,...). Allthough the library checks for most of them and installs them.
 5. Make a **test deployment** to a test/staging server. Do not directly deploy to your production site, you may break it.
 6. Develop, deploy and be happy :)
 
@@ -70,13 +69,11 @@ Some tasks have additional requirements, eg:
 All tasks are documented and describe which options/variables need to be configured. `set.php` is included in all example recipes - This and the example recipes should have you covered regarding all required configurations. Further variables which need to be set by you are marked accordingly in the recipes.
 
 To help understand all the configurations here are the thoughts behind theme:
-The tasks are built to work with any kind of WordPress setup (vanilla, composer, subdirectory,..) - therefore all paths and directorys are configurable via variables. `set.php` contains some sane defaults which makes all tasks wort out of the box with a default installation.
+The tasks are built to work with any kind of WordPress setup (vanilla, composer, subdirectory,..) - therefore all paths and directorys are configurable via variables. `set.php` contains some sane defaults which makes all tasks work out of the box with a default installation.
 
 ### Default Directory Structure
 
-The defaults assume you've got everything in your root project directory. Which means `deploy.php` is located in the same directory which serves as document root and in this document root WordPress is installed with it's default directory structure (themes, plugins, uploads under `wp-content`).
-
-My [Vanilla WordPress Boilerplate](https://github.com/gaambo/vanilla-wp/) puts the document root into a `public` subdirectory of the root directory. So it updates the paths on localhost to point to the public directory. You can find a example configuration in the GitHub repository.
+My [Vanilla WordPress Boilerplate](https://github.com/gaambo/vanilla-wp/) uses this library. You can find a example configuration in the GitHub repository.
 
 ### wp-config.php
 
@@ -110,7 +107,7 @@ This prevents any development files/development tools from syncing. I strongly r
 ## Tasks
 
 All tasks reside in the `src/tasks` directory and are documented well. Here's a summary of all tasks - for details (eg required variables/config) see their source.
-You can also run `dep --list` to see all available tasks and their description.
+You can also run `dep list` to see all available tasks and their description.
 
 ### Database Tasks (`tasks/database.php`)
 
@@ -178,17 +175,7 @@ You can also run `dep --list` to see all available tasks and their description.
 Handling and installing the WP-CLI binary can be done in one of multiple ways: 
 
 1. The default `bin/wp` in `set.php` checks for a usable WP-CLI binary and if none is found it downloads and installs it to `{{deploy_path}}/.dep/wp-cli.phar` (this path is checked in the future as well).
-2. If you want this behaviour (check if installed, else install) but in another path, overwrite the `bin/wp` variable with a function: 
-    ```php
-    set('bin/wp', function() {
-        if($path = getWPCLIBinary()) {
-            return $path;
-        }
-        return installWPCLI('/usr/local/bin', 'wp', true);
-    }
-    ```
-    This would install the WP-CLI binary into `/usr/local/bin` with sudo, since this path is probably in $PATH it's found via `getWPCLIBinary` the next time.
-
+2. If you want this behaviour (check if installed, else install) but in another path, overwrite the `bin/wp` variable with a function and change the path it should be installed to.
 3. Set the `bin/wp` variable path on the host configuration, if WP-CLI is already installed.
 4. Install the WP-CLI binary manually with the `wp:install-wpcli` task and set the path as `/bin/wp` afterwards.
 You can pass the installPath, binaryFile and sudo usage via CLI: 
@@ -198,45 +185,21 @@ See [original PR](https://github.com/gaambo/deployer-wordpress/pull/5) for more 
 
 There's a task for downloading core and `--info`. You can generate your own tasks to handle other WP-CLI commands, there's a util function `Gaambo\DeployerWordpress\Utils\WPCLI\runCommand` (`src/utils/wp-cli.php`);
 
-### Simple Tasks (`tasks/simple.php`)
-
-- Contains some overwrites of Deployer default `deploy:*` tasks to be used in a "simple" recipe without release paths. See [Simple Recipe](#simple)
-
-If you want to include only some tasks/files you can require them via `require_once 'tasks/{task}.php';` because the `autoload.php` adds the `tasks` directory to the include path (similar to deployer). Please check you have your `vendor/autoload.php` loaded as well.
-
 ## Recipes
 
-Deployer WordPress ships with some recipes which handle most of my use cases/WordPress setup types. Just copy the contents of the corresponding recipe file (`deploy*.php`) and example host file (`hosts*.example.yml`) from `recipes` into your root directory (and maybe rename the recipe to `deploy.php`). See [the installation checklist](#installation) for a quick checklist of settings to change. All recipes have some special configurations which are documented well in each file. Configuration details, thoughts behind it, use cases and more information are listed below for each recipe.
+Deployer WordPress ships with two base recipes which handle my use cases.
+Both recipes are based on the default PHPDeployer common recipe and have their own recipe file which you can include in your `deploy.php` as a start. The examples folder provides examples for each recipe.
+Both recipes log the deployed versions in PHPDeployers default format (`.dep` folder).
+Both recipes overwrites the `deploy:update_code` Deployer task with a `deploy:update_code` task to deploy code via rsync instead of git 
 
-### Default aka Vanilla - `deploy.php`
+### Base
 
-Used for standard aka default aka vanilla deployments. By default it assumes the document root and WordPress are located in the same directory as your `deploy.php` (aka the root directory of your project). But all paths can be configured (see `set.php`).
-The recipe contains tasks for building assets for your custom theme, installing the vendors of your custom theme and installing the vendors of your custom mu-plugin (eg site-specific/core-functionality plugin).
+This is for WordPress sites where you don't need symlinking per version or atomic releases. This means that on your remote/production host you just have on folder which contains all of WordPress files and this is served by your web server.
+Since this is still based on the default PHPDeployer recipe which uses symlinking and to provide compatibility with all tasks, this just hardcodes the `release_path` and `current_path`.
 
-The deployment flow is based on the default [Deployer flow](https://deployer.org/docs/flow.html) and assumes a default Deployer directory structure on the remote host.
-By default this recipes overwrites the `deploy:update_code` Deployer task with a `deploy:push_code` task to deploy code via rsync instead of git - but you can change that by removing the overwrite. Or you can edit the task to just sync themes (`themes:push`) and mu-plugins (`mu-plugins:push`).
+### Advanced
 
-#### Custom Theme
-
-Set custom theme name (= directory) in variable `theme/name`.
-By default it runs `theme:assets:vendors` and `theme:assets:build` locally and just pushes the built/dist files to the server (--> no need to install Node.js/npm on server). The `theme:assets` task (which groups the two tasks above) is hooked into _before_ `deploy:push_code`.
-
-Installing PHP/composer vendors/dependencies is done on the server. The `theme:vendors` task is therefore hooked into _after_ `deploy:push_code`.
-
-#### Custom MU-Plugin
-
-Set custom mu-plugin name (=directory) in variable `mu-plugin/name`.
-Installing PHP/composer vendors/dependencies is done on the server. The `mu-plugin:vendors` task is therefore hooked into _after_ `deploy:push_code`.
-
-### Simple - `deploy-simple.php`
-
-A simple task for deploying WordPress Sites on shared hosting via rsync.
-This is especially useful in case you can't put directories outside of the document root on your hosting or you don't want (for any reason) atomic deploys.
-
-The deployment flow is based on the default [Deployer flow](https://deployer.org/docs/flow.html) but overwrites/removes some of the default `deploy:*` tasks to not create handle release directories, symlinks etc.
-By default this recipes overwrites the `deploy:update_code` Deployer task with a `deploy:push_code` task to deploy code via rsync instead of git - but you can change that by removing the overwrite. Or you can edit the task to just sync themes (`themes:push`) and mu-plugins (`mu-plugins:push`).
-
-An important configuration step is to set **deploy_path**, **release_path** and **document_root** on each remote host to the same directory. This way all tasks work as usual and don't require any changes.
+This uses symlinking like the default common recipe from PHPDeployer. Each release gets deployed in its own folder unter `{{deploy_path}}/releases/` and `{{deploy_path}}/current` is a symlink to the most current version. The symlink is automatically updated after the deployment finishes successfully. You can configure your webserver to just server `{{deploy_path}}/current`.
 
 #### Custom Theme
 
@@ -251,6 +214,18 @@ Set custom mu-plugin name (=directory) in variable `mu-plugin/name`.
 Installing PHP/composer vendors/dependencies is done on the server. The `mu-plugin:vendors` task is therefore hooked into _after_ `deploy:push_code`.
 
 ## Changelog
+
+### v3.0.0
+
+- Did a large refactor of paths (release_path, current_path, document_root)
+- Provide two [recipes](#recipes) (base and advanced) and examples for both
+- v2.0.0 did not work with symlink deployments, this now works again (see #8)
+- Updated from Deployer 7.2 to 7.3
+ 
+**Upgrading:**
+  - If you haven't upgraded to v2.0.0 yet, it's best to upgrade to 3.0.0 directly
+  - Have a look at the example files. Your deploy.php will get much smaller and require less configuration. 
+  - Also the new version is more smiliar to PHPDeployers default common recipe.
 
 ### v2.0.0
 
@@ -273,6 +248,13 @@ If you've used most of the core functions of this library or just the examples, 
 
 If you have feature requests, find bugs or need help just open an issue on [GitHub](https://github.com/gaambo/deployer-wordpress).
 Pull requests are always welcome. PSR2 coding standard are used and I try to adhere to Deployer best-practices.
+
+### Testing
+
+1. Download my [Vanilla WordPress Boilerplate](https://github.com/gaambo/vanilla-wp/) or set up a local dev environment with a deploy config
+2. Setup a remote test server
+3. Configure yml/deploy.php
+4. Run common tasks (`deploy`, `plugins:pull/push`, `db`) for both base as well as advanced recipe
 
 ## Built by
 

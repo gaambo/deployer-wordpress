@@ -7,10 +7,9 @@
 
 namespace Deployer;
 
-use function Gaambo\DeployerWordpress\Utils\WPCLI\getWPCLIBinary;
+use function Gaambo\DeployerWordpress\Utils\Composer\installComposer;
 use function \Gaambo\DeployerWordpress\Utils\WPCLI\installWPCLI;
 
-require_once 'utils/localhost.php';
 require_once 'utils/wp-cli.php';
 
 // BINARIES
@@ -18,25 +17,54 @@ set('bin/npm', function () {
     return which('npm');
 });
 
+// Path to the `php` bin.
+set('bin/php', function () {
+    if (currentHost()->hasOwn('php_version')) {
+        return '/usr/bin/php{{php_version}}';
+    }
+    return which('php');
+});
+
 // can be overwritten if you eg. use wpcli in a docker container
 set('bin/wp', function () {
-    if ($path = getWPCLIBinary()) {
-        return $path;
-    }
-
     $installPath = '{{deploy_path}}/.dep';
     $binaryFile = 'wp-cli.phar';
 
-    writeln("WP-CLI binary wasn't found. Installing latest wp-cli to \"$installPath/$binaryFile\".");
+    if (test("[ -f $installPath/$binaryFile ]")) {
+        return "{{bin/php}} $installPath/$binaryFile";
+    }
 
+    if (commandExist('wp')) {
+        return '{{bin/php}} ' . which('wp');
+    }
+
+    warning("WP-CLI binary wasn't found. Installing latest WP-CLI to $installPath/$binaryFile.");
     installWPCLI($installPath, $binaryFile);
+    return "{{bin/php}} $installPath/$binaryFile";
 });
 
+set('composer_action', 'install');
+set('composer_options', '--verbose --prefer-dist --no-progress --no-interaction --no-dev --optimize-autoloader');
+
+// Returns Composer binary path in found. Otherwise try to install latest
+// composer version to `.dep/composer.phar`. To use specific composer version
+// download desired phar and place it at `.dep/composer.phar`.
 set('bin/composer', function () {
-    return which('composer');
-});
+    $installPath = '{{deploy_path}}/.dep';
+    $binaryFile = 'composer.phar';
 
-set('composer_options', 'install --no-dev');
+    if (test("[ -f $installPath/$binaryFile ]")) {
+        return "{{bin/php}} $installPath/$binaryFile";
+    }
+
+    if (commandExist('composer')) {
+        return '{{bin/php}} ' . which('composer');
+    }
+
+    warning("Composer binary wasn't found. Installing latest composer to $installPath/$binaryFile.");
+    installComposer($installPath, $binaryFile);
+    return "{{bin/php}} $installPath/$binaryFile";
+});
 
 // PATHS & FILES CONFIGURATION
 
@@ -75,7 +103,7 @@ set('wp/filter', [ // contains all wordpress core files excluding uploads, theme
     '- *'
 ]);
 set('uploads/dir', 'wp-content/uploads'); // relative to document root
-set('uploads/path', '{{deploy_path}}'); // path in front of uploads directory
+set('uploads/path', '{{release_or_current_path}}'); // path in front of uploads directory
 set('uploads/filter', []); // rsync filter syntax
 set('mu-plugins/dir', 'wp-content/mu-plugins'); // relative to document root
 set('mu-plugins/filter', []); // rsync filter syntax
@@ -85,12 +113,6 @@ set('themes/dir', 'wp-content/themes'); // relative to document root
 set('themes/filter', []); // rsync filter syntax
 set('theme/build_script', 'build'); // custom theme npm build script
 
-set('document_root', function () {
-    // default to local document_root to be used if no host context is present
-    $localPath = \Gaambo\DeployerWordpress\Utils\Localhost\getLocalhostConfig('document_root');
-    return $localPath;
-});
-
 // options for zipping files for backups - passed to zip shell command
 set('zip_options', '-x "_backup_*.zip" -x **/node_modules/**\* -x **/vendor/**\*');
 
@@ -98,9 +120,6 @@ set('zip_options', '-x "_backup_*.zip" -x **/node_modules/**\* -x **/vendor/**\*
 set('shared_files', ['wp-config-local.php']);
 set('shared_dirs', [get('uploads/dir')]);
 set('writable_dirs', [get('uploads/dir')]);
-
-// URLS
-set('remote_url', '{{public_url}}'); // public_url must be set on host
 
 // The default rsync config
 // used by all *:push/*:pull tasks and in `src/utils/rsync.php:buildOptionsArray`
@@ -137,64 +156,4 @@ set('rsync_src', __DIR__);
 
 set('release_name', function () {
     return date('YmdHis'); // you could also use the composer.json version here
-});
-
-/**
- * Taken and adapted from deployer/recipe/common.php
- */
-// Name of current user who is running deploy.
-// If not set will try automatically get git user name,
-// otherwise output of `whoami` command.
-set('user', function () {
-    if (getenv('CI') !== false) {
-        return 'ci';
-    }
-
-    try {
-        return runLocally('git config --get user.name');
-    } catch (RunException $exception) {
-        try {
-            return runLocally('whoami');
-        } catch (RunException $exception) {
-            return 'no_user';
-        }
-    }
-});
-
-// Default timeout for `run()` and `runLocally()` functions.
-//
-// Set to `null` to disable timeout.
-set('default_timeout', 300);
-
-/**
- * Remote environment variables.
- * ```php
- * set('env', [
- *     'KEY' => 'something',
- * ]);
- * ```
- *
- * It is possible to override it per `run()` call.
- *
- * ```php
- * run('echo $KEY', env: ['KEY' => 'over']);
- * ```
- */
-set('env', []);
-
-/**
- * Path to `.env` file which will be used as environment variables for each command per `run()`.
- *
- * ```php
- * set('dotenv', '{{current_path}}/.env');
- * ```
- */
-set('dotenv', false);
-
-// Path to the `php` bin.
-set('bin/php', function () {
-    if (currentHost()->hasOwn('php_version')) {
-        return '/usr/bin/php{{php_version}}';
-    }
-    return which('php');
 });

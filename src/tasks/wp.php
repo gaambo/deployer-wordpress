@@ -4,13 +4,14 @@
  * Provides tasks for using WP CLI and pulling/pushing WordPress core
  */
 
-namespace Deployer;
+namespace Gaambo\DeployerWordpress\Tasks;
 
+use function Deployer\get;
+use function Deployer\task;
 use function Gaambo\DeployerWordpress\Utils\WPCLI\installWPCLI;
 use function Gaambo\DeployerWordpress\Utils\WPCLI\runCommand;
 
 require_once 'utils/files.php';
-require_once 'utils/localhost.php';
 require_once 'utils/rsync.php';
 require_once 'utils/wp-cli.php';
 
@@ -23,7 +24,7 @@ require_once 'utils/wp-cli.php';
  */
 task('wp:download-core', function () {
     $wpVersion = get('wp/version', 'latest');
-    runCommand("cd {{document_root}} && core download --version=$wpVersion");
+    runCommand("cd {{release_or_current_path}} && core download --version=$wpVersion");
 })->desc('Installs a WordPress version via WP CLI');
 
 /**
@@ -31,7 +32,7 @@ task('wp:download-core', function () {
  * Needs the following variables:
  *  - deploy_path or release_path: to build remote path
  *  - wp/filter: rsync filter syntax array of files to push (has a default)
- *  - wp/dir: Path of WordPress directory relative to document_root/release_path (has a default)
+ *  - wp/dir: Path of WordPress directory relative to release_path/current_path
  */
 task('wp:push', function () {
     $rsyncOptions = \Gaambo\DeployerWordpress\Utils\Rsync\buildOptionsArray([
@@ -46,7 +47,7 @@ task('wp:push', function () {
  * Needs the following variables:
  *  - deploy_path or release_path: to build remote path
  *  - wp/filter: rsync filter syntax array of files to push (has a default)
- *  - wp/dir: Path of WordPress directory relative to document_root/release_path (has a default)
+ *  - wp/dir: Path of WordPress directory relative to release_path/current_path
  */
 task('wp:pull', function () {
     $rsyncOptions = \Gaambo\DeployerWordpress\Utils\Rsync\buildOptionsArray([

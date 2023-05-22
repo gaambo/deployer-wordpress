@@ -6,7 +6,7 @@
  * and installing vendors (npm, composer) and building assets via npm script for custom themes
  */
 
-namespace Deployer;
+namespace Gaambo\DeployerWordpress\Tasks;
 
 require_once 'utils/composer.php';
 require_once 'utils/files.php';
@@ -14,35 +14,38 @@ require_once 'utils/localhost.php';
 require_once 'utils/npm.php';
 require_once 'utils/rsync.php';
 
-use function \Gaambo\DeployerWordpress\Utils\Localhost\getLocalhostConfig;
+use function Deployer\download;
+use function Deployer\get;
+use function Deployer\task;
 use function \Gaambo\DeployerWordpress\Utils\Files\zipFiles;
-use function \Gaambo\DeployerWordpress\Utils\Files\getRemotePath;
 use function \Gaambo\DeployerWordpress\Utils\Files\pullFiles;
 use function \Gaambo\DeployerWordpress\Utils\Files\pushFiles;
+use function Gaambo\DeployerWordpress\Utils\Localhost\getLocalhost;
 
 /**
  * Install theme assets vendors/dependencies (npm)
  * Can be run locally or remote
  * Needs the following variables:
- *  - document_root: Directory from which to search for theme directory - can be set to release_path on remote hosts (defaults to local config)
- *  - themes/dir: Path to directory which contains all themes (has a default)
+ *  - themes/dir: Path to directory which contains all themes relative to release_path/current_path
  *  - theme/name: Name (= directory) of your custom theme
  */
 task('theme:assets:vendors', function () {
-    \Gaambo\DeployerWordpress\Utils\Npm\runInstall('{{document_root}}/{{themes/dir}}/{{theme/name}}', 'install');
+    \Gaambo\DeployerWordpress\Utils\Npm\runInstall('{{release_or_current_path}}/{{themes/dir}}/{{theme/name}}', 'install');
 })->desc("Install theme assets vendors/dependencies (npm)");
 
 /**
  * Run theme assets (npm) build script
  * Can be run locally or remote
  * Needs the following variables:
- *  - document_root: Directory from which to search for theme directory - can be set to release_path on remote hosts (defaults to local config)
- *  - themes/dir: Path to directory which contains all themes (has a default)
+ *  - themes/dir: Path to directory which contains all themes relative to release_path/current_path
  *  - theme/name: Name (= directory) of your custom theme
  *  - theme/build_script: NPM script to be run (must be defined in package.json, has a default)
  */
 task('theme:assets:build', function () {
-    \Gaambo\DeployerWordpress\Utils\Npm\runScript('{{document_root}}/{{themes/dir}}/{{theme/name}}', '{{theme/build_script}}');
+    \Gaambo\DeployerWordpress\Utils\Npm\runScript(
+        '{{release_or_current_path}}/{{themes/dir}}/{{theme/name}}',
+        '{{theme/build_script}}'
+    );
 })->desc("Run theme assets (npm) build script");
 
 /**
@@ -56,12 +59,11 @@ task('theme:assets', ['theme:assets:vendors', 'theme:assets:build'])
  * Install theme vendors (composer)
  * Can be run locally or remote
  * Needs the following variables:
- *  - document_root: Directory from which to search for theme directory - can be set to release_path on remote hosts (defaults to local config)
- *  - themes/dir: Path to directory which contains all themes (has a default)
+ *  - themes/dir: Path to directory which contains all themes relative to release_path/current_path
  *  - theme/name: Name (= directory) of your custom theme
  */
 task('theme:vendors', function () {
-    \Gaambo\DeployerWordpress\Utils\Composer\runDefault('{{document_root}}/{{themes/dir}}/{{theme/name}}');
+    \Gaambo\DeployerWordpress\Utils\Composer\runDefault('{{release_or_current_path}}/{{themes/dir}}/{{theme/name}}');
 })->desc("Install theme vendors (composer), can be run locally or remote");
 
 /**
@@ -76,8 +78,7 @@ task('theme', ['theme:assets', 'theme:vendors'])
  * Push themes from local to remote
  * Needs the following variables:
  *  - themes/filter: rsync filter syntax array of files to push (has a default)
- *  - themes/dir: Path of themes directory relative to document_root/release_path (has a default)
- *  - document_root on localhost: Path to directory which contains the public document_root
+ *  - themes/dir: Path of themes directory relative to release_path/current_path
  *  - deploy_path or release_path: to build remote path
  */
 task('themes:push', function () {
@@ -91,8 +92,7 @@ task('themes:push', function () {
  * Pull themes from remote to local
  * Needs the following variables:
  *  - themes/filter: rsync filter syntax array of files to pull (has a default)
- *  - themes/dir: Path of themes directory relative to document_root/release_path (has a default)
- *  - document_root on localhost: Path to directory which contains the public document_root
+ *  - themes/dir: Path of themes directory relative to release_path/current_path
  *  - deploy_path or release_path: to build remote path
  */
 task('themes:pull', function () {
@@ -112,32 +112,30 @@ task("themes:sync", ["themes:push", "themes:pull"])->desc("Sync themes");
 /**
  * Backup themes on remote host and downloads zip to local backup path
  * Needs the following variables:
- *  - themes/dir: Path of themes directory relative to document_root/release_path (has a default)
+ *  - themes/dir: Path of themes directory relative to release_path/current_path
  *  - backup_path (on remote host): Path to directory in which to store all backups
  *  - backup_path (on localhost): Path to directory in which to store all backups
  *  - deploy_path or release_path: to build remote path
  */
 task('themes:backup:remote', function () {
-    $remotePath = getRemotePath();
     $backupFile = zipFiles(
-        "$remotePath/{{themes/dir}}/",
+        "{{release_or_current_path}}/{{themes/dir}}/",
         '{{backup_path}}',
         'backup_themes'
     );
-    $localBackupPath = getLocalhostConfig('backup_path');
+    $localBackupPath = getLocalhost()->get('backup_path');
     download($backupFile, "$localBackupPath/");
 })->desc('Backup themes on remote host and download zip');
 
 /**
  * Backup themes on localhost
  * Needs the following variables:
- *  - themes/dir: Path of themes directory relative to document_root/release_path (has a default)
+ *  - themes/dir: Path of themes directory relative to release_path/current_path
  *  - backup_path (on localhost): Path to directory in which to store all backups
- *  - document_root on localhost: Path to directory which contains the public document_root
  */
 task('themes:backup:local', function () {
-    $localPath = getLocalhostConfig('document_root');
-    $localBackupPath = getLocalhostConfig('backup_path');
+    $localPath = getLocalhost()->get('current_path');
+    $localBackupPath = getLocalhost()->get('backup_path');
     $backupFile = zipFiles(
         "$localPath/{{themes/dir}}/",
         $localBackupPath,
