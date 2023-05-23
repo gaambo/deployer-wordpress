@@ -71,7 +71,11 @@ set('bin/composer', function () {
 // if you want to further define options for rsyncing files
 // just look at the source in `files.php` and use the Rsync\buildConfig, Files\pushFiles and Files\pullFiles utils methods
 set('wp/dir', ''); // relative to document root
-set('wp/configFiles', ['wp-config.php', 'wp-config-local.php']); // config files which should be protected
+// config files which should be protected - add to shared_files as well
+set('wp/configFiles', ['wp-config.php', 'wp-config-local.php']);
+// set all wp-config files to 600 - which means plugins/wordpress can modify it
+// alternative set it to 400 to disallow edits via wordpress
+set('wp/configFiles/permissions', '600');
 set('wp/filter', [ // contains all wordpress core files excluding uploads, themes, plugins, mu-plugins
     '+ /wp-content/',
     '- /wp-content/mu-plugins/*',
@@ -118,9 +122,9 @@ set('theme/build_script', 'build'); // custom theme npm build script
 set('zip_options', '-x "_backup_*.zip" -x **/node_modules/**\* -x **/vendor/**\*');
 
 // SHARED FILES
-set('shared_files', ['wp-config-local.php']);
-set('shared_dirs', [get('uploads/dir')]);
-set('writable_dirs', [get('uploads/dir')]);
+set('shared_files', ['wp-config.php', 'wp-config-local.php']);
+set('shared_dirs', ['{{uploads/dir}}']);
+set('writable_dirs', ['{{uploads/dir}}']);
 
 // The default rsync config
 // used by all *:push/*:pull tasks and in `src/utils/rsync.php:buildOptionsArray`

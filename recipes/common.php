@@ -97,17 +97,25 @@ task('cache:clear', function () {
 });
 
 /**
+ * Overwrite deploy:writable to use chmod always and
  * CHOWN files to http_user and set file permissions according to WP best practices
+ *
+ * Does not support writable_mode configuration - always uses this
  */
-after('deploy:writable', function () {
+task('deploy:writable', function () {
     if (has('http_user')) {
         run("cd {{release_or_current_path}} && chown -R {{http_user}} .");
     }
+    // set all directories to 755
     run("cd {{release_or_current_path}} && find . -type d -exec chmod 755 {} \;");
+    run("cd {{deploy_path}}/shared && find . -type d -exec chmod 755 {} \;"); // also do for shared files
+    // set all files to 644
     run("cd {{release_or_current_path}} && find . -type f -exec chmod 644 {} \;");
+    run("cd {{deploy_path}}/shared && find . -type f -exec chmod 644 {} \;"); // also do for shared files
 
+    // set all files to 600 (so they can be modified by you/wordpress)
     $configFiles = get('wp/configFiles');
     foreach ((array)$configFiles as $configFile) {
-        run("cd {{release_or_current_path}} && chmod 600 $configFile");
+        run("cd {{release_or_current_path}} && chmod {{wp/configFiles/permissions}} $configFile");
     }
 });
