@@ -11,11 +11,13 @@ use Deployer\Deployer;
 
 use function Deployer\after;
 use function Deployer\before;
+use function Deployer\get;
 use function Deployer\has;
 use function Deployer\info;
 use function Deployer\invoke;
 use function Deployer\localhost;
 use function Deployer\on;
+use function Deployer\run;
 use function Deployer\selectedHosts;
 use function Deployer\task;
 
@@ -92,4 +94,20 @@ before('deploy:update_code', function () {
 task('cache:clear', function () {
     // TODO: overwrite, maybe clear cache via wpcli
     // run("cd {{release_or_current_path}} && {{bin/wp}} rocket clean --confirm");
+});
+
+/**
+ * CHOWN files to http_user and set file permissions according to WP best practices
+ */
+after('deploy:writable', function () {
+    if (has('http_user')) {
+        run("cd {{release_or_current_path}} && chown -R {{http_user}} .");
+    }
+    run("cd {{release_or_current_path}} && find . -type d -exec chmod 755 {} \;");
+    run("cd {{release_or_current_path}} && find . -type f -exec chmod 644 {} \;");
+
+    $configFiles = get('wp/configFiles');
+    foreach ((array)$configFiles as $configFile) {
+        run("cd {{release_or_current_path}} && chmod 600 $configFile");
+    }
 });

@@ -71,6 +71,7 @@ set('bin/composer', function () {
 // if you want to further define options for rsyncing files
 // just look at the source in `files.php` and use the Rsync\buildConfig, Files\pushFiles and Files\pullFiles utils methods
 set('wp/dir', ''); // relative to document root
+set('wp/configFiles', ['wp-config.php', 'wp-config-local.php']); // config files which should be protected
 set('wp/filter', [ // contains all wordpress core files excluding uploads, themes, plugins, mu-plugins
     '+ /wp-content/',
     '- /wp-content/mu-plugins/*',
