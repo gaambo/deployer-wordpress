@@ -1,7 +1,7 @@
 {
   "name": "gaambo/deployer-wordpress",
   "description": "Deployer tasks for deploying WordPress Sites",
-  "version": "2.0.0",
+  "version": "3.0.0-alpha",
   "type": "library",
   "license": "MIT",
   "homepage": "https://github.com/gaambo/deployer-wordpress",
