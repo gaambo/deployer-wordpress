@@ -20,6 +20,7 @@ use function Deployer\on;
 use function Deployer\run;
 use function Deployer\selectedHosts;
 use function Deployer\task;
+use function Deployer\test;
 
 $deployerPath = 'vendor/deployer/deployer/';
 require_once $deployerPath . 'recipe/common.php';
@@ -116,6 +117,12 @@ task('deploy:writable', function () {
     // set all files to 600 (so they can be modified by you/wordpress)
     $configFiles = get('wp/configFiles');
     foreach ((array)$configFiles as $configFile) {
-        run("cd {{release_or_current_path}} && chmod {{wp/configFiles/permissions}} $configFile");
+        if (test("[ -f {{release_or_current_path}}/$configFile ]")) {
+            run("chmod {{wp/configFiles/permissions}} {{release_or_current_path}}/$configFile");
+        }
+        // wpconfig files could also be in shared folder
+        if (test("[ -f {{deploy_path}}/shared/$configFile ]")) {
+            run("chmod {{wp/configFiles/permissions}} {{deploy_path}}/shared/$configFile");
+        }
     }
 });
