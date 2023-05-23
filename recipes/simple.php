@@ -10,12 +10,10 @@ namespace Gaambo\DeployerWordpress\Recipes\Simple;
 
 use function Deployer\add;
 use function Deployer\get;
-use function Deployer\localhost;
 use function Deployer\run;
 use function Deployer\set;
 use function Deployer\task;
 use function Deployer\test;
-use function Gaambo\DeployerWordpress\Utils\Localhost\getLocalhost;
 
 require_once __DIR__ . '/common.php';
 
@@ -33,6 +31,10 @@ set('current_path', function () {
     }
     return '{{deploy_path}}/.dep/current';
 });
+
+// Do not use shared dirs
+set('shared_files', []);
+set('shared_dirs', []);
 
 task('deploy', [
     'deploy:prepare',
