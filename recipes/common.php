@@ -91,6 +91,5 @@ before('deploy:update_code', function () {
  */
 task('cache:clear', function () {
     // TODO: overwrite, maybe clear cache via wpcli
-    // $remotePath = getRemotePath();
-    // run("cd $remotePath && {{bin/wp}} rocket clean --confirm");
+    // run("cd {{release_or_current_path}} && {{bin/wp}} rocket clean --confirm");
 });
