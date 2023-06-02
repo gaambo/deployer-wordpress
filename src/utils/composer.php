@@ -21,7 +21,7 @@ const INSTALLER_DOWNLOAD = 'https://getcomposer.org/installer';
  */
 function runDefault(string $path): string
 {
-    return runCommand($path, '', '{{composer_action}}', '{{composer_options}}');
+    return runCommand($path, '{{composer_action}}', '{{composer_options}}');
 }
 
 /**
