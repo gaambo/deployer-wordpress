@@ -4,12 +4,19 @@
  * Provides tasks for backing up remote/local databases and importing/exporting backups on local and remote host
  */
 
-namespace Deployer;
+namespace Gaambo\DeployerWordpress\Tasks;
+
+use function Deployer\download;
+use function Deployer\get;
+use function Deployer\run;
+use function Deployer\runLocally;
+use function Deployer\set;
+use function Deployer\task;
+use function Deployer\upload;
+use function Gaambo\DeployerWordpress\Utils\Localhost\getLocalhost;
 
 require_once 'utils/files.php';
 require_once 'utils/localhost.php';
-
-use function \Gaambo\DeployerWordpress\Utils\Files\getRemotePath;
 
 /**
  * Backup remote database and download to localhost
@@ -21,14 +28,13 @@ use function \Gaambo\DeployerWordpress\Utils\Files\getRemotePath;
  * @todo check if this (especially dump_path in shared) works with simple recipe
  */
 task('db:remote:backup', function () {
-    $localDumpPath = \Gaambo\DeployerWordpress\Utils\Localhost\getLocalhostConfig('dump_path');
-    $remotePath = getRemotePath();
+    $localDumpPath = getLocalhost()->get('dump_path');
     $now = date('Y-m-d_H-i', time());
     set('dump_file', "db_backup-$now.sql");
     set('dump_filepath', get('dump_path') . '/' . get('dump_file'));
 
     run('mkdir -p ' . get('dump_path'));
-    run("cd $remotePath && {{bin/wp}} db export {{dump_filepath}} --add-drop-table");
+    run("cd {{release_or_current_path}} && {{bin/wp}} db export {{dump_filepath}} --add-drop-table");
 
     runLocally("mkdir -p $localDumpPath");
     download('{{dump_filepath}}', "$localDumpPath/{{dump_file}}");
@@ -44,8 +50,8 @@ task('db:remote:backup', function () {
  * @todo check if this (especially dump_path in shared) works with simple recipe
  */
 task('db:local:backup', function () {
-    $localWp = \Gaambo\DeployerWordpress\Utils\Localhost\getLocalhostConfig('bin/wp');
-    $localDumpPath = \Gaambo\DeployerWordpress\Utils\Localhost\getLocalhostConfig('dump_path');
+    $localWp = getLocalhost()->get('bin/wp');
+    $localDumpPath = getLocalhost()->get('dump_path');
     $now = date('Y-m-d_H-i', time());
     set('dump_file', "db_backup-$now.sql");
     set('dump_filepath', '{{dump_path}}/{{dump_file}}');
@@ -68,10 +74,9 @@ task('db:local:backup', function () {
  * dump_filepath is set in db:local:backup task and gets deleted after importing
  */
 task('db:remote:import', function () {
-    $localUrl = \Gaambo\DeployerWordpress\Utils\Localhost\getLocalhostConfig('public_url');
-    $remotePath = getRemotePath();
-    run("cd $remotePath && {{bin/wp}} db import {{dump_filepath}}");
-    run("cd $remotePath && {{bin/wp}} search-replace $localUrl {{public_url}}");
+    $localUrl = getLocalhost()->get('public_url');
+    run("cd {{release_or_current_path}} && {{bin/wp}} db import {{dump_filepath}}");
+    run("cd {{release_or_current_path}} && {{bin/wp}} search-replace $localUrl {{public_url}}");
     run('rm -f {{dump_filepath}}');
 })->desc('Imports Database on remote host');
 
@@ -84,9 +89,9 @@ task('db:remote:import', function () {
  * dump_filepath is set in db:local:backup task and gets deleted after importing
  */
 task('db:local:import', function () {
-    $localWp = \Gaambo\DeployerWordpress\Utils\Localhost\getLocalhostConfig('bin/wp');
-    $localUrl = \Gaambo\DeployerWordpress\Utils\Localhost\getLocalhostConfig('public_url');
-    $localDumpPath = \Gaambo\DeployerWordpress\Utils\Localhost\getLocalhostConfig('dump_path');
+    $localWp = getLocalhost()->get('bin/wp');
+    $localUrl = getLocalhost()->get('public_url');
+    $localDumpPath = getLocalhost()->get('dump_path');
     runLocally("$localWp db import $localDumpPath/{{dump_file}}");
     runLocally("$localWp search-replace {{public_url}} $localUrl");
     runLocally("rm -f $localDumpPath/{{dump_file}}");

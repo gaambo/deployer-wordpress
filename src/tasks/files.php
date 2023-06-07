@@ -5,7 +5,9 @@
  * Includes tasks for uploads, plugins, mu-plugins, themes
  */
 
-namespace Deployer;
+namespace Gaambo\DeployerWordpress\Tasks;
+
+use function Deployer\task;
 
 require_once 'mu-plugins.php';
 require_once 'plugins.php';

@@ -1,0 +1,14 @@
+config:
+  theme/name: custom-theme
+  mu-plugin/name: core-functionality
+  local_url: http://test.local
+hosts:
+  prod:
+    labels:
+      stage: production
+    hostname: test.dev
+    public_url: https://test.dev
+    deploy_path: "~"
+    release_path: "{{deploy_path}}/public_html" # fixed directory, no symlinks
+    dump_path: ~/data/dumps
+    backup_path: ~/data/backups

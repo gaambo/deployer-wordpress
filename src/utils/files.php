@@ -7,65 +7,43 @@
 
 namespace Gaambo\DeployerWordpress\Utils\Files;
 
-require_once 'localhost.php';
-
-use function \Deployer\get;
 use function \Deployer\upload;
 use function \Deployer\download;
-use function Deployer\info;
 use function \Deployer\run;
-use function Deployer\writeln;
-use function \Gaambo\DeployerWordpress\Utils\Localhost\getLocalhostConfig;
+use function Gaambo\DeployerWordpress\Utils\Localhost\getLocalhost;
 
-/**
- * Gets the release path to sync files to
- * If called outside of a deployment context release_path may not be set
- * Therefore deploy_path/current is used
- *
- * @return string Path to current release
- */
-function getRemotePath(): string
-{
-    $remotePath = '{{deploy_path}}/current';
-    $releasePath = get('release_path');
-    if ($releasePath) { // if a release is currently running we deploy into the release path
-        $remotePath = $releasePath;
-    }
-    return $remotePath;
-}
+require_once 'localhost.php';
 
 /**
  * Push files to a remote host
- * Syncs from a directory in locals document_root to a directory in remotes remotePath (@see getRemotePath above)
+ * Syncs from a directory in locals current_path to a directory in remotes release_path/current_path
  * Uses Deployers upload function
  *
- * @param string $source Source path relative to locals document_root
- * @param string $destination Destination path relative to remote path (current release, @see getRemotePath above)
+ * @param string $source Source path relative to locals release_path/current_path
+ * @param string $destination Destination path relative to release_path/current_path
  * @param array $rsyncOptions Array of command-line arguments for rsync to pass to Deployers upload
  * @return void
  */
 function pushFiles(string $source, string $destination, array $rsyncOptions)
 {
-    $localPath = getLocalhostConfig('document_root');
-    $remotePath = getRemotePath();
-    upload("$localPath/$source/", "$remotePath/$destination/", ['options' => $rsyncOptions]);
+    $localPath = getLocalhost()->get('current_path');
+    upload("$localPath/$source/", "{{release_or_current_path}}/$destination/", ['options' => $rsyncOptions]);
 }
 
 /**
  * Pull files from a remote host
- * Syncs from a directory in remotes remote path (@see getRemotePath above) to locals document_root
+ * Syncs from a directory in remotes release_path/current_path to locals current_path
  * Uses Deployers download function
  *
- * @param string $source Source path relative to remote path (current release, @see getRemotePath above)
- * @param string $destination Destination path relative to locals document_root
+ * @param string $source Source path relative to release_path/current_path
+ * @param string $destination Destination path relative to locals current_path
  * @param array $rsyncOptions Array of command-line arguments for rsync to pass to Deployers download
  * @return void
  */
 function pullFiles(string $source, string $destination, array $rsyncOptions)
 {
-    $localPath = getLocalhostConfig('document_root');
-    $remotePath = getRemotePath();
-    download("$remotePath/$source/", "$localPath/$destination/", ['options' => $rsyncOptions]);
+    $localPath = getLocalhost()->get('current_path');
+    download("{{release_or_current_path}}/$source/", "$localPath/$destination/", ['options' => $rsyncOptions]);
 }
 
 /**

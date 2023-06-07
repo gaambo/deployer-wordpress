@@ -4,28 +4,28 @@
  * Provides tasks for pushing, pulling, syncing and backing up uploads
  */
 
-namespace Deployer;
+namespace Gaambo\DeployerWordpress\Tasks;
 
 require_once 'utils/files.php';
 require_once 'utils/localhost.php';
 require_once 'utils/rsync.php';
 
-use function \Gaambo\DeployerWordpress\Utils\Localhost\getLocalhostConfig;
+use function Deployer\download;
+use function Deployer\get;
+use function Deployer\task;
+use function Deployer\upload;
 use function \Gaambo\DeployerWordpress\Utils\Files\zipFiles;
-use function \Gaambo\DeployerWordpress\Utils\Files\getRemotePath;
-use function \Gaambo\DeployerWordpress\Utils\Files\pullFiles;
-use function \Gaambo\DeployerWordpress\Utils\Files\pushFiles;
+use function Gaambo\DeployerWordpress\Utils\Localhost\getLocalhost;
 
 /**
  * Push uploads from local to remote
  * Needs the following variables:
  *  - uploads/filter: rsync filter syntax array of files to push (has a default)
- *  - uploads/dir: Path of uploads directory relative to document_root/release_path (has a default)
+ *  - uploads/dir: Path of uploads directory relative to release_path/current_path
  *  - uploads/path: Path to directory which contains the uploads directory on remote (eg shared directory, has a default)
- *  - document_root on localhost: Path to directory which contains the public document_root
  */
 task('uploads:push', function () {
-    $localPath = getLocalhostConfig('document_root');
+    $localPath = getLocalhost()->get('current_path');
     $rsyncOptions = \Gaambo\DeployerWordpress\Utils\Rsync\buildOptionsArray([
         'filter' => get("uploads/filter"),
     ]);
@@ -36,12 +36,11 @@ task('uploads:push', function () {
  * Pull uploads from remote to local
  * Needs the following variables:
  *  - uploads/filter: rsync filter syntax array of files to pull (has a default)
- *  - uploads/dir: Path of uploads directory relative to document_root/release_path (has a default)
+ *  - uploads/dir: Path of uploads directory relative to release_path/current_path
  *  - uploads/path: Path to directory which contains the uploads directory on remote (eg shared directory, has a default)
- *  - document_root on localhost: Path to directory which contains the public document_root
  */
 task('uploads:pull', function () {
-    $localPath = getLocalhostConfig('document_root');
+    $localPath = getLocalhost()->get('current_path');
     $rsyncOptions = \Gaambo\DeployerWordpress\Utils\Rsync\buildOptionsArray([
         'filter' => get("uploads/filter"),
     ]);
@@ -58,7 +57,7 @@ task("uploads:sync", ["uploads:push", "uploads:pull"])->desc("Sync uploads");
 /**
  * Backup uploads on remote host and downloads zip to local backup path
  * Needs the following variables:
- *  - uploads/dir: Path of uploads directory relative to document_root/release_path (has a default)
+ *  - uploads/dir: Path of uploads directory relative to release_path/current_path
  *  - uploads/path: Path to directory which contains the uploads directory on remote (eg shared directory, has a default)
  *  - backup_path (on remote host): Path to directory in which to store all backups
  *  - backup_path (on localhost): Path to directory in which to store all backups
@@ -69,21 +68,20 @@ task('uploads:backup:remote', function () {
         '{{backup_path}}',
         'backup_uploads'
     );
-    $localBackupPath = getLocalhostConfig('backup_path');
+    $localBackupPath = getLocalhost()->get('backup_path');
     download($backupFile, "$localBackupPath/");
 })->desc('Backup uploads on remote host and download zip');
 
 /**
  * Backup uploads on localhost
  * Needs the following variables:
- *  - uploads/dir: Path of uploads directory relative to document_root/release_path (has a default)
+ *  - uploads/dir: Path of uploads directory relative to release_path/current_path
  *  - uploads/path: Path to directory which contains the uploads directory on remote (eg shared directory, has a default)
  *  - backup_path (on localhost): Path to directory in which to store all backups
- *  - document_root on localhost: Path to directory which contains the public document_root
  */
 task('uploads:backup:local', function () {
-    $localPath = getLocalhostConfig('document_root');
-    $localBackupPath = getLocalhostConfig('backup_path');
+    $localPath = getLocalhost()->get('current_path');
+    $localBackupPath = getLocalhost()->get('backup_path');
     $backupFile = zipFiles(
         "$localPath/{{uploads/dir}}/",
         $localBackupPath,

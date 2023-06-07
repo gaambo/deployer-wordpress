@@ -23,32 +23,7 @@ function runCommand(string $command, string $path = '{{deploy_path}}', string $a
 }
 
 /**
- * Gets the path to the WP-CLI binary
- *
- * Uses which to get a global binary
- * or alternatively check in a given path for a file
- *
- * Default path/file to check is {{deploy_path}}/.dep/wp-cli.phar
- * Which is the same as the default path PHPDeployer installs composer if not installed
- *
- * @param string $path Path in which the WP-CLI binary is stored
- * @param string $binaryFile Name of the WP-CLI binary file
- * @return string|boolean Path to binary file or false if not found
- */
-function getWPCLIBinary($path = '{{deploy_path}}/.dep', $binaryFile = 'wp-cli.phar')
-{
-    if (\Deployer\commandExist('wp')) {
-        return \Deployer\which('wp');
-    }
-
-    if (\Deployer\test("[ -f $path/$binaryFile ]")) {
-        return "{{bin/php}} $path/$binaryFile";
-    }
-    return false;
-}
-
-/**
- * Installs the WP-CLI Binary to a specified installPath
+ * Installs the WP-CLI binary to a specified installPath
  * Allows passing a name for the binary file and using sudo (eg to move to /usr/local/bin)
  *
  * @param string $installPath
@@ -61,7 +36,7 @@ function installWPCLI($installPath, $binaryName = 'wp-cli.phar', $sudo = false)
     $sudoCommand = $sudo ? 'sudo ' : '';
 
     \Deployer\run("mkdir -p $installPath");
-    \Deployer\run("cd $installPath && curl -sS -O " . INSTALLER_DOWNLOAD . " && chmod +x wp-cli.phar");
+    \Deployer\run("cd $installPath && curl -sS -O " . INSTALLER_DOWNLOAD);
     if ($binaryName !== 'wp-cli.phar') {
         \Deployer\run("$sudoCommand mv $installPath/wp-cli.phar $installPath/$binaryName");
     }
