@@ -10,17 +10,16 @@ namespace Gaambo\DeployerWordpress\Recipes\Common;
 use Deployer\Deployer;
 
 use function Deployer\after;
-use function Deployer\before;
 use function Deployer\get;
 use function Deployer\has;
 use function Deployer\info;
 use function Deployer\invoke;
-use function Deployer\localhost;
 use function Deployer\on;
 use function Deployer\run;
 use function Deployer\selectedHosts;
 use function Deployer\task;
 use function Deployer\test;
+use function Gaambo\DeployerWordpress\Utils\Localhost\getLocalhost;
 
 $deployerPath = 'vendor/deployer/deployer/';
 require_once $deployerPath . 'recipe/common.php';
@@ -51,9 +50,20 @@ task('deploy:prepare', [
     'deploy:release'
 ])->desc('Prepares a new release');
 
+// Build theme assets via npm locally
+task('deploy:build_assets', function () {
+    on(getLocalhost(), function () {
+        if (has('theme/name')) {
+            invoke('theme:assets:vendors');
+            invoke('theme:assets:build');
+        }
+    });
+})->once();
+
 // Overwrite deployment with rsync (instead of git)
 Deployer::get()->tasks->remove('deploy:check_remote');
 Deployer::get()->tasks->remove('deploy:update_code');
+// Push all files (incl 'wp:push', 'uploads:push', 'plugins:push', 'mu-plugins:push', 'themes:push')
 task('deploy:update_code', ['files:push'])
     ->desc('Pushes local code to the remote hosts');
 
@@ -70,22 +80,13 @@ task('deploy:publish', [
 // Complete deploy task which includes preparation, pushing code and publishing
 task('deploy', [
     'deploy:prepare',
+    'deploy:build_assets',
     'deploy:update_code',
     'deploy:publish',
 ])->desc('Deploy WordPress project');
 
 // If deploy fails automatically unlock.
 after('deploy:failed', 'deploy:unlock');
-
-// build theme assets via npm locally
-before('deploy:update_code', function () {
-    on(localhost(), function () {
-        if (!has('theme/name')) {
-            invoke('theme:assets:vendors');
-            invoke('theme:assets:build');
-        }
-    });
-});
 
 /**
  * Clears cache via cli
