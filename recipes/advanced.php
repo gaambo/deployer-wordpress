@@ -17,6 +17,7 @@ add('recipes', ['simple-wp']);
 
 task('deploy', [
     'deploy:prepare',
+    'deploy:build_assets',
     'deploy:update_code',
     'deploy:symlink', // Add additional symlink task
     'deploy:publish'

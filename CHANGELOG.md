@@ -1,5 +1,10 @@
 # Changelog
 
+## v3.1.0
+
+- Added a `deploy:build_assets` step into the default deploy task to build theme assets on local.
+This allows for easier overwriting this task (eg to build custom plugin assets) and fixes running duplicates on some configurations.
+
 ## v3.0.0
 
 - Did a large refactor of paths (release_path, current_path, document_root)

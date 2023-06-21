@@ -38,6 +38,7 @@ set('shared_dirs', []);
 
 task('deploy', [
     'deploy:prepare',
+    'deploy:build_assets',
     'deploy:update_code',
     'deploy:publish'
 ])->desc('Deploy WordPress Site');
