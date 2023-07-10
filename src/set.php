@@ -8,7 +8,7 @@
 namespace Deployer;
 
 use function Gaambo\DeployerWordpress\Utils\Composer\installComposer;
-use function \Gaambo\DeployerWordpress\Utils\WPCLI\installWPCLI;
+use function Gaambo\DeployerWordpress\Utils\WPCLI\installWPCLI;
 
 require_once 'utils/wp-cli.php';
 
@@ -162,3 +162,5 @@ set('rsync_src', __DIR__);
 set('release_name', function () {
     return date('YmdHis'); // you could also use the composer.json version here
 });
+
+set('writable_mode', 'chown');

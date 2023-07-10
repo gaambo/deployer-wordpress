@@ -105,7 +105,7 @@ task('cache:clear', function () {
  * Does not support writable_mode configuration - always uses this
  */
 task('deploy:writable', function () {
-    if (has('http_user')) {
+    if (has('http_user') && get('writable_mode') === 'chown') {
         run("cd {{release_or_current_path}} && chown -R {{http_user}} .");
     }
     // set all directories to 755
