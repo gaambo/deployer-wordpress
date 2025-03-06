@@ -8,6 +8,7 @@ namespace Gaambo\DeployerWordpress\Tasks;
 
 use function Deployer\get;
 use function Deployer\task;
+use function Gaambo\DeployerWordpress\Utils\Localhost\getLocalhost;
 use function Gaambo\DeployerWordpress\Utils\WPCLI\installWPCLI;
 use function Gaambo\DeployerWordpress\Utils\WPCLI\runCommand;
 
@@ -35,11 +36,16 @@ task('wp:download-core', function () {
  *  - wp/dir: Path of WordPress directory relative to release_path/current_path
  */
 task('wp:push', function () {
+    $localWpDir = getLocalhost()->get('wp/dir');
     $rsyncOptions = \Gaambo\DeployerWordpress\Utils\Rsync\buildOptionsArray([
         'filter' => get("wp/filter"),
         'flags' => 'rz',
     ]);
-    \Gaambo\DeployerWordpress\Utils\Files\pushFiles('{{wp/dir}}', '{{wp/dir}}', $rsyncOptions);
+    \Gaambo\DeployerWordpress\Utils\Files\pushFiles(
+        $localWpDir,
+        '{{wp/dir}}',
+        $rsyncOptions
+    );
 })->desc('Push WordPress core files from local to remote');
 
 /**
@@ -50,11 +56,16 @@ task('wp:push', function () {
  *  - wp/dir: Path of WordPress directory relative to release_path/current_path
  */
 task('wp:pull', function () {
+    $localWpDir = getLocalhost()->get('wp/dir');
     $rsyncOptions = \Gaambo\DeployerWordpress\Utils\Rsync\buildOptionsArray([
         'filter' => get("wp/filter"),
         'flags' => 'rz',
     ]);
-    \Gaambo\DeployerWordpress\Utils\Files\pullFiles('{{wp/dir}}', '{{wp/dir}}', $rsyncOptions);
+    \Gaambo\DeployerWordpress\Utils\Files\pullFiles(
+        '{{wp/dir}}',
+        $localWpDir,
+        $rsyncOptions
+    );
 })->desc('Pull WordPress core files from remote to local');
 
 /**

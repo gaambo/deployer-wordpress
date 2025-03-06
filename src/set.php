@@ -117,6 +117,8 @@ set('plugins/filter', []); // rsync filter syntax
 set('themes/dir', 'wp-content/themes'); // relative to document root
 set('themes/filter', []); // rsync filter syntax
 set('theme/build_script', 'build'); // custom theme npm build script
+set('languages/dir', 'wp-content/languages'); // relative to document root
+set('languages/filter', []); // rsync filter syntax
 
 // options for zipping files for backups - passed to zip shell command
 set('zip_options', '-x "_backup_*.zip" -x **/node_modules/**\* -x **/vendor/**\*');

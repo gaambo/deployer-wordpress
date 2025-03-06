@@ -29,7 +29,7 @@ task('plugins:push', function () {
     $rsyncOptions = \Gaambo\DeployerWordpress\Utils\Rsync\buildOptionsArray([
         'filter' => get("plugins/filter"),
     ]);
-    pushFiles('{{plugins/dir}}', '{{plugins/dir}}', $rsyncOptions);
+    pushFiles(getLocalhost()->get('plugins/dir'), '{{plugins/dir}}', $rsyncOptions);
 })->desc('Push plugins from local to remote');
 
 /**
@@ -43,7 +43,7 @@ task('plugins:pull', function () {
     $rsyncOptions = \Gaambo\DeployerWordpress\Utils\Rsync\buildOptionsArray([
         'filter' => get("plugins/filter"),
     ]);
-    pullFiles('{{plugins/dir}}', '{{plugins/dir}}', $rsyncOptions);
+    pullFiles('{{plugins/dir}}', getLocalhost()->get('plugins/dir'), $rsyncOptions);
 })->desc('Pull plugins from remote to local');
 
 /**

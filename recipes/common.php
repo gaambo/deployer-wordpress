@@ -28,6 +28,7 @@ require_once 'set.php';
 require_once 'tasks/database.php';
 require_once 'tasks/files.php';
 require_once 'tasks/mu-plugins.php';
+require_once 'tasks/packages.php';
 require_once 'tasks/plugins.php';
 require_once 'tasks/themes.php';
 require_once 'tasks/uploads.php';
@@ -50,12 +51,12 @@ task('deploy:prepare', [
     'deploy:release'
 ])->desc('Prepares a new release');
 
-// Build theme assets via npm locally
+// Build package assets via npm locally
 task('deploy:build_assets', function () {
     on(getLocalhost(), function () {
-        if (has('theme/name')) {
-            invoke('theme:assets:vendors');
-            invoke('theme:assets:build');
+        if (has('packages')) {
+            invoke('packages:assets:vendors');
+            invoke('packages:assets:build');
         }
     });
 })->once();
@@ -63,7 +64,7 @@ task('deploy:build_assets', function () {
 // Overwrite deployment with rsync (instead of git)
 Deployer::get()->tasks->remove('deploy:check_remote');
 Deployer::get()->tasks->remove('deploy:update_code');
-// Push all files (incl 'wp:push', 'uploads:push', 'plugins:push', 'mu-plugins:push', 'themes:push')
+// Push all files (incl 'wp:push', 'uploads:push', 'plugins:push', 'mu-plugins:push', 'themes:push', 'packages:push')
 task('deploy:update_code', ['files:push'])
     ->desc('Pushes local code to the remote hosts');
 

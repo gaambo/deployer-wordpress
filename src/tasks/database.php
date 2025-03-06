@@ -77,6 +77,14 @@ task('db:remote:import', function () {
     $localUrl = getLocalhost()->get('public_url');
     run("cd {{release_or_current_path}} && {{bin/wp}} db import {{dump_filepath}}");
     run("cd {{release_or_current_path}} && {{bin/wp}} search-replace $localUrl {{public_url}}");
+
+    // If the local uploads directory is different than the remote one
+    // replace all references to the local uploads directory with the remote one
+    $localUploadsDir = getLocalhost()->get('uploads/dir');
+    if ($localUploadsDir !== get('uploads/dir')) {
+        run("cd {{release_or_current_path}} && {{bin/wp}} search-replace $localUploadsDir {{uploads/dir}}");
+    }
+
     run('rm -f {{dump_filepath}}');
 })->desc('Imports Database on remote host');
 
@@ -94,6 +102,14 @@ task('db:local:import', function () {
     $localDumpPath = getLocalhost()->get('dump_path');
     runLocally("$localWp db import $localDumpPath/{{dump_file}}");
     runLocally("$localWp search-replace {{public_url}} $localUrl");
+
+    // If the local uploads directory is different than the remote one
+    // replace all references to the remotes uploads directory with the local one
+    $localUploadsDir = getLocalhost()->get('uploads/dir');
+    if ($localUploadsDir !== get('uploads/dir')) {
+        run("cd {{release_or_current_path}} && {{bin/wp}} search-replace {{uploads/dir}} $localUploadsDir");
+    }
+
     runLocally("rm -f $localDumpPath/{{dump_file}}");
 })->desc('Imports Database on local host');
 

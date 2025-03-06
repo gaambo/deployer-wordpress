@@ -10,19 +10,20 @@ namespace Gaambo\DeployerWordpress\Tasks;
 use function Deployer\task;
 
 require_once 'mu-plugins.php';
+require_once 'packages.php';
 require_once 'plugins.php';
 require_once 'themes.php';
 require_once 'uploads.php';
 require_once 'wp.php';
 
 // Pushes all files from local to remote host
-// Runs wp:push, uploads:push, plugins:push, mu-plugins:push, themes:push in series
+// Runs wp:push, uploads:push, plugins:push, mu-plugins:push, themes:push, packages:push in series
 // see tasks definitions for details and required variables
-task('files:push', ['wp:push', 'uploads:push', 'plugins:push', 'mu-plugins:push', 'themes:push'])
-    ->desc("Pushes all files from local to remote host (combines `wp:push`, `uploads:push`, `plugins:push`, `mu-plugins:push`, `themes:push`)");
+task('files:push', ['wp:push', 'uploads:push', 'plugins:push', 'mu-plugins:push', 'themes:push', 'packages:push'])
+    ->desc("Pushes all files from local to remote host (combines `wp:push`, `uploads:push`, `plugins:push`, `mu-plugins:push`, `themes:push`, `packages:push`)");
 
 // Pulls all files from remote to local host
-// Runs wp:pull, uploads:pull, plugins:pull, mu-plugins:pull, themes:pull in series
+// Runs wp:pull, uploads:pull, plugins:pull, mu-plugins:pull, themes:pull, packages:pull in series
 // see tasks definitions for details and required variables
-task('files:pull', ['wp:pull', 'uploads:pull', 'plugins:pull', 'mu-plugins:pull', 'themes:pull'])
-    ->desc("Pulls all files from remote to local host (combines `wp:pull`, `uploads:pull`, `plugins:pull`, `mu-plugins:pull`, `themes:pull`)");
+task('files:pull', ['wp:pull', 'uploads:pull', 'plugins:pull', 'mu-plugins:pull', 'themes:pull', 'packages:pull'])
+    ->desc("Pulls all files from remote to local host (combines `wp:pull`, `uploads:pull`, `plugins:pull`, `mu-plugins:pull`, `themes:pull`, `packages:pull`)");

@@ -85,7 +85,7 @@ task('themes:push', function () {
     $rsyncOptions = \Gaambo\DeployerWordpress\Utils\Rsync\buildOptionsArray([
         'filter' => get("themes/filter"),
     ]);
-    pushFiles('{{themes/dir}}', '{{themes/dir}}', $rsyncOptions);
+    pushFiles(getLocalhost()->get('themes/dir'), '{{themes/dir}}', $rsyncOptions);
 })->desc('Push themes from local to remote');
 
 /**
@@ -99,7 +99,7 @@ task('themes:pull', function () {
     $rsyncOptions = \Gaambo\DeployerWordpress\Utils\Rsync\buildOptionsArray([
         'filter' => get("themes/filter"),
     ]);
-    pullFiles('{{themes/dir}}', '{{themes/dir}}', $rsyncOptions);
+    pullFiles('{{themes/dir}}', getLocalhost()->get('themes/dir'), $rsyncOptions);
 })->desc('Pull themes from remote to local');
 
 /**

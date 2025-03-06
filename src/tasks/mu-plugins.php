@@ -53,7 +53,7 @@ task('mu-plugins:push', function () {
     $rsyncOptions = \Gaambo\DeployerWordpress\Utils\Rsync\buildOptionsArray([
         'filter' => get("mu-plugins/filter"),
     ]);
-    pushFiles('{{mu-plugins/dir}}', '{{mu-plugins/dir}}', $rsyncOptions);
+    pushFiles(getLocalhost()->get('mu-plugins/dir'), '{{mu-plugins/dir}}', $rsyncOptions);
 })->desc('Push mu-plugins from local to remote');
 
 /**
@@ -67,7 +67,7 @@ task('mu-plugins:pull', function () {
     $rsyncOptions = \Gaambo\DeployerWordpress\Utils\Rsync\buildOptionsArray([
         'filter' => get("mu-plugins/filter"),
     ]);
-    pullFiles('{{mu-plugins/dir}}', '{{mu-plugins/dir}}', $rsyncOptions);
+    pullFiles('{{mu-plugins/dir}}', getLocalhost()->get('mu-plugins/dir'), $rsyncOptions);
 })->desc('Pull mu-plugins from remote to local');
 
 /**
@@ -102,10 +102,10 @@ task('mu-plugins:backup:remote', function () {
  *  - backup_path (on localhost): Path to directory in which to store all backups
  */
 task('mu-plugins:backup:local', function () {
-    $localPath = getLocalhost()->get('current_path');
+    $localPath = getLocalhost()->get('mu-plugins/dir');
     $localBackupPath = getLocalhost()->get('backup_path');
     $backupFile = zipFiles(
-        "$localPath/{{mu-plugins/dir}}/",
+        "$localPath/",
         $localBackupPath,
         'backup_mu-plugins'
     );

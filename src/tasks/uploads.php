@@ -15,6 +15,7 @@ use function Deployer\get;
 use function Deployer\task;
 use function Deployer\upload;
 use function \Gaambo\DeployerWordpress\Utils\Files\zipFiles;
+
 use function Gaambo\DeployerWordpress\Utils\Localhost\getLocalhost;
 
 /**
@@ -25,11 +26,17 @@ use function Gaambo\DeployerWordpress\Utils\Localhost\getLocalhost;
  *  - uploads/path: Path to directory which contains the uploads directory on remote (eg shared directory, has a default)
  */
 task('uploads:push', function () {
-    $localPath = getLocalhost()->get('current_path');
+    $localUploadsPath = getLocalhost()->get('uploads/path');
+    $localUploadsDir = getLocalhost()->get('uploads/dir');
     $rsyncOptions = \Gaambo\DeployerWordpress\Utils\Rsync\buildOptionsArray([
         'filter' => get("uploads/filter"),
     ]);
-    upload("$localPath/{{uploads/dir}}/", '{{uploads/path}}/{{uploads/dir}}/', ['options' => $rsyncOptions]);
+
+    upload(
+        "$localUploadsPath/$localUploadsDir/",
+        '{{uploads/path}}/{{uploads/dir}}/',
+        ['options' => $rsyncOptions]
+    );
 })->desc('Push uploads from local to remote');
 
 /**
@@ -40,11 +47,12 @@ task('uploads:push', function () {
  *  - uploads/path: Path to directory which contains the uploads directory on remote (eg shared directory, has a default)
  */
 task('uploads:pull', function () {
-    $localPath = getLocalhost()->get('current_path');
+    $localUploadsPath = getLocalhost()->get('uploads/path');
+    $localUploadsDir = getLocalhost()->get('uploads/dir');
     $rsyncOptions = \Gaambo\DeployerWordpress\Utils\Rsync\buildOptionsArray([
         'filter' => get("uploads/filter"),
     ]);
-    download('{{uploads/path}}/{{uploads/dir}}/', "$localPath/{{uploads/dir}}/", ['options' => $rsyncOptions]);
+    download("{{uploads/path}}/{{uploads/dir}}/", "$localUploadsPath/$localUploadsDir/", ['options' => $rsyncOptions]);
 })->desc('Pull uploads from remote to local');
 
 /**
