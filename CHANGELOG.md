@@ -1,5 +1,30 @@
 # Changelog
 
+## v@next- YYYY-MM-DD
+
+### Added
+- Introduced a new **packages** system for managing custom themes, plugins, and mu-plugins. This system allows for more flexible handling of assets, vendors, and deployment tasks.
+- Improved path handling for various components.
+- New tasks for deploying/syncing **language files**.
+- Examples for Bedrock and simple deployment recipes to help users better understand and implement the new features.
+
+### Changed
+- Updated tasks to integrate with the new packages system, providing more flexibility and control over deployment processes.
+- Refactored code to improve consistency and maintainability, particularly in handling local and remote paths.
+
+### Deprecated
+- Existing theme and plugin tasks remain functional, but the packages system offers enhanced capabilities and is the preferred method moving forward.
+
+### Removed
+- advanced recipe (because it was basically the same as the simple)
+
+**Upgrading:**
+- Review and update your `set.php` configuration to include the new `packages` array for managing custom themes, plugins, and mu-plugins.
+- Ensure that all paths in your configuration are correctly set relative to `release_path` or `current_path`.
+- Consider migrating existing theme and plugin configurations to the new packages system for better flexibility and control.
+- Test your deployment process in a staging environment to ensure compatibility with the new changes.
+- Read the [README.md](README.md) section about packages for detailed guidance on configuration and usage.
+
 ## v3.1.0
 
 - Added a `deploy:build_assets` step into the default deploy task to build theme assets on local.

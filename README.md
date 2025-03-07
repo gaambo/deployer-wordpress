@@ -20,6 +20,7 @@ A collection of [Deployer](https://deployer.org) Tasks/Recipes to deploy WordPre
     - [Plugin Tasks (`tasks/plugins.php`)](#plugin-tasks-taskspluginsphp)
     - [MU Plugin Tasks (`tasks/mu-plugins.php`)](#mu-plugin-tasks-tasksmu-pluginsphp)
     - [WordPress Tasks (`tasks/wp.php`)](#wordpress-tasks-taskswpphp)
+    - [Language Tasks (`tasks/languages.php`)](#language-tasks-taskslanguagesphp)
       - [WP-CLI](#wp-cli)
   - [Recipes](#recipes)
     - [Base](#base)
@@ -30,6 +31,10 @@ A collection of [Deployer](https://deployer.org) Tasks/Recipes to deploy WordPre
   - [Contributing](#contributing)
     - [Testing](#testing)
   - [Built by](#built-by)
+  - [Packages](#packages)
+    - [Configuration](#configuration)
+    - [Example](#example)
+    - [Best Practices](#best-practices)
 
 ## Installation
 
@@ -123,6 +128,8 @@ You can also run `dep list` to see all available tasks and their description.
 
 ### Theme Tasks (`tasks/theme.php`)
 
+> **Note:** It is recommended to use the new packages functionality for managing themes for better flexibility and control.
+
 - `theme:assets:vendors`: Install theme assets vendors/dependencies (npm), can be run locally or remote
 - `theme:assets:build`: Run theme assets (npm) build script, can be run locally or remote
 - `theme:assets`: A combined tasks to build theme assets - combines `theme:assets:vendors` and `theme:assets:build`
@@ -144,6 +151,8 @@ You can also run `dep list` to see all available tasks and their description.
 
 ### Plugin Tasks (`tasks/plugins.php`)
 
+> **Note:** It is recommended to use the new packages functionality for managing plugins for better flexibility and control.
+
 - `plugins:push`: Push plugins from local to remote
 - `plugins:pull`: Pull plugins from remote to local
 - `plugins:sync`: Syncs plugins between remote and local
@@ -151,6 +160,8 @@ You can also run `dep list` to see all available tasks and their description.
 - `plugins:backup:local`: Backup plugins on localhost
 
 ### MU Plugin Tasks (`tasks/mu-plugins.php`)
+
+> **Note:** It is recommended to use the new packages functionality for managing mu-plugins for better flexibility and control.
 
 - `mu-plugin:vendors`: Install mu-plugin vendors (composer), can be run locally or remote
 - `mu-plugin`: A combined tasks to prepare the theme - at the moment only runs mu-plugin:vendors task
@@ -182,6 +193,14 @@ You can pass the installPath, binaryFile and sudo usage via CLI:
 See [original PR](https://github.com/gaambo/deployer-wordpress/pull/5) for more information.
 
 There's a task for downloading core and `--info`. You can generate your own tasks to handle other WP-CLI commands, there's a util function `Gaambo\DeployerWordpress\Utils\WPCLI\runCommand` (`src/utils/wp-cli.php`);
+
+### Language Tasks (`tasks/languages.php`)
+
+- `languages:push`: Push language files from local to remote
+- `languages:pull`: Pull language files from remote to local
+- `languages:sync`: Sync language files between remote and local
+- `languages:backup:remote`: Backup language files on remote host and download zip
+- `languages:backup:local`: Backup language files on localhost
 
 ## Recipes
 
@@ -230,3 +249,47 @@ Pull requests are always welcome. PSR2 coding standard are used and I try to adh
 ## Built by
 
 [Gaambo](https://github.com/gaambo) and [Contributors](https://github.com/gaambo/deployer-wordpress/graphs/contributors)
+
+## Packages (added in v@next)
+
+The new packages system allows for more flexible handling of custom themes, plugins, and mu-plugins. Packages can be configured to manage assets, vendors, and deployment tasks.
+
+### Configuration
+
+To configure packages, add the following to your `set.php` or equivalent configuration file:
+
+```php
+set('packages', [
+    [
+        'path' => 'path/to/package',
+        'remote:path' => 'path/on/remote',
+        'assets' => true,
+        'assets:build_script' => 'build',
+    ],
+    // Add more packages as needed
+]);
+```
+
+### Example
+
+Here is an example configuration for a custom theme package:
+
+```php
+set('packages', [
+    'custom-theme' => [
+        'path' => '{{themes/dir}}/custom-theme',
+        'remote:path' => '{{themes/dir}}/custom-theme',
+        'assets' => true,
+        'assets:build_script' => 'build'
+    ],
+    'core-functionality' => [
+        'path' => '{{mu-plugins/dir}}/core-functionality',
+        'remote:path' => '{{mu-plugins/dir}}/core-functionality'
+    ],
+]);
+```
+
+### Best Practices
+
+- Ensure all package paths are correctly set relative to the `release_path` or `current_path`.
+- Define npm build scripts in your `package.json` for asset management.
