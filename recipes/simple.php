@@ -36,6 +36,9 @@ set('current_path', function () {
 set('shared_files', []);
 set('shared_dirs', []);
 
+task('deploy:update_code', ['packages:push'])
+    ->desc('Pushes local packages to the remote hosts');
+
 task('deploy', [
     'deploy:prepare',
     'deploy:build_assets',

@@ -1,7 +1,7 @@
 <?php
 
 require_once __DIR__ . '/vendor/autoload.php';
-require_once __DIR__ . '/vendor/gaambo/deployer-wordpress/recipes/simple.php';
+require_once __DIR__ . '/vendor/gaambo/deployer-wordpress/recipes/bedrock.php';
 
 use function Deployer\import;
 use function Deployer\localhost;
@@ -15,11 +15,18 @@ import('deploy.yml');
 localhost()
     ->set('public_url', "{{local_url}}")
     ->set('deploy_path', __DIR__)
-    ->set('release_path', __DIR__ . '/public')
+    // Root project directory, for app:push to work.
+    ->set('release_path', __DIR__)
     // set current_path to hardcoded release_path on local so release_or_current_path works; {{release_path}} does not work here?
     ->set('current_path', function () {
         return getLocalhost()->get('release_path');
     })
+    // Bedrock dirs
+    ->set('uploads/dir', 'web/app/uploads')
+    ->set('mu-plugins/dir', 'web/app/mu-plugins')
+    ->set('themes/dir', 'web/app/themes')
+    ->set('plugins/dir', 'web/app/plugins')
+    ->set('wp/dir', 'web/wp')
     ->set('dump_path', __DIR__ . '/data/db_dumps')
     ->set('backup_path', __DIR__ . '/data/backups');
 

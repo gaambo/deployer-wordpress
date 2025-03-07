@@ -97,6 +97,7 @@ after('deploy:failed', 'deploy:unlock');
 task('cache:clear', function () {
     // TODO: overwrite, maybe clear cache via wpcli
     // run("cd {{release_or_current_path}} && {{bin/wp}} rocket clean --confirm");
+    // run("cd {{release_or_current_path}} && {{bin/wp}} cache flush");
 });
 
 /**

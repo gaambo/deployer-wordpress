@@ -1,0 +1,18 @@
+config:
+  local_url: http://test.local
+hosts:
+  prod:
+    labels:
+      stage: production
+    hostname: test.dev
+    public_url: https://test.dev
+    deploy_path: "~"
+    release_path: "{{deploy_path}}/public_html" # fixed directory, no symlinks
+    # Bedrock dirs
+    uploads/dir: web/app/uploads
+    mu-plugins/dir: web/app/mu-plugins
+    themes/dir: web/app/themes
+    plugins/dir: web/app/plugins
+    wp/dir: web/wp
+    dump_path: ~/data/dumps
+    backup_path: ~/data/backups
