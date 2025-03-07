@@ -17,9 +17,9 @@ require_once 'utils/rsync.php';
 use function Deployer\download;
 use function Deployer\get;
 use function Deployer\task;
-use function \Gaambo\DeployerWordpress\Utils\Files\zipFiles;
-use function \Gaambo\DeployerWordpress\Utils\Files\pullFiles;
-use function \Gaambo\DeployerWordpress\Utils\Files\pushFiles;
+use function Gaambo\DeployerWordpress\Utils\Files\zipFiles;
+use function Gaambo\DeployerWordpress\Utils\Files\pullFiles;
+use function Gaambo\DeployerWordpress\Utils\Files\pushFiles;
 use function Gaambo\DeployerWordpress\Utils\Localhost\getLocalhost;
 
 /**
@@ -30,7 +30,10 @@ use function Gaambo\DeployerWordpress\Utils\Localhost\getLocalhost;
  *  - theme/name: Name (= directory) of your custom theme
  */
 task('theme:assets:vendors', function () {
-    \Gaambo\DeployerWordpress\Utils\Npm\runInstall('{{release_or_current_path}}/{{themes/dir}}/{{theme/name}}', 'install');
+    \Gaambo\DeployerWordpress\Utils\Npm\runInstall(
+        '{{release_or_current_path}}/{{themes/dir}}/{{theme/name}}',
+        'install'
+    );
 })->desc("Install theme assets vendors/dependencies (npm)");
 
 /**

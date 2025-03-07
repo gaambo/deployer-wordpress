@@ -16,7 +16,8 @@ localhost()
     ->set('public_url', "{{local_url}}")
     ->set('deploy_path', __DIR__)
     ->set('release_path', __DIR__ . '/public')
-    // set current_path to hardcoded release_path on local so release_or_current_path works; {{release_path}} does not work here?
+    // set current_path to hardcoded release_path on local so release_or_current_path works;
+    // {{release_path}} does not work here?
     ->set('current_path', function () {
         return getLocalhost()->get('release_path');
     })

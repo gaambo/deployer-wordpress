@@ -14,7 +14,7 @@ use function Deployer\download;
 use function Deployer\get;
 use function Deployer\task;
 use function Deployer\upload;
-use function \Gaambo\DeployerWordpress\Utils\Files\zipFiles;
+use function Gaambo\DeployerWordpress\Utils\Files\zipFiles;
 
 use function Gaambo\DeployerWordpress\Utils\Localhost\getLocalhost;
 
@@ -23,7 +23,7 @@ use function Gaambo\DeployerWordpress\Utils\Localhost\getLocalhost;
  * Needs the following variables:
  *  - uploads/filter: rsync filter syntax array of files to push (has a default)
  *  - uploads/dir: Path of uploads directory relative to release_path/current_path
- *  - uploads/path: Path to directory which contains the uploads directory on remote (eg shared directory, has a default)
+ *  - uploads/path: Path to directory which contains the uploads directory (eg shared directory, has a default)
  */
 task('uploads:push', function () {
     $localUploadsPath = getLocalhost()->get('uploads/path');
@@ -44,7 +44,7 @@ task('uploads:push', function () {
  * Needs the following variables:
  *  - uploads/filter: rsync filter syntax array of files to pull (has a default)
  *  - uploads/dir: Path of uploads directory relative to release_path/current_path
- *  - uploads/path: Path to directory which contains the uploads directory on remote (eg shared directory, has a default)
+ *  - uploads/path: Path to directory which contains the uploads directory (eg shared directory, has a default)
  */
 task('uploads:pull', function () {
     $localUploadsPath = getLocalhost()->get('uploads/path');
@@ -66,7 +66,7 @@ task("uploads:sync", ["uploads:push", "uploads:pull"])->desc("Sync uploads");
  * Backup uploads on remote host and downloads zip to local backup path
  * Needs the following variables:
  *  - uploads/dir: Path of uploads directory relative to release_path/current_path
- *  - uploads/path: Path to directory which contains the uploads directory on remote (eg shared directory, has a default)
+ *  - uploads/path: Path to directory which contains the uploads directory (eg shared directory, has a default)
  *  - backup_path (on remote host): Path to directory in which to store all backups
  *  - backup_path (on localhost): Path to directory in which to store all backups
  */
@@ -84,7 +84,7 @@ task('uploads:backup:remote', function () {
  * Backup uploads on localhost
  * Needs the following variables:
  *  - uploads/dir: Path of uploads directory relative to release_path/current_path
- *  - uploads/path: Path to directory which contains the uploads directory on remote (eg shared directory, has a default)
+ *  - uploads/path: Path to directory which contains the uploads directory (eg shared directory, has a default)
  *  - backup_path (on localhost): Path to directory in which to store all backups
  */
 task('uploads:backup:local', function () {

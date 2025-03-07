@@ -17,7 +17,8 @@ localhost()
     ->set('deploy_path', __DIR__)
     // Root project directory, for app:push to work.
     ->set('release_path', __DIR__)
-    // set current_path to hardcoded release_path on local so release_or_current_path works; {{release_path}} does not work here?
+    // set current_path to hardcoded release_path on local so release_or_current_path works;
+    // {{release_path}} does not work here?
     ->set('current_path', function () {
         return getLocalhost()->get('release_path');
     })

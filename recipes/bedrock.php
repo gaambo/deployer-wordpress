@@ -37,7 +37,7 @@ set('shared_files', []);
 set('shared_dirs', []);
 
 // Tasks
-task('app:push',function() {
+task('app:push', function () {
     $rsyncOptions = \Gaambo\DeployerWordpress\Utils\Rsync\buildOptionsArray();
     run("mkdir -p {{release_or_current_path}}");
     upload([
@@ -66,12 +66,12 @@ task('deploy:update_code', [
 
 // install vendors after deploying (on remote host)
 after(
-	'deploy:update_code',
-	function () {
-		\Gaambo\DeployerWordpress\Utils\Composer\runDefault(
-			'{{release_or_current_path}}'
-		);
-	}
+    'deploy:update_code',
+    function () {
+        \Gaambo\DeployerWordpress\Utils\Composer\runDefault(
+            '{{release_or_current_path}}'
+        );
+    }
 );
 
 task('deploy', [

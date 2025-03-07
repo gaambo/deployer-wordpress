@@ -20,10 +20,12 @@ require_once 'wp.php';
 // Runs wp:push, uploads:push, plugins:push, mu-plugins:push, themes:push, packages:push in series
 // see tasks definitions for details and required variables
 task('files:push', ['wp:push', 'uploads:push', 'plugins:push', 'mu-plugins:push', 'themes:push', 'packages:push'])
-    ->desc("Pushes all files from local to remote host (combines `wp:push`, `uploads:push`, `plugins:push`, `mu-plugins:push`, `themes:push`, `packages:push`)");
+    // phpcs:ignore Generic.Files.LineLength.TooLong
+    ->desc("Pushes all files from local to remote host (combines push for wp, uploads, plugins, mu-plugins, themes, packages`wp:push`, `uploads:push`, `plugins:push`, `mu-plugins:push`, `themes:push`, `packages:push`)");
 
 // Pulls all files from remote to local host
 // Runs wp:pull, uploads:pull, plugins:pull, mu-plugins:pull, themes:pull, packages:pull in series
 // see tasks definitions for details and required variables
 task('files:pull', ['wp:pull', 'uploads:pull', 'plugins:pull', 'mu-plugins:pull', 'themes:pull', 'packages:pull'])
+    // phpcs:ignore Generic.Files.LineLength.TooLong
     ->desc("Pulls all files from remote to local host (combines `wp:pull`, `uploads:pull`, `plugins:pull`, `mu-plugins:pull`, `themes:pull`, `packages:pull`)");

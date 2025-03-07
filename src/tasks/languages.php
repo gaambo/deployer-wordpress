@@ -13,9 +13,9 @@ require_once 'utils/rsync.php';
 use function Deployer\download;
 use function Deployer\get;
 use function Deployer\task;
-use function \Gaambo\DeployerWordpress\Utils\Files\zipFiles;
-use function \Gaambo\DeployerWordpress\Utils\Files\pullFiles;
-use function \Gaambo\DeployerWordpress\Utils\Files\pushFiles;
+use function Gaambo\DeployerWordpress\Utils\Files\zipFiles;
+use function Gaambo\DeployerWordpress\Utils\Files\pullFiles;
+use function Gaambo\DeployerWordpress\Utils\Files\pushFiles;
 use function Gaambo\DeployerWordpress\Utils\Localhost\getLocalhost;
 
 /**

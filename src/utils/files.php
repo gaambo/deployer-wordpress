@@ -7,9 +7,9 @@
 
 namespace Gaambo\DeployerWordpress\Utils\Files;
 
-use function \Deployer\upload;
-use function \Deployer\download;
-use function \Deployer\run;
+use function Deployer\upload;
+use function Deployer\download;
+use function Deployer\run;
 use function Gaambo\DeployerWordpress\Utils\Localhost\getLocalhost;
 
 require_once 'localhost.php';

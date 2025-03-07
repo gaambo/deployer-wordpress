@@ -69,7 +69,8 @@ set('bin/composer', function () {
 // PATHS & FILES CONFIGURATION
 
 // if you want to further define options for rsyncing files
-// just look at the source in `files.php` and use the Rsync\buildConfig, Files\pushFiles and Files\pullFiles utils methods
+// just look at the source in `files.php`
+// and use the Rsync\buildConfig, Files\pushFiles and Files\pullFiles utils methods
 set('wp/dir', ''); // relative to document root
 // config files which should be protected - add to shared_files as well
 set('wp/configFiles', ['wp-config.php', 'wp-config-local.php']);
@@ -139,7 +140,8 @@ set('rsync', function () {
         'include-file' => false,
         'filter'       => [],
         'filter-file'  => false,
-        // Allows specifying (=excluding/including/filtering) files to sync per directory in a `.deployfilter` file - See README directory for examples
+        // Allows specifying (=excluding/including/filtering) files to sync per directory in a `.deployfilter` file
+        // See README directory for examples
         'filter-perdir' => '.deployfilter',
         'flags'        => 'rz', // Recursive, with compress
         'options'      => ['delete-after'], // needed so deployfilter files are send and delete is checked afterwards

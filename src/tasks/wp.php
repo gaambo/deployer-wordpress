@@ -95,4 +95,5 @@ task('wp:install-wpcli', function () {
     $sudo = get('sudo', false);
 
     installWPCLI($installPath, $binaryFile, $sudo);
+    // phpcs:ignore Generic.Files.LineLength.TooLong
 })->desc("Install the WP-CLI binary manually with the `wp:install-wpcli` task and set the path as `/bin/wp` afterwards.");
