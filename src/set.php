@@ -76,15 +76,16 @@ set('wp/configFiles', ['wp-config.php', 'wp-config-local.php']);
 // set all wp-config files to 600 - which means plugins/wordpress can modify it
 // alternative set it to 400 to disallow edits via wordpress
 set('wp/configFiles/permissions', '600');
-set('wp/filter', [ // contains all wordpress core files excluding uploads, themes, plugins, mu-plugins
+set('wp/filter', [ // contains all wordpress core files excluding uploads, themes, plugins, mu-plugins, languages
     '+ /wp-content/',
     '- /wp-content/mu-plugins/*',
     '- /wp-content/plugins/*',
     '- /wp-content/themes/*',
     '- /wp-content/uploads/*',
+    '- /wp-content/languages/*',
     '- /wp-content/upgrade',
     '- /wp-content/cache',
-    '+ /wp-content/**', // all other files in wp-content eg. languages
+    '+ /wp-content/**', // all other files in wp-content
     '+ /wp-admin/',
     '+ /wp-admin/**',
     '+ /wp-includes/',
