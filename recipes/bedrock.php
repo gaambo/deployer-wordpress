@@ -14,6 +14,8 @@ use function Deployer\run;
 use function Deployer\set;
 use function Deployer\task;
 use function Deployer\test;
+use Gaambo\DeployerWordpress\Composer;
+use Gaambo\DeployerWordpress\Rsync;
 
 require_once __DIR__ . '/common.php';
 
@@ -38,7 +40,7 @@ set('shared_dirs', []);
 
 // Tasks
 task('app:push', function () {
-    $rsyncOptions = \Gaambo\DeployerWordpress\Utils\Rsync\buildOptionsArray();
+    $rsyncOptions = Rsync::buildOptionsArray();
     run("mkdir -p {{release_or_current_path}}");
     upload([
         'config',
@@ -68,9 +70,7 @@ task('deploy:update_code', [
 after(
     'deploy:update_code',
     function () {
-        \Gaambo\DeployerWordpress\Utils\Composer\runDefault(
-            '{{release_or_current_path}}'
-        );
+        Composer::runDefault('{{release_or_current_path}}');
     }
 );
 

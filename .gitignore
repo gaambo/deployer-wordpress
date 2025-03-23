@@ -1,2 +1,5 @@
-/vendor/
-/test
+/vendor
+/tests
+/.cursor
+/.idea
+.DS_STORE

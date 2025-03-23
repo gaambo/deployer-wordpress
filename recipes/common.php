@@ -9,30 +9,196 @@ namespace Gaambo\DeployerWordpress\Recipes\Common;
 
 use Deployer\Deployer;
 
+use function Deployer\add;
 use function Deployer\after;
+use function Deployer\commandExist;
 use function Deployer\get;
 use function Deployer\has;
 use function Deployer\info;
 use function Deployer\invoke;
 use function Deployer\on;
+use function Deployer\output;
 use function Deployer\run;
 use function Deployer\selectedHosts;
+use function Deployer\set;
 use function Deployer\task;
 use function Deployer\test;
-use function Gaambo\DeployerWordpress\Utils\Localhost\getLocalhost;
+use function Deployer\warning;
+use function Deployer\which;
+use Gaambo\DeployerWordpress\Composer;
+use Gaambo\DeployerWordpress\Localhost;
+use Gaambo\DeployerWordpress\WPCLI;
 
 $deployerPath = 'vendor/deployer/deployer/';
 require_once $deployerPath . 'recipe/common.php';
 
-require_once 'set.php';
-require_once 'tasks/database.php';
-require_once 'tasks/files.php';
-require_once 'tasks/mu-plugins.php';
-require_once 'tasks/packages.php';
-require_once 'tasks/plugins.php';
-require_once 'tasks/themes.php';
-require_once 'tasks/uploads.php';
-require_once 'tasks/wp.php';
+// Include task definitions
+require_once __DIR__ . '/../tasks/database.php';
+require_once __DIR__ . '/../tasks/files.php';
+require_once __DIR__ . '/../tasks/mu-plugins.php';
+require_once __DIR__ . '/../tasks/packages.php';
+require_once __DIR__ . '/../tasks/plugins.php';
+require_once __DIR__ . '/../tasks/themes.php';
+require_once __DIR__ . '/../tasks/uploads.php';
+require_once __DIR__ . '/../tasks/wp.php';
+
+// BINARIES
+set('bin/npm', function () {
+    return which('npm');
+});
+
+// Path to the `php` bin.
+set('bin/php', function () {
+    if (currentHost()->hasOwn('php_version')) {
+        return '/usr/bin/php{{php_version}}';
+    }
+    return which('php');
+});
+
+// can be overwritten if you eg. use wpcli in a docker container
+set('bin/wp', function () {
+    $installPath = '{{deploy_path}}/.dep';
+    $binaryFile = 'wp-cli.phar';
+
+    if (test("[ -f $installPath/$binaryFile ]")) {
+        return "{{bin/php}} $installPath/$binaryFile";
+    }
+
+    if (commandExist('wp')) {
+        return '{{bin/php}} ' . which('wp');
+    }
+
+    warning("WP-CLI binary wasn't found. Installing latest WP-CLI to $installPath/$binaryFile.");
+    WPCLI::install($installPath, $binaryFile);
+    return "{{bin/php}} $installPath/$binaryFile";
+});
+
+set('composer_action', 'install');
+set('composer_options', '--verbose --prefer-dist --no-progress --no-interaction --no-dev --optimize-autoloader');
+
+// Returns Composer binary path in found. Otherwise try to install latest
+// composer version to `.dep/composer.phar`. To use specific composer version
+// download desired phar and place it at `.dep/composer.phar`.
+set('bin/composer', function () {
+    $installPath = '{{deploy_path}}/.dep';
+    $binaryFile = 'composer.phar';
+
+    if (test("[ -f $installPath/$binaryFile ]")) {
+        return "{{bin/php}} $installPath/$binaryFile";
+    }
+
+    if (commandExist('composer')) {
+        return '{{bin/php}} ' . which('composer');
+    }
+
+    warning("Composer binary wasn't found. Installing latest composer to $installPath/$binaryFile.");
+    Composer::install($installPath, $binaryFile);
+    return "{{bin/php}} $installPath/$binaryFile";
+});
+
+// PATHS & FILES CONFIGURATION
+
+// if you want to further define options for rsyncing files
+// just look at the source in `Files.php` and `Rsync.php`
+// and use the Rsync::buildOptionsArray and Files::push/pull methods
+set('wp/dir', ''); // relative to document root
+// config files which should be protected - add to shared_files as well
+set('wp/configFiles', ['wp-config.php', 'wp-config-local.php']);
+// set all wp-config files to 600 - which means plugins/wordpress can modify it
+// alternative set it to 400 to disallow edits via wordpress
+set('wp/configFiles/permissions', '600');
+set('wp/filter', [ // contains all wordpress core files excluding uploads, themes, plugins, mu-plugins, languages
+    '+ /wp-content/',
+    '- /wp-content/mu-plugins/*',
+    '- /wp-content/plugins/*',
+    '- /wp-content/themes/*',
+    '- /wp-content/uploads/*',
+    '- /wp-content/languages/*',
+    '- /wp-content/upgrade',
+    '- /wp-content/cache',
+    '+ /wp-content/**', // all other files in wp-content
+    '+ /wp-admin/',
+    '+ /wp-admin/**',
+    '+ /wp-includes/',
+    '+ /wp-includes/**',
+    '+ wp-activate.php',
+    '+ wp-blog-header.php',
+    '+ wp-comments-post.php',
+    '+ wp-config-sample.php',
+    '+ wp-config.php',
+    '- wp-config-local.php', // should be required in wp-config.php
+    '+ wp-cron.php',
+    '+ wp-links-opml.php',
+    '+ wp-load.php',
+    '+ wp-login.php',
+    '+ wp-mail.php',
+    '+ wp-settings.php',
+    '+ wp-signup.php',
+    '+ wp-trackback.php',
+    '+ xmlrpc.php',
+    '+ index.php',
+    '- *'
+]);
+set('uploads/dir', 'wp-content/uploads'); // relative to document root
+set('uploads/path', '{{release_or_current_path}}'); // path in front of uploads directory
+set('uploads/filter', []); // rsync filter syntax
+set('mu-plugins/dir', 'wp-content/mu-plugins'); // relative to document root
+set('mu-plugins/filter', []); // rsync filter syntax
+set('plugins/dir', 'wp-content/plugins'); // relative to document root
+set('plugins/filter', []); // rsync filter syntax
+set('themes/dir', 'wp-content/themes'); // relative to document root
+set('themes/filter', []); // rsync filter syntax
+set('theme/build_script', 'build'); // custom theme npm build script
+set('languages/dir', 'wp-content/languages'); // relative to document root
+set('languages/filter', []); // rsync filter syntax
+
+// options for zipping files for backups - passed to zip shell command
+set('zip_options', '-x "_backup_*.zip" -x **/node_modules/**\* -x **/vendor/**\*');
+
+// SHARED FILES
+set('shared_files', ['wp-config.php', 'wp-config-local.php']);
+set('shared_dirs', ['{{uploads/dir}}']);
+set('writable_dirs', ['{{uploads/dir}}']);
+
+// The default rsync config
+// used by all *:push/*:pull tasks and in `src/utils/rsync.php:buildOptionsArray`
+set('rsync', function () {
+    $config = [
+        'exclude'      => [], // do NOT exclude .deployfilter files - remote should be aware of them
+        'exclude-file' => false,
+        'include'      => [],
+        'include-file' => false,
+        'filter'       => [],
+        'filter-file'  => false,
+        // Allows specifying (=excluding/including/filtering) files to sync per directory in a `.deployfilter` file
+        // See README directory for examples
+        'filter-perdir' => '.deployfilter',
+        'flags'        => 'rz', // Recursive, with compress
+        'options'      => ['delete-after'], // needed so deployfilter files are send and delete is checked afterwards
+        'timeout'      => 60,
+        'progress_bar' => true,
+    ];
+
+    if (output()->isVerbose()) {
+        $config['options'][] = 'verbose';
+    }
+    if (output()->isVeryVerbose()) {
+        $config['options'][] = 'verbose';
+    }
+    if (output()->isDebug()) {
+        $config['options'][] = 'verbose';
+    }
+
+    return $config;
+});
+// https://github.com/deployphp/deployer/issues/3139
+set('rsync_src', __DIR__);
+
+set('release_name', function () {
+    return date('YmdHis'); // you could also use the composer.json version here
+});
+
+set('writable_mode', 'chown');
 
 // Overwrite deploy:info task to show host instead of branch
 task('deploy:info', function () {
@@ -53,7 +219,7 @@ task('deploy:prepare', [
 
 // Build package assets via npm locally
 task('deploy:build_assets', function () {
-    on(getLocalhost(), function () {
+    on(Localhost::get(), function () {
         if (has('packages')) {
             invoke('packages:assets:vendors');
             invoke('packages:assets:build');
@@ -96,8 +262,8 @@ after('deploy:failed', 'deploy:unlock');
  */
 task('cache:clear', function () {
     // TODO: overwrite, maybe clear cache via wpcli
-    // run("cd {{release_or_current_path}} && {{bin/wp}} rocket clean --confirm");
-    // run("cd {{release_or_current_path}} && {{bin/wp}} cache flush");
+    // WPCLI::runCommand("rocket clean --confirm", "{{release_or_current_path}}");
+    // WPCLI::runCommand("cache flush", "{{release_or_current_path}}");
 });
 
 /**
