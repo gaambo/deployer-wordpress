@@ -12,10 +12,11 @@
     }
   ],
   "require-dev": {
-    "squizlabs/php_codesniffer": "^3.7"
+    "squizlabs/php_codesniffer": "^3.7",
+    "phpunit/phpunit": "^10.5"
   },
   "require": {
-    "php": "^8.0|^7.3",
+    "php": "^8.1",
     "deployer/deployer": "^7.3"
   },
   "autoload": {
@@ -23,8 +24,15 @@
       "Gaambo\\DeployerWordpress\\": "src/"
     }
   },
+  "autoload-dev": {
+    "psr-4": {
+      "Gaambo\\DeployerWordpress\\Tests\\": "tests/",
+      "Deployer\\": "vendor/deployer/deployer/src/"
+    }
+  },
   "scripts": {
     "phpcs": "phpcs",
-    "phpcs:fix": "phpcbf"
+    "phpcs:fix": "phpcbf",
+    "test": "phpunit"
   }
 }

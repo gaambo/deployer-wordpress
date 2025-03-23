@@ -1,5 +1,6 @@
 /vendor
-/tests
 /.cursor
 /.idea
 .DS_STORE
+.phpunit.cache
+.phpunit.result.cache

@@ -65,7 +65,7 @@ class Rsync
         foreach ($filters as $filter) {
             $filtersStrings[] = '--filter=' . $filter;
         }
-        if (!empty($filterFile)) {
+        if (!empty($filterFile) && file_exists($filterFile) && is_file($filterFile) && is_readable($filterFile)) {
             $filtersStrings[] = "--filter=merge " . $filterFile . "";
         }
         if (!empty($filterPerDir)) {
@@ -129,6 +129,12 @@ class Rsync
         }
 
         $mergedConfig = array_merge($defaultConfig, $config);
+
+        // Filter out empty strings from arrays before building options
+        $mergedConfig['options'] = array_filter($mergedConfig['options']);
+        $mergedConfig['exclude'] = array_filter($mergedConfig['exclude']);
+        $mergedConfig['include'] = array_filter($mergedConfig['include']);
+        $mergedConfig['filter'] = array_filter($mergedConfig['filter']);
 
         $options = array_merge(
             self::buildOptions($mergedConfig['options']),
