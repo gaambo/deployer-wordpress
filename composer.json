@@ -11,9 +11,10 @@
     }
   ],
   "require-dev": {
-    "squizlabs/php_codesniffer": "^3.11",
+    "phpstan/phpstan": "^2.1",
     "phpunit/phpunit": "^10.5",
-    "phpstan/phpstan": "^2.1"
+    "squizlabs/php_codesniffer": "^3.11",
+    "symfony/console": "^6.4"
   },
   "require": {
     "php": "^8.1",
@@ -35,6 +36,16 @@
     "phpcs:fix": "phpcbf",
     "phpstan": "phpstan analyse",
     "lint": "find . -type f -name '*.php' -not -path './vendor/*' -exec php -l {} \\;",
-    "test": "phpunit"
+    "test": "phpunit",
+    "precommit": [
+      "@lint",
+      "@phpcs",
+      "@phpstan",
+      "@composer validate",
+      "@test"
+    ]
+  },
+  "config": {
+    "sort-packages": true
   }
 }
