@@ -37,6 +37,7 @@
     "phpstan": "vendor/bin/phpstan analyse --memory-limit 1G",
     "lint": "find . -type f -name '*.php' -not -path './vendor/*' -exec php -l {} \\;",
     "test": "vendor/bin/phpunit",
+    "test:coverage": "XDEBUG_MODE=coverage vendor/bin/phpunit --coverage-text --filter 'Gaambo\\\\DeployerWordpress\\\\'",
     "precommit": [
       "@lint",
       "@phpcs",

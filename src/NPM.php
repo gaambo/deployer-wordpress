@@ -35,7 +35,16 @@ class NPM
     {
         $verbosityArgument = Utils::getVerbosityArgument();
         $verbosityArgument = str_replace('v', 'd', $verbosityArgument); // npm takes d for verbosity argument
-        return run("cd $path && {{bin/npm}} $action $arguments $verbosityArgument");
+
+        $command = "cd $path && {{bin/npm}} $action";
+        if ($arguments !== '') {
+            $command .= " $arguments";
+        }
+        if ($verbosityArgument !== '') {
+            $command .= " $verbosityArgument";
+        }
+
+        return run($command);
     }
 
     /**

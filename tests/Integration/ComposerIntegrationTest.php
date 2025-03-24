@@ -158,18 +158,20 @@ class ComposerIntegrationTest extends IntegrationTestCase
         $this->assertEquals("$installPath/composer.phar", $result);
     }
 
-    public function testRunCommandWithVerbosity(): void
+    /**
+     * @dataProvider verbosityProvider
+     */
+    public function testRunCommandWithVerbosity(bool $isVerbose, bool $isVeryVerbose, bool $isDebug, string $verbosityFlag): void
     {
         $path = '/var/www/html';
         $command = 'require';
         $arguments = 'package/name:1.0.0';
 
-        // Test with verbose output
-        $this->outputMock->method('isVerbose')->willReturn(true);
-        $this->outputMock->method('isVeryVerbose')->willReturn(false);
-        $this->outputMock->method('isDebug')->willReturn(false);
+        $this->outputMock->method('isVerbose')->willReturn($isVerbose);
+        $this->outputMock->method('isVeryVerbose')->willReturn($isVeryVerbose);
+        $this->outputMock->method('isDebug')->willReturn($isDebug);
 
-        $expectedCommand = "cd $path && composer require package/name:1.0.0 -v";
+        $expectedCommand = "cd $path && composer require package/name:1.0.0 $verbosityFlag";
 
         $this->processRunnerMock
             ->expects($this->once())
@@ -181,49 +183,12 @@ class ComposerIntegrationTest extends IntegrationTestCase
         $this->assertEquals('Composer output', $result);
     }
 
-    public function testRunCommandWithVeryVerboseOutput(): void
+    public static function verbosityProvider(): array
     {
-        $path = '/var/www/html';
-        $command = 'require';
-        $arguments = 'package/name:1.0.0';
-
-        // Test with very verbose output
-        $this->outputMock->method('isVerbose')->willReturn(false);
-        $this->outputMock->method('isVeryVerbose')->willReturn(true);
-        $this->outputMock->method('isDebug')->willReturn(false);
-
-        $expectedCommand = "cd $path && composer require package/name:1.0.0 -vv";
-
-        $this->processRunnerMock
-            ->expects($this->once())
-            ->method('run')
-            ->with($this->host, $expectedCommand)
-            ->willReturn('Composer output');
-
-        $result = Composer::runCommand($path, $command, $arguments);
-        $this->assertEquals('Composer output', $result);
-    }
-
-    public function testRunCommandWithDebugOutput(): void
-    {
-        $path = '/var/www/html';
-        $command = 'require';
-        $arguments = 'package/name:1.0.0';
-
-        // Test with debug output
-        $this->outputMock->method('isVerbose')->willReturn(false);
-        $this->outputMock->method('isVeryVerbose')->willReturn(false);
-        $this->outputMock->method('isDebug')->willReturn(true);
-
-        $expectedCommand = "cd $path && composer require package/name:1.0.0 -vvv";
-
-        $this->processRunnerMock
-            ->expects($this->once())
-            ->method('run')
-            ->with($this->host, $expectedCommand)
-            ->willReturn('Composer output');
-
-        $result = Composer::runCommand($path, $command, $arguments);
-        $this->assertEquals('Composer output', $result);
+        return [
+            'verbose' => [true, false, false, '-v'],
+            'very verbose' => [false, true, false, '-vv'],
+            'debug' => [false, false, true, '-vvv'],
+        ];
     }
 } 
