@@ -1,0 +1,32 @@
+name: Composer Lock Diff
+
+on:
+  pull_request:
+    paths:
+      - 'composer.json'
+      - 'composer.lock'
+
+jobs:
+  composer-diff:
+    name: Composer Lock Diff
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      # Checkout the repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Generate composer.lock diff
+      - name: Generate composer.lock diff
+        id: composer-diff
+        uses: IonBazan/composer-diff-action@v1
+
+      # Post diff as sticky comment
+      - name: Post diff as sticky comment
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          message: |
+            ## Composer Package Changes
+            ${{ steps.composer-diff.outputs.diff }} 

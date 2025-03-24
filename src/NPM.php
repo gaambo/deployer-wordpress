@@ -2,8 +2,8 @@
 
 namespace Gaambo\DeployerWordpress;
 
-use function Deployer\run;
 use function Deployer\has;
+use function Deployer\run;
 use function Deployer\test;
 
 class NPM
@@ -23,6 +23,22 @@ class NPM
     }
 
     /**
+     * Run any npm command
+     * Uses Deployers run function
+     *
+     * @param string $path Path in which to run npm command
+     * @param string $action NPM action to be run
+     * @param string $arguments Command-line arguments to be passed to npm
+     * @return string Output of the command
+     */
+    public static function runCommand(string $path, string $action, string $arguments = ''): string
+    {
+        $verbosityArgument = Utils::getVerbosityArgument();
+        $verbosityArgument = str_replace('v', 'd', $verbosityArgument); // npm takes d for verbosity argument
+        return run("cd $path && {{bin/npm}} $action $arguments $verbosityArgument");
+    }
+
+    /**
      * Run npm install
      * Tries to copy node_modules from previous release if available
      *
@@ -39,20 +55,4 @@ class NPM
         }
         return self::runCommand($path, 'install', $arguments);
     }
-
-    /**
-     * Run any npm command
-     * Uses Deployers run function
-     *
-     * @param string $path Path in which to run npm command
-     * @param string $action NPM action to be run
-     * @param string $arguments Command-line arguments to be passed to npm
-     * @return string Output of the command
-     */
-    public static function runCommand(string $path, string $action, string $arguments = ''): string
-    {
-        $verbosityArgument = Utils::getVerbosityArgument();
-        $verbosityArgument = str_replace('v', 'd', $verbosityArgument); // npm takes d for verbosity argument
-        return run("cd $path && {{bin/npm}} $action $arguments $verbosityArgument");
-    }
-} 
+}

@@ -2,9 +2,9 @@
 
 namespace Gaambo\DeployerWordpress;
 
-use function Deployer\upload;
 use function Deployer\download;
 use function Deployer\run;
+use function Deployer\upload;
 
 class Files
 {
@@ -38,7 +38,8 @@ class Files
      * Zip files into a backup zip
      *
      * @param string $dir Directory to zip
-     *  Can have a trailing slash, which backups the contents of the directory, if not it backups the directory into the zip
+     *  Can have a trailing slash, which backups the contents of the directory,
+     *  if not it backups the directory into the zip
      * @param string $backupDir Directory in which to store the zip
      * @param string $filename Filename of the zip file - gets prefixed to a datetime
      * @return string The full path ($backupDir + full filename) to the created zip
@@ -62,4 +63,4 @@ class Files
 
         return $backupPath;
     }
-} 
+}

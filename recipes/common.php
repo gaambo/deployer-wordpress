@@ -8,10 +8,14 @@
 namespace Gaambo\DeployerWordpress\Recipes\Common;
 
 use Deployer\Deployer;
+use Deployer\Host\Host;
+use Gaambo\DeployerWordpress\Composer;
+use Gaambo\DeployerWordpress\Localhost;
+use Gaambo\DeployerWordpress\WPCLI;
 
-use function Deployer\add;
 use function Deployer\after;
 use function Deployer\commandExist;
+use function Deployer\currentHost;
 use function Deployer\get;
 use function Deployer\has;
 use function Deployer\info;
@@ -25,9 +29,6 @@ use function Deployer\task;
 use function Deployer\test;
 use function Deployer\warning;
 use function Deployer\which;
-use Gaambo\DeployerWordpress\Composer;
-use Gaambo\DeployerWordpress\Localhost;
-use Gaambo\DeployerWordpress\WPCLI;
 
 $deployerPath = 'vendor/deployer/deployer/';
 require_once $deployerPath . 'recipe/common.php';
@@ -203,7 +204,7 @@ set('writable_mode', 'chown');
 // Overwrite deploy:info task to show host instead of branch
 task('deploy:info', function () {
     $selectedHosts = selectedHosts();
-    $hosts =  implode(',', array_map(function (\Deployer\Host\Host $host) {
+    $hosts =  implode(',', array_map(function (Host $host) {
         return $host->getAlias();
     }, $selectedHosts));
     info("deploying to <fg=magenta;options=bold>$hosts</>");

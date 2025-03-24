@@ -8,14 +8,17 @@
 
 namespace Gaambo\DeployerWordpress\Recipes\Bedrock;
 
+use Gaambo\DeployerWordpress\Composer;
+use Gaambo\DeployerWordpress\Rsync;
+
 use function Deployer\add;
+use function Deployer\after;
 use function Deployer\get;
 use function Deployer\run;
 use function Deployer\set;
 use function Deployer\task;
 use function Deployer\test;
-use Gaambo\DeployerWordpress\Composer;
-use Gaambo\DeployerWordpress\Rsync;
+use function Deployer\upload;
 
 require_once __DIR__ . '/common.php';
 

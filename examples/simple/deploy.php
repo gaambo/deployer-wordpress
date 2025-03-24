@@ -1,12 +1,17 @@
 <?php
 
+use Gaambo\DeployerWordpress\Localhost;
+
 require_once __DIR__ . '/vendor/autoload.php';
 require_once __DIR__ . '/vendor/gaambo/deployer-wordpress/recipes/simple.php';
 
+use function Deployer\has;
 use function Deployer\import;
+use function Deployer\invoke;
 use function Deployer\localhost;
+use function Deployer\on;
+use function Deployer\set;
 use function Deployer\task;
-use function Gaambo\DeployerWordpress\Utils\Localhost\getLocalhost;
 
 // hosts & config
 import('deploy.yml');
@@ -19,7 +24,7 @@ localhost()
     // set current_path to hardcoded release_path on local so release_or_current_path works;
     // {{release_path}} does not work here?
     ->set('current_path', function () {
-        return getLocalhost()->get('release_path');
+        return Localhost::getConfig('release_path');
     })
     ->set('dump_path', __DIR__ . '/data/db_dumps')
     ->set('backup_path', __DIR__ . '/data/backups');
@@ -39,7 +44,7 @@ set('packages', [
 
 // Build package assets via npm locally
 task('deploy:build_assets', function () {
-    on(getLocalhost(), function () {
+    on(Localhost::get(), function () {
         if (has('packages')) {
             // Do not install vendors on each deployment.
             // invoke('packages:assets:vendors');

@@ -33,7 +33,7 @@ use Gaambo\DeployerWordpress\WPCLI;
  *     dep wp:download-core production -o wp/version=6.4.3
  */
 task('wp:download-core', function () {
-    WPCLI::runCommand("core download --skip-content --version= $wpVersion");
+    WPCLI::runCommand("core download --skip-content --version=" . get('wp/version', 'latest'));
 })->desc('Download WordPress core files');
 
 /**

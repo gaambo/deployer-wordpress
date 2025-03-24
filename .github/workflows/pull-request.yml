@@ -1,0 +1,36 @@
+name: Pull Request Tests
+
+on:
+  pull_request:
+
+jobs:
+  tests:
+    name: Run PHPUnit Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      matrix:
+        php: ['8.1', '8.2', '8.3', '8.4']
+      fail-fast: false
+
+    steps:
+      # Checkout the repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Setup PHP with Composer
+      - name: Setup PHP and tools
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          tools: composer:v2
+
+      # Install dependencies with caching
+      - name: Install Composer dependencies
+        uses: ramsey/composer-install@v3
+        with:
+          composer-options: '--prefer-dist --no-progress'
+
+      # Run PHPUnit tests
+      - name: Run PHPUnit tests
+        run: composer run-script test 

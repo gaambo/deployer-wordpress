@@ -5,8 +5,9 @@ require __DIR__ . '/../vendor/autoload.php';
 // Somehow deployer removes its autoload after releasing.
 // see https://github.com/deployphp/deployer/commit/76fadcd887eb22e37ffe92c5e05964ce43c9cfe5
 // And also add Deployer PSR-4 autoload-dev to composer.json
-require __DIR__ . '/../vendor/deployer/deployer/src/functions.php';
+// These are automatically loaded by Deployer when running the dep binary.
 require __DIR__ . '/../vendor/deployer/deployer/src/Support/helpers.php';
+require __DIR__ . '/../vendor/deployer/deployer/src/functions.php';
 
 set_include_path(__DIR__ . '/../vendor/deployer/deployer' . PATH_SEPARATOR . get_include_path());
 

@@ -15,7 +15,7 @@ class Utils
     {
         $outputInterface = output();
         $verbosityArgument = '';
-        
+
         if ($outputInterface->isVerbose()) {
             $verbosityArgument = '-v';
         }
@@ -25,7 +25,7 @@ class Utils
         if ($outputInterface->isDebug()) {
             $verbosityArgument = '-vvv';
         }
-        
+
         return $verbosityArgument;
     }
-} 
+}

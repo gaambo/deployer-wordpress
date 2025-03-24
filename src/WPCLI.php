@@ -4,7 +4,6 @@ namespace Gaambo\DeployerWordpress;
 
 use function Deployer\run;
 use function Deployer\runLocally;
-use function Deployer\test;
 
 /**
  * WP CLI utility class
@@ -13,6 +12,7 @@ use function Deployer\test;
 class WPCLI
 {
     private const INSTALLER_DOWNLOAD = 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar';
+    private const DEFAULT_PATH = '{{release_or_current_path}}';
 
     /**
      * Run a WP CLI command
@@ -21,7 +21,7 @@ class WPCLI
      * @param string $arguments Additional arguments to pass to WP-CLI
      * @return void
      */
-    public static function runCommand(string $command, ?string $path = '{{release_or_current_path}}', string $arguments = ''): void
+    public static function runCommand(string $command, ?string $path = self::DEFAULT_PATH, string $arguments = ''): void
     {
         $cmd = "{{bin/wp}} $command $arguments";
         if ($path) {
@@ -38,8 +38,11 @@ class WPCLI
      * @param string $arguments Additional arguments to pass to WP-CLI
      * @return void
      */
-    public static function runCommandLocally(string $command, ?string $path = '{{release_or_current_path}}', string $arguments = ''): void
-    {
+    public static function runCommandLocally(
+        string $command,
+        ?string $path = self::DEFAULT_PATH,
+        string $arguments = ''
+    ): void {
         $localWp = Localhost::getConfig('bin/wp');
         if ($path) {
             runLocally("cd $path && $localWp $command $arguments");
@@ -63,11 +66,11 @@ class WPCLI
 
         run("mkdir -p $installPath");
         run("cd $installPath && curl -sS -O " . self::INSTALLER_DOWNLOAD);
-        
+
         if ($binaryName !== 'wp-cli.phar') {
-            run("$sudoCommand mv $installPath/wp-cli.phar $installPath/$binaryName");
+            run("$sudoPrefix mv $installPath/wp-cli.phar $installPath/$binaryName");
         }
 
         return "$installPath/$binaryName";
     }
-} 
+}

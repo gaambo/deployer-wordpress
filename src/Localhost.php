@@ -2,6 +2,7 @@
 
 namespace Gaambo\DeployerWordpress;
 
+use Deployer\Deployer;
 use Deployer\Host\Host;
 
 /**
@@ -27,6 +28,6 @@ class Localhost
      */
     public static function get(): Host
     {
-        return \Deployer\Deployer::get()->hosts->get('localhost');
+        return Deployer::get()->hosts->get('localhost');
     }
-} 
+}
