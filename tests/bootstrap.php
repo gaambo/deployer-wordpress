@@ -13,7 +13,7 @@ set_include_path(__DIR__ . '/../vendor/deployer/deployer' . PATH_SEPARATOR . get
 
 // Set up test environment
 putenv('DEPLOYER_LOCAL_WORKER=true');
-define('__FIXTURES__', __DIR__ . '/fixtures');
+define('__FIXTURES__', __DIR__ . '/Fixtures');
 define('__TEMP_DIR__', sys_get_temp_dir() . '/deployer-wordpress');
 
 // Create temp directory if it doesn't exist

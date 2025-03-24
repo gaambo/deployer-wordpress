@@ -1,4 +1,4 @@
-name: Pull Request Tests
+name: Tests
 
 on:
   pull_request:
@@ -13,9 +13,9 @@ jobs:
       matrix:
         php: ['8.1', '8.2', '8.3', '8.4']
         # TODO: Add 8.0 when released.
-        deployer: ['^7.3', '^7.4', '^7.5']
+        deployer: ['7.3', '7.4', '7.5']
       fail-fast: false
-    name: Tests forDeployer ${{ matrix.deployer }} on PHP ${{ matrix.php }}
+    name: Tests for Deployer ${{ matrix.deployer }} on PHP ${{ matrix.php }}
 
     steps:
       # Checkout the repository
@@ -37,7 +37,8 @@ jobs:
 
       # Install specific Deployer version
       - name: Install Deployer version
-        run: composer require --no-update deployer/deployer:"${{ matrix.deployer }}"
+        # Install latest patch of the specified version.
+        run: composer require --no-update deployer/deployer:"${{ matrix.deployer }}.*"
 
       # Run PHPStan
       - name: Run PHPStan
