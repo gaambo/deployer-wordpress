@@ -151,4 +151,199 @@ class WpCliIntegrationTest extends IntegrationTestCase
         $result = WPCLI::install($installPath);
         $this->assertEquals("$installPath/wp-cli.phar", $result);
     }
+
+    public function testRunCommandWithComplexArguments(): void
+    {
+        $path = '/var/www/html';
+        $command = 'post create';
+        $arguments = '--post_title="Complex Title with Spaces" --post_content="Content with \'quotes\' and \"double quotes\"" --post_status=draft';
+        $expectedCommand = "cd $path && wp $command $arguments";
+
+        $this->processRunnerMock
+            ->expects($this->once())
+            ->method('run')
+            ->with($this->host, $expectedCommand)
+            ->willReturn('WP-CLI output');
+
+        WPCLI::runCommand($command, $path, $arguments);
+    }
+
+    public function testRunCommandWithSpecialCharactersInPath(): void
+    {
+        $path = '/var/www/html with spaces';
+        $command = 'post list';
+        $arguments = '--format=table';
+        $expectedCommand = "cd $path && wp $command $arguments";
+
+        $this->processRunnerMock
+            ->expects($this->once())
+            ->method('run')
+            ->with($this->host, $expectedCommand)
+            ->willReturn('WP-CLI output');
+
+        WPCLI::runCommand($command, $path, $arguments);
+    }
+
+    public function testRunCommandWithVeryLongPath(): void
+    {
+        // Create a path that's 255 characters long (common filesystem limit)
+        $path = str_repeat('a', 200) . '/path/to/wordpress';
+        $command = 'post list';
+        $arguments = '--format=table';
+        $expectedCommand = "cd $path && wp $command $arguments";
+
+        $this->processRunnerMock
+            ->expects($this->once())
+            ->method('run')
+            ->with($this->host, $expectedCommand)
+            ->willReturn('WP-CLI output');
+
+        WPCLI::runCommand($command, $path, $arguments);
+    }
+
+    public function testRunCommandWithComplexCommand(): void
+    {
+        $path = '/var/www/html';
+        $command = 'post create --post_type=page --post_status=publish --post_title="Home Page" --post_content="Welcome to our site"';
+        $arguments = '--meta_input=\'{"_wp_page_template":"page-home.php"}\'';
+        $expectedCommand = "cd $path && wp $command $arguments";
+
+        $this->processRunnerMock
+            ->expects($this->once())
+            ->method('run')
+            ->with($this->host, $expectedCommand)
+            ->willReturn('WP-CLI output');
+
+        WPCLI::runCommand($command, $path, $arguments);
+    }
+
+    public function testRunCommandLocallyWithComplexPath(): void
+    {
+        $path = '/var/www/html with spaces and special chars @#$%';
+        $command = 'post list';
+        $arguments = '--format=table';
+        $expectedCommand = "cd $path && wp $command $arguments";
+
+        $this->processRunnerMock
+            ->expects($this->once())
+            ->method('run')
+            ->with(
+                $this->anything(),
+                $expectedCommand,
+                []
+            );
+
+        WPCLI::runCommandLocally($command, $path, $arguments);
+    }
+
+    public function testRunCommandWithCustomWpBinary(): void
+    {
+        $path = '/var/www/html';
+        $command = 'post list';
+        $arguments = '--format=table';
+        $expectedCommand = "cd $path && /usr/local/bin/wp $command $arguments";
+
+        // Set custom wp binary path
+        $this->deployer->config->set('bin/wp', '/usr/local/bin/wp');
+        $this->host->config()->set('bin/wp', '/usr/local/bin/wp');
+
+        $this->processRunnerMock
+            ->expects($this->once())
+            ->method('run')
+            ->with($this->host, $expectedCommand)
+            ->willReturn('WP-CLI output');
+
+        WPCLI::runCommand($command, $path, $arguments);
+    }
+
+    public function testRunCommandLocallyWithCustomWpBinary(): void
+    {
+        $path = '/var/www/html';
+        $command = 'post list';
+        $arguments = '--format=table';
+        $expectedCommand = "cd $path && /usr/local/bin/wp $command $arguments";
+
+        // Set custom wp binary path for localhost
+        $this->deployer->config->set('localhost.bin/wp', '/usr/local/bin/wp');
+        $this->host->config()->set('bin/wp', '/usr/local/bin/wp');
+
+        $this->processRunnerMock
+            ->expects($this->once())
+            ->method('run')
+            ->with(
+                $this->anything(),
+                $expectedCommand,
+                []
+            );
+
+        WPCLI::runCommandLocally($command, $path, $arguments);
+    }
+
+    public function testRunCommandWithInvalidWpBinary(): void
+    {
+        $path = '/var/www/html';
+        $command = 'post list';
+        $arguments = '--format=table';
+        $expectedCommand = "cd $path && wp $command $arguments";
+
+        // Set invalid wp binary (should fall back to default)
+        $this->deployer->config->set('bin/wp', null);
+
+        $this->processRunnerMock
+            ->expects($this->once())
+            ->method('run')
+            ->with($this->host, $expectedCommand)
+            ->willReturn('WP-CLI output');
+
+        WPCLI::runCommand($command, $path, $arguments);
+    }
+
+    public function testRunCommandLocallyWithInvalidWpBinary(): void
+    {
+        $path = '/var/www/html';
+        $command = 'post list';
+        $arguments = '--format=table';
+        $expectedCommand = "cd $path && wp $command $arguments";
+
+        // Set invalid wp binary for localhost (should fall back to default)
+        $this->deployer->config->set('localhost.bin/wp', null);
+
+        $this->processRunnerMock
+            ->expects($this->once())
+            ->method('run')
+            ->with(
+                $this->anything(),
+                $expectedCommand,
+                []
+            );
+
+        WPCLI::runCommandLocally($command, $path, $arguments);
+    }
+
+    public function testInstallWithCustomBinaryPath(): void
+    {
+        $installPath = '/usr/local/bin';
+        $binaryName = 'wp';
+        $expectedCommands = [
+            "sudo mkdir -p $installPath",
+            "sudo cd $installPath && curl -sS https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar -o wp-cli.phar",
+            "sudo mv $installPath/wp-cli.phar $installPath/$binaryName"
+        ];
+
+        // Set custom binary path
+        $this->deployer->config->set('bin/wp', "$installPath/$binaryName");
+
+        $this->processRunnerMock
+            ->expects($this->exactly(3))
+            ->method('run')
+            ->willReturnCallback(function ($host, $command) use ($expectedCommands) {
+                static $index = 0;
+                $this->assertEquals($expectedCommands[$index], $command);
+                $index++;
+                return 'Installation output';
+            });
+
+        $result = WPCLI::install($installPath, $binaryName, true);
+        $this->assertEquals("$installPath/$binaryName", $result);
+    }
 } 

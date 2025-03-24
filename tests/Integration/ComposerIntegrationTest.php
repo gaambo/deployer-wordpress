@@ -4,6 +4,7 @@ namespace Gaambo\DeployerWordpress\Tests\Integration;
 
 use Deployer\Component\ProcessRunner\ProcessRunner;
 use Deployer\Component\Ssh\Client;
+use Deployer\Exception\ConfigurationException;
 use Gaambo\DeployerWordpress\Composer;
 use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -39,7 +40,7 @@ class ComposerIntegrationTest extends IntegrationTestCase
     public function testRunDefault(): void
     {
         $path = '/var/www/html';
-        $expectedCommand = "cd $path && composer install --no-dev --no-interaction ";
+        $expectedCommand = "cd $path && composer install --no-dev --no-interaction";
 
         $this->processRunnerMock
             ->expects($this->once())
@@ -56,7 +57,7 @@ class ComposerIntegrationTest extends IntegrationTestCase
         $path = '/var/www/html';
         $command = 'require';
         $arguments = 'package/name:1.0.0';
-        $expectedCommand = "cd $path && composer require package/name:1.0.0 ";
+        $expectedCommand = "cd $path && composer require package/name:1.0.0";
 
         $this->processRunnerMock
             ->expects($this->once())
@@ -73,7 +74,7 @@ class ComposerIntegrationTest extends IntegrationTestCase
         $path = '/var/www/html';
         $script = 'post-install-cmd';
         $arguments = '--env=prod';
-        $expectedCommand = "cd $path && composer run-script post-install-cmd --env=prod ";
+        $expectedCommand = "cd $path && composer run-script post-install-cmd --env=prod";
 
         $this->processRunnerMock
             ->expects($this->once())
@@ -190,5 +191,40 @@ class ComposerIntegrationTest extends IntegrationTestCase
             'very verbose' => [false, true, false, '-vv'],
             'debug' => [false, false, true, '-vvv'],
         ];
+    }
+
+    public function testRunCommandWithCustomComposerBinary(): void
+    {
+        $path = '/var/www/html';
+        $action = 'install';
+        $arguments = '--no-dev';
+        $expectedCommand = "cd $path && /usr/local/bin/composer $action $arguments";
+
+        // Set custom composer binary path
+        $this->deployer->config->set('bin/composer', '/usr/local/bin/composer');
+
+        $this->processRunnerMock
+            ->expects($this->once())
+            ->method('run')
+            ->with($this->host, $expectedCommand)
+            ->willReturn('Composer output');
+
+        $result = Composer::runCommand($path, $action, $arguments);
+        $this->assertEquals('Composer output', $result);
+    }
+
+    public function testRunCommandWithInvalidComposerBinary(): void
+    {
+        $path = '/var/www/html';
+        $action = 'install';
+        $arguments = '--no-dev';
+        $expectedCommand = "cd $path && composer $action $arguments";
+
+        // Set invalid composer binary (should fall back to default)
+        $this->deployer->config->set('bin/composer', null);
+
+        $this->expectException(ConfigurationException::class);
+        $this->expectExceptionMessage('Config option "bin/composer" does not exist');
+        $result = Composer::runCommand($path, $action, $arguments);
     }
 } 

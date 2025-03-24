@@ -31,7 +31,17 @@ class Composer
      */
     public static function runCommand(string $path, string $command, string $arguments = ''): string
     {
-        return run("cd $path && {{bin/composer}} $command $arguments " . Utils::getVerbosityArgument());
+        $verbosityArgument = Utils::getVerbosityArgument();
+
+        $runCommand = "cd $path && {{bin/composer}} $command";
+        if ($arguments !== '') {
+            $runCommand .= " $arguments";
+        }
+        if ($verbosityArgument !== '') {
+            $runCommand .= " $verbosityArgument";
+        }
+
+        return run($runCommand);
     }
 
     /**
