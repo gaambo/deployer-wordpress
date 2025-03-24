@@ -4,3 +4,4 @@
 .DS_STORE
 .phpunit.cache
 .phpunit.result.cache
+/coverage

@@ -11,7 +11,7 @@ use function Deployer\runLocally;
  */
 class WPCLI
 {
-    private const INSTALLER_DOWNLOAD = 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar';
+    private const BINARY_DOWNLOAD = 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar';
     private const DEFAULT_PATH = '{{release_or_current_path}}';
 
     /**
@@ -64,11 +64,11 @@ class WPCLI
     {
         $sudoPrefix = $sudo ? 'sudo ' : '';
 
-        run("mkdir -p $installPath");
-        run("cd $installPath && curl -sS -O " . self::INSTALLER_DOWNLOAD);
+        run($sudoPrefix . "mkdir -p $installPath");
+        run($sudoPrefix . "cd $installPath && curl -sS " . self::BINARY_DOWNLOAD . " -o wp-cli.phar");
 
         if ($binaryName !== 'wp-cli.phar') {
-            run("$sudoPrefix mv $installPath/wp-cli.phar $installPath/$binaryName");
+            run($sudoPrefix . "mv $installPath/wp-cli.phar $installPath/$binaryName");
         }
 
         return "$installPath/$binaryName";

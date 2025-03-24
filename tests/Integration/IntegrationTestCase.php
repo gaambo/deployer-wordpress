@@ -6,6 +6,7 @@ use Deployer\Deployer;
 use Deployer\Host\Host;
 use Deployer\Host\Localhost;
 use Deployer\Task\Context;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Input\Input;
@@ -14,8 +15,8 @@ use Symfony\Component\Console\Output\Output;
 abstract class IntegrationTestCase extends TestCase
 {
     protected Deployer $deployer;
-    protected Input $input;
-    protected Output $output;
+    protected MockObject|Input $input;
+    protected MockObject|Output $output;
     protected Host $host;
 
     protected function setUp(): void
@@ -36,6 +37,10 @@ abstract class IntegrationTestCase extends TestCase
 
         // Create a localhost instance for testing
         $this->host = new Localhost();
+        $this->host->set('deploy_path', '/var/www');
+        $this->host->set('bin/wp', 'wp');
+        $this->host->set('release_or_current_path', '/var/www/current');
+        $this->deployer->hosts->set('localhost', $this->host);
 
         // Push a new context with our host
         Context::push(new Context($this->host));

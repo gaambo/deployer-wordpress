@@ -60,14 +60,13 @@ class Composer
         string $binaryName = 'composer.phar',
         bool $sudo = false
     ): string {
-        $sudoCommand = $sudo ? 'sudo ' : '';
+        $sudoPrefix = $sudo ? 'sudo ' : '';
 
-        run("mkdir -p $installPath");
-        run("cd $installPath && curl -sS " . self::INSTALLER_DOWNLOAD . " | {{bin/php}}");
-        run('mv {{deploy_path}}/composer.phar {{deploy_path}}/.dep/composer.phar');
+        run($sudoPrefix . "mkdir -p $installPath");
+        run($sudoPrefix . "cd $installPath && curl -sS " . self::INSTALLER_DOWNLOAD . " | {{bin/php}}");
 
         if ($binaryName !== 'composer.phar') {
-            run("$sudoCommand mv $installPath/composer.phar $installPath/$binaryName");
+            run($sudoPrefix . "mv $installPath/composer.phar $installPath/$binaryName");
         }
 
         return "$installPath/$binaryName";
