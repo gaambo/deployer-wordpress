@@ -13,6 +13,9 @@
 
 namespace Gaambo\DeployerWordpress\Tasks;
 
+use Gaambo\DeployerWordpress\Localhost;
+use Gaambo\DeployerWordpress\WPCLI;
+
 use function Deployer\download;
 use function Deployer\get;
 use function Deployer\run;
@@ -20,16 +23,14 @@ use function Deployer\runLocally;
 use function Deployer\set;
 use function Deployer\task;
 use function Deployer\upload;
-use Gaambo\DeployerWordpress\Localhost;
-use Gaambo\DeployerWordpress\WPCLI;
 
 /**
  * Create backup of remote database and download locally
- * 
+ *
  * Configuration:
  * - dump_path: Directory to store database dumps (required on both local and remote)
  * - bin/wp: WP-CLI binary/command to use (automatically configured)
- * 
+ *
  * Example:
  *     dep db:remote:backup prod
  */
@@ -48,11 +49,11 @@ task('db:remote:backup', function () {
 
 /**
  * Create backup of local database and upload to remote
- * 
+ *
  * Configuration:
  * - dump_path: Directory to store database dumps (required on both local and remote)
  * - bin/wp: WP-CLI binary/command to use (automatically configured)
- * 
+ *
  * Example:
  *     dep db:local:backup prod
  */
@@ -74,12 +75,12 @@ task('db:local:backup', function () {
 
 /**
  * Import database backup on remote host
- * 
+ *
  * Configuration:
  * - bin/wp: WP-CLI binary/command to use (automatically configured)
  * - public_url: Site URL for both local and remote (required for URL replacement)
  * - uploads/dir: Upload directory path (for path replacement if different between environments)
- * 
+ *
  * Example:
  *     dep db:remote:import prod
  */
@@ -88,7 +89,7 @@ task('db:remote:import', function () {
     WPCLI::runCommand("db import {{dump_filepath}}", "{{release_or_current_path}}");
     WPCLI::runCommand("search-replace $localUrl {{public_url}}", "{{release_or_current_path}}");
 
-    // If the local uploads directory is different than the remote one
+    // If the local uploads directory is different from the remote one
     // replace all references to the local uploads directory with the remote one
     $localUploadsDir = Localhost::getConfig('uploads/dir');
     if ($localUploadsDir !== get('uploads/dir')) {
@@ -100,13 +101,13 @@ task('db:remote:import', function () {
 
 /**
  * Import database backup on local host
- * 
+ *
  * Configuration:
  * - bin/wp: WP-CLI binary/command to use (automatically configured)
  * - public_url: Site URL for both local and remote (required for URL replacement)
  * - uploads/dir: Upload directory path (for path replacement if different between environments)
  * - dump_path: Directory containing database dumps
- * 
+ *
  * Example:
  *     dep db:local:import prod
  */
@@ -116,7 +117,7 @@ task('db:local:import', function () {
     WPCLI::runCommandLocally("db import $localDumpPath/{{dump_file}}");
     WPCLI::runCommandLocally("search-replace {{public_url}} $localUrl");
 
-    // If the local uploads directory is different than the remote one
+    // If the local uploads directory is different from the remote one
     // replace all references to the remotes uploads directory with the local one
     $localUploadsDir = Localhost::getConfig('uploads/dir');
     if ($localUploadsDir !== get('uploads/dir')) {
@@ -128,10 +129,10 @@ task('db:local:import', function () {
 
 /**
  * Push database from local to remote
- * 
+ *
  * Combines db:local:backup and db:remote:import tasks.
  * See individual tasks for configuration options.
- * 
+ *
  * Example:
  *     dep db:push prod
  */
@@ -140,10 +141,10 @@ task('db:push', ['db:local:backup', 'db:remote:import'])
 
 /**
  * Pull database from remote to local
- * 
+ *
  * Combines db:remote:backup and db:local:import tasks.
  * See individual tasks for configuration options.
- * 
+ *
  * Example:
  *     dep db:pull prod
  */

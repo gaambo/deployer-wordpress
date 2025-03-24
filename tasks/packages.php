@@ -7,7 +7,7 @@
  * - Pushing/pulling package files between environments
  * - Creating backups of package directories
  * - Managing package dependencies and configurations
- * 
+ *
  * Packages can be custom themes, plugins, or mu-plugins that need special handling.
  *
  * @package Gaambo\DeployerWordpress\Tasks
@@ -15,23 +15,24 @@
 
 namespace Gaambo\DeployerWordpress\Tasks;
 
-use function Deployer\download;
-use function Deployer\get;
-use function Deployer\run;
-use function Deployer\task;
 use Gaambo\DeployerWordpress\Composer;
 use Gaambo\DeployerWordpress\Files;
 use Gaambo\DeployerWordpress\Localhost;
 use Gaambo\DeployerWordpress\NPM;
 use Gaambo\DeployerWordpress\Rsync;
 
+use function Deployer\download;
+use function Deployer\get;
+use function Deployer\run;
+use function Deployer\task;
+
 /**
  * Install package assets dependencies via npm
- * 
+ *
  * Configuration per package:
  * - path: Path of package relative to release_path/current_path
  * - assets: Whether the package has assets to install
- * 
+ *
  * Example:
  *     dep packages:assets:vendors prod
  */
@@ -47,12 +48,12 @@ task('packages:assets:vendors', function () {
 
 /**
  * Build package assets via npm script
- * 
+ *
  * Configuration per package:
  * - path: Path of package relative to release_path/current_path
  * - assets: Whether the package has assets to build
  * - assets:build_script: NPM script to run (optional, default: "build")
- * 
+ *
  * Example:
  *     dep packages:assets:build prod
  */
@@ -71,10 +72,10 @@ task('packages:assets:build', function () {
 
 /**
  * Install and build package assets
- * 
+ *
  * Combines packages:assets:vendors and packages:assets:build tasks.
  * See individual tasks for configuration options.
- * 
+ *
  * Example:
  *     dep packages:assets prod
  */
@@ -83,10 +84,10 @@ task('packages:assets', ['packages:assets:vendors', 'packages:assets:build'])
 
 /**
  * Install package dependencies via composer
- * 
+ *
  * Configuration per package:
  * - path: Path of package relative to release_path/current_path
- * 
+ *
  * Example:
  *     dep packages:vendors prod
  */
@@ -101,10 +102,10 @@ task('packages:vendors', function () {
 
 /**
  * Install all package dependencies
- * 
+ *
  * Combines packages:assets and packages:vendors tasks.
  * See individual tasks for configuration options.
- * 
+ *
  * Example:
  *     dep packages prod
  */
@@ -113,12 +114,12 @@ task('packages', ['packages:assets', 'packages:vendors'])
 
 /**
  * Push packages from local to remote
- * 
+ *
  * Configuration per package:
  * - path: Path of package relative to release_path/current_path
  * - remote:path: Path of package on remote host
  * - rsync:filter: (optional) Rsync filter rules for package files
- * 
+ *
  * Example:
  *     dep packages:push prod
  */
@@ -136,12 +137,12 @@ task('packages:push', function () {
 
 /**
  * Pull packages from remote to local
- * 
+ *
  * Configuration per package:
  * - path: Path of package relative to release_path/current_path
  * - remote:path: Path of package on remote host
  * - rsync:filter: (optional) Rsync filter rules for package files
- * 
+ *
  * Example:
  *     dep packages:pull prod
  */
@@ -158,10 +159,10 @@ task('packages:pull', function () {
 
 /**
  * Sync packages between remote and local
- * 
+ *
  * Combines packages:push and packages:pull tasks.
  * See individual tasks for configuration options.
- * 
+ *
  * Example:
  *     dep packages:sync prod
  */
@@ -170,13 +171,13 @@ task('packages:sync', ['packages:push', 'packages:pull'])
 
 /**
  * Backup packages on remote host
- * 
+ *
  * Creates a zip backup of remote packages and downloads it locally.
- * 
+ *
  * Configuration per package:
  * - remote:path: Path of package on remote host
  * - backup_path: Path for storing backups (required on both local and remote)
- * 
+ *
  * Example:
  *     dep packages:backup:remote prod
  */
@@ -195,13 +196,13 @@ task('packages:backup:remote', function () {
 
 /**
  * Backup packages on local host
- * 
+ *
  * Creates a zip backup of local packages.
- * 
+ *
  * Configuration per package:
  * - path: Path of package relative to release_path/current_path
  * - backup_path: Path for storing backups (local)
- * 
+ *
  * Example:
  *     dep packages:backup:local prod
  */
@@ -211,7 +212,7 @@ task('packages:backup:local', function () {
 
     foreach (get('packages', []) as $package) {
         $packagePath = $package['path'];
-        $backupFile = Files::zipFiles(
+        Files::zipFiles(
             "$localPath/$packagePath/",
             $localBackupPath,
             'backup_packages'

@@ -12,20 +12,21 @@
 
 namespace Gaambo\DeployerWordpress\Tasks;
 
-use function Deployer\download;
-use function Deployer\get;
-use function Deployer\task;
 use Gaambo\DeployerWordpress\Files;
 use Gaambo\DeployerWordpress\Localhost;
 use Gaambo\DeployerWordpress\Rsync;
 
+use function Deployer\download;
+use function Deployer\get;
+use function Deployer\task;
+
 /**
  * Push languages from local to remote
- * 
+ *
  * Configuration:
  * - languages/dir: Path to languages directory relative to document root
  * - languages/filter: Rsync filter rules for language files (has defaults)
- * 
+ *
  * Example:
  *     dep languages:push prod
  */
@@ -38,11 +39,11 @@ task('languages:push', function () {
 
 /**
  * Pull languages from remote to local
- * 
+ *
  * Configuration:
  * - languages/dir: Path to languages directory relative to document root
  * - languages/filter: Rsync filter rules for language files (has defaults)
- * 
+ *
  * Example:
  *     dep languages:pull prod
  */
@@ -55,10 +56,10 @@ task('languages:pull', function () {
 
 /**
  * Sync languages between remote and local
- * 
+ *
  * Combines languages:push and languages:pull tasks.
  * See individual tasks for configuration options.
- * 
+ *
  * Example:
  *     dep languages:sync prod
  */
@@ -67,13 +68,13 @@ task('languages:sync', ['languages:push', 'languages:pull'])
 
 /**
  * Backup languages on remote host
- * 
+ *
  * Creates a zip backup of remote languages and downloads it locally.
- * 
+ *
  * Configuration:
  * - languages/dir: Path to languages directory relative to document root
  * - backup_path: Path for storing backups (required on both local and remote)
- * 
+ *
  * Example:
  *     dep languages:backup:remote prod
  */
@@ -89,20 +90,20 @@ task('languages:backup:remote', function () {
 
 /**
  * Backup languages on local host
- * 
+ *
  * Creates a zip backup of local languages.
- * 
+ *
  * Configuration:
  * - languages/dir: Path to languages directory relative to document root
  * - backup_path: Path for storing backups (local)
- * 
+ *
  * Example:
  *     dep languages:backup:local prod
  */
 task('languages:backup:local', function () {
     $localPath = Localhost::getConfig('current_path');
     $localBackupPath = Localhost::getConfig('backup_path');
-    $backupFile = Files::zipFiles(
+    Files::zipFiles(
         "$localPath/{{languages/dir}}/",
         $localBackupPath,
         'backup_languages'

@@ -13,12 +13,11 @@
 
 namespace Gaambo\DeployerWordpress\Tasks;
 
-use function Deployer\download;
-use function Deployer\get;
-use function Deployer\task;
 use Gaambo\DeployerWordpress\Files;
 use Gaambo\DeployerWordpress\Localhost;
-use Gaambo\DeployerWordpress\Rsync;
+
+use function Deployer\download;
+use function Deployer\task;
 
 require_once __DIR__ . '/mu-plugins.php';
 require_once __DIR__ . '/packages.php';
@@ -29,10 +28,10 @@ require_once __DIR__ . '/wp.php';
 
 /**
  * Push all files from local to remote
- * 
+ *
  * Runs wp:push, uploads:push, plugins:push, mu-plugins:push, themes:push, packages:push in series.
  * See individual task definitions for required configuration options.
- * 
+ *
  * Example:
  *     dep files:push prod
  */
@@ -41,10 +40,10 @@ task('files:push', ['wp:push', 'uploads:push', 'plugins:push', 'mu-plugins:push'
 
 /**
  * Pull all files from remote to local
- * 
+ *
  * Runs wp:pull, uploads:pull, plugins:pull, mu-plugins:pull, themes:pull, packages:pull in series.
  * See individual task definitions for required configuration options.
- * 
+ *
  * Example:
  *     dep files:pull prod
  */
@@ -53,10 +52,10 @@ task('files:pull', ['wp:pull', 'uploads:pull', 'plugins:pull', 'mu-plugins:pull'
 
 /**
  * Sync all files between remote and local
- * 
+ *
  * Combines files:push and files:pull tasks.
  * See individual tasks for configuration options.
- * 
+ *
  * Example:
  *     dep files:sync prod
  */
@@ -65,13 +64,13 @@ task('files:sync', ['files:push', 'files:pull'])
 
 /**
  * Backup all files on remote host
- * 
+ *
  * Creates a zip backup of remote WordPress files and downloads it locally.
- * 
+ *
  * Configuration:
  * - backup_path: Path for storing backups (required on both local and remote)
  * - release_path: Path to WordPress installation on remote
- * 
+ *
  * Example:
  *     dep files:backup:remote prod
  */
@@ -87,20 +86,20 @@ task('files:backup:remote', function () {
 
 /**
  * Backup all files on local host
- * 
+ *
  * Creates a zip backup of local WordPress files.
- * 
+ *
  * Configuration:
  * - backup_path: Path for storing backups (local)
  * - current_path: Path to WordPress installation on local
- * 
+ *
  * Example:
  *     dep files:backup:local prod
  */
 task('files:backup:local', function () {
     $localPath = Localhost::getConfig('current_path');
     $localBackupPath = Localhost::getConfig('backup_path');
-    $backupFile = Files::zipFiles(
+    Files::zipFiles(
         "$localPath/",
         $localBackupPath,
         'backup_files'

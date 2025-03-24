@@ -30,6 +30,8 @@ use function Deployer\test;
 use function Deployer\warning;
 use function Deployer\which;
 
+// Deployer binary sets the include path, so this should work.
+
 $deployerPath = 'vendor/deployer/deployer/';
 require_once $deployerPath . 'recipe/common.php';
 
@@ -77,7 +79,7 @@ set('bin/wp', function () {
 set('composer_action', 'install');
 set('composer_options', '--verbose --prefer-dist --no-progress --no-interaction --no-dev --optimize-autoloader');
 
-// Returns Composer binary path in found. Otherwise try to install latest
+// Returns Composer binary path in found. Otherwise, try to install latest
 // composer version to `.dep/composer.phar`. To use specific composer version
 // download desired phar and place it at `.dep/composer.phar`.
 set('bin/composer', function () {
@@ -105,10 +107,10 @@ set('bin/composer', function () {
 set('wp/dir', ''); // relative to document root
 // config files which should be protected - add to shared_files as well
 set('wp/configFiles', ['wp-config.php', 'wp-config-local.php']);
-// set all wp-config files to 600 - which means plugins/wordpress can modify it
-// alternative set it to 400 to disallow edits via wordpress
+// set all wp-config files to 600 - which means plugins/WordPress can modify it
+// alternative set it to 400 to disallow edits via WordPress
 set('wp/configFiles/permissions', '600');
-set('wp/filter', [ // contains all wordpress core files excluding uploads, themes, plugins, mu-plugins, languages
+set('wp/filter', [ // Contains all WordPress core files excluding uploads, themes, plugins, mu-plugins, languages.
     '+ /wp-content/',
     '- /wp-content/mu-plugins/*',
     '- /wp-content/plugins/*',
@@ -175,7 +177,7 @@ set('rsync', function () {
         // See README directory for examples
         'filter-perdir' => '.deployfilter',
         'flags'        => 'rz', // Recursive, with compress
-        'options'      => ['delete-after'], // needed so deployfilter files are send and delete is checked afterwards
+        'options'      => ['delete-after'], // needed so deployfilter files are send and delete is checked afterward
         'timeout'      => 60,
         'progress_bar' => true,
     ];

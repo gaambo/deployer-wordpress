@@ -1,7 +1,7 @@
 <?php
 
 /**
- * An Deployer recipe to be used with Roots Bedrock WordPress installations
+ * A Deployer recipe to be used with Roots Bedrock WordPress installations
  * Which pushes code into a hardcoded release_path (no directories per release and no symlinks).
  * For more Information see README.md
  */

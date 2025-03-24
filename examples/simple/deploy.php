@@ -16,7 +16,7 @@ use function Deployer\task;
 // hosts & config
 import('deploy.yml');
 
-// OPTIONAL: overwrite localhost config'
+// OPTIONAL: overwrite localhost config.
 localhost()
     ->set('public_url', "{{local_url}}")
     ->set('deploy_path', __DIR__)

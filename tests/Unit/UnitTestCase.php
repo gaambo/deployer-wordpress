@@ -9,6 +9,5 @@ abstract class UnitTestCase extends BaseTestCase
     protected function setUp(): void
     {
         parent::setUp();
-
     }
-} 
+}

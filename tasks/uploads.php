@@ -12,22 +12,23 @@
 
 namespace Gaambo\DeployerWordpress\Tasks;
 
-use function Deployer\download;
-use function Deployer\get;
-use function Deployer\task;
-use function Deployer\upload;
 use Gaambo\DeployerWordpress\Files;
 use Gaambo\DeployerWordpress\Localhost;
 use Gaambo\DeployerWordpress\Rsync;
 
+use function Deployer\download;
+use function Deployer\get;
+use function Deployer\task;
+use function Deployer\upload;
+
 /**
  * Push uploads from local to remote
- * 
+ *
  * Configuration:
  * - uploads/dir: Path to uploads directory relative to document root
  * - uploads/path: Path to directory containing uploads (e.g., shared directory)
  * - uploads/filter: Rsync filter rules for upload files (has defaults)
- * 
+ *
  * Example:
  *     dep uploads:push prod
  */
@@ -47,12 +48,12 @@ task('uploads:push', function () {
 
 /**
  * Pull uploads from remote to local
- * 
+ *
  * Configuration:
  * - uploads/dir: Path to uploads directory relative to document root
  * - uploads/path: Path to directory containing uploads (e.g., shared directory)
  * - uploads/filter: Rsync filter rules for upload files (has defaults)
- * 
+ *
  * Example:
  *     dep uploads:pull prod
  */
@@ -67,10 +68,10 @@ task('uploads:pull', function () {
 
 /**
  * Sync uploads between remote and local
- * 
+ *
  * Combines uploads:push and uploads:pull tasks.
  * See individual tasks for configuration options.
- * 
+ *
  * Example:
  *     dep uploads:sync prod
  */
@@ -79,14 +80,14 @@ task('uploads:sync', ['uploads:push', 'uploads:pull'])
 
 /**
  * Backup uploads on remote host
- * 
+ *
  * Creates a zip backup of remote uploads and downloads it locally.
- * 
+ *
  * Configuration:
  * - uploads/dir: Path to uploads directory relative to document root
  * - uploads/path: Path to directory containing uploads (e.g., shared directory)
  * - backup_path: Path for storing backups (required on both local and remote)
- * 
+ *
  * Example:
  *     dep uploads:backup:remote prod
  */
@@ -102,14 +103,14 @@ task('uploads:backup:remote', function () {
 
 /**
  * Backup uploads on local host
- * 
+ *
  * Creates a zip backup of local uploads.
- * 
+ *
  * Configuration:
  * - uploads/dir: Path to uploads directory relative to document root
  * - uploads/path: Path to directory containing uploads (e.g., shared directory)
  * - backup_path: Path for storing backups (local)
- * 
+ *
  * Example:
  *     dep uploads:backup:local prod
  */
@@ -117,7 +118,7 @@ task('uploads:backup:local', function () {
     $localUploadsPath = Localhost::getConfig('uploads/path');
     $localUploadsDir = Localhost::getConfig('uploads/dir');
     $localBackupPath = Localhost::getConfig('backup_path');
-    $backupFile = Files::zipFiles(
+    Files::zipFiles(
         "$localUploadsPath/$localUploadsDir/",
         $localBackupPath,
         'backup_uploads'

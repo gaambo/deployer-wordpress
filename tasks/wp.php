@@ -14,20 +14,22 @@
 
 namespace Gaambo\DeployerWordpress\Tasks;
 
-use function Deployer\get;
-use function Deployer\task;
+use RuntimeException;
 use Gaambo\DeployerWordpress\Files;
 use Gaambo\DeployerWordpress\Localhost;
 use Gaambo\DeployerWordpress\Rsync;
 use Gaambo\DeployerWordpress\WPCLI;
 
+use function Deployer\get;
+use function Deployer\task;
+
 /**
  * Download WordPress core files
- * 
+ *
  * Configuration:
  * - wp/version: WordPress version to download (optional, defaults to latest)
  * - bin/wp: WP-CLI binary/command to use (automatically configured)
- * 
+ *
  * Example:
  *     dep wp:download-core production
  *     dep wp:download-core production -o wp/version=6.4.3
@@ -38,11 +40,11 @@ task('wp:download-core', function () {
 
 /**
  * Push WordPress core files from local to remote
- * 
+ *
  * Configuration:
  * - wp/dir: Path to WordPress directory relative to document root
  * - wp/filter: Rsync filter rules for WordPress core files (has defaults)
- * 
+ *
  * Example:
  *     dep wp:push prod
  */
@@ -56,11 +58,11 @@ task('wp:push', function () {
 
 /**
  * Pull WordPress core files from remote to local
- * 
+ *
  * Configuration:
  * - wp/dir: Path to WordPress directory relative to document root
  * - wp/filter: Rsync filter rules for WordPress core files (has defaults)
- * 
+ *
  * Example:
  *     dep wp:pull prod
  */
@@ -69,18 +71,18 @@ task('wp:pull', function () {
     $rsyncOptions = Rsync::buildOptionsArray([
         'filter' => get("wp/filter"),
     ]);
-    Files::pullFiles( '{{wp/dir}}', $localWpDir, $rsyncOptions);
+    Files::pullFiles('{{wp/dir}}', $localWpDir, $rsyncOptions);
 })->desc('Pull WordPress core files from remote to local');
 
 /**
  * Display WP-CLI information
- * 
+ *
  * Useful for debugging WP-CLI setup and configuration.
  * Shows version, PHP info, and config paths.
- * 
+ *
  * Configuration:
  * - bin/wp: WP-CLI binary/command to use (automatically configured)
- * 
+ *
  * Example:
  *     dep wp:info prod
  */
@@ -90,12 +92,12 @@ task('wp:info', function () {
 
 /**
  * Install WP-CLI on remote host
- * 
+ *
  * Configuration (via CLI options):
  * - installPath: Directory to install WP-CLI in (required)
  * - binaryFile: Name of the WP-CLI binary (default: wp-cli.phar)
  * - sudo: Whether to use sudo for installation (default: false)
- * 
+ *
  * Example:
  *     dep wp:install-wpcli prod -o installPath=/usr/local/bin -o binaryFile=wp
  *     dep wp:install-wpcli prod -o installPath=/usr/local/bin -o sudo=true
@@ -103,7 +105,7 @@ task('wp:info', function () {
 task('wp:install-wpcli', function () {
     $installPath = get('installPath');
     if (empty($installPath)) {
-        throw new \RuntimeException(
+        throw new RuntimeException(
             'You have to set an installPath for WordPress via a config variable or in cli via `-o installPath=$path`.'
         );
     }

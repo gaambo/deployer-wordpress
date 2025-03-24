@@ -1,9 +1,9 @@
 parameters:
-    level: 5
+    level: 6
     paths:
         - src
+        - tasks
         - recipes
         - examples
-        - tasks
     scanDirectories:
         - vendor/deployer/deployer

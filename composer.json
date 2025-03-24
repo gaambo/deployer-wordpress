@@ -32,11 +32,11 @@
     }
   },
   "scripts": {
-    "phpcs": "phpcs",
-    "phpcs:fix": "phpcbf",
-    "phpstan": "phpstan analyse",
+    "phpcs": "vendor/bin/phpcs -s",
+    "phpcs:fix": "vendor/bin/phpcbf",
+    "phpstan": "vendor/bin/phpstan analyse --memory-limit 1G",
     "lint": "find . -type f -name '*.php' -not -path './vendor/*' -exec php -l {} \\;",
-    "test": "phpunit",
+    "test": "vendor/bin/phpunit",
     "precommit": [
       "@lint",
       "@phpcs",

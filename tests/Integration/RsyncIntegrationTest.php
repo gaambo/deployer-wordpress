@@ -3,7 +3,6 @@
 namespace Gaambo\DeployerWordpress\Tests\Integration;
 
 use Gaambo\DeployerWordpress\Rsync;
-use PHPUnit\Framework\MockObject\MockObject;
 
 class RsyncIntegrationTest extends IntegrationTestCase
 {
@@ -70,9 +69,9 @@ class RsyncIntegrationTest extends IntegrationTestCase
             'filter-perdir' => '.deployfilter',
             'options' => ['delete-after', 'recursive']
         ];
-        
+
         $result = Rsync::buildOptionsArray($config);
-        
+
         $this->assertContains('--exclude=*.log', $result);
         $this->assertContains('--exclude=*.tmp', $result);
         $this->assertContains('--exclude-from=' . $config['exclude-file'], $result);
@@ -89,12 +88,12 @@ class RsyncIntegrationTest extends IntegrationTestCase
     public function testBuildOptionsArrayWithDefaults(): void
     {
         $result = Rsync::buildOptionsArray();
-        
+
         // Default config should include these
         $this->assertContains('--exclude=.git', $result);
         $this->assertContains('--exclude=deploy.php', $result);
         $this->assertContains('--delete-after', $result);
-        
+
         // These should not be present in default config
         $this->assertNotContains('--include=', $result);
         $this->assertNotContains('--include-from=', $result);
@@ -106,7 +105,7 @@ class RsyncIntegrationTest extends IntegrationTestCase
     public function testBuildOptionsArrayWithEmptyConfig(): void
     {
         $result = Rsync::buildOptionsArray([]);
-        
+
         // Should still include defaults
         $this->assertContains('--exclude=.git', $result);
         $this->assertContains('--exclude=deploy.php', $result);
@@ -117,9 +116,9 @@ class RsyncIntegrationTest extends IntegrationTestCase
     {
         // Remove the rsync config
         $this->deployer->config->set('rsync', null);
-        
+
         $result = Rsync::buildOptionsArray();
-        
+
         // Should use hardcoded defaults
         $this->assertContains('--exclude=.git', $result);
         $this->assertContains('--exclude=deploy.php', $result);
@@ -130,9 +129,9 @@ class RsyncIntegrationTest extends IntegrationTestCase
     {
         // Set an invalid config
         $this->deployer->config->set('rsync', 'invalid');
-        
+
         $result = Rsync::buildOptionsArray();
-        
+
         // Should use hardcoded defaults
         $this->assertContains('--exclude=.git', $result);
         $this->assertContains('--exclude=deploy.php', $result);
@@ -146,9 +145,9 @@ class RsyncIntegrationTest extends IntegrationTestCase
             'include-file' => '/nonexistent/include.txt',
             'filter-file' => '/nonexistent/filter.txt'
         ];
-        
+
         $result = Rsync::buildOptionsArray($config);
-        
+
         // Invalid files should be ignored
         $this->assertNotContains('--exclude-from=/nonexistent/exclude.txt', $result);
         $this->assertNotContains('--include-from=/nonexistent/include.txt', $result);
@@ -163,20 +162,20 @@ class RsyncIntegrationTest extends IntegrationTestCase
             'include' => ['', '*.php', ''],
             'filter' => ['', '+ /wp-content/', '']
         ];
-        
+
         $result = Rsync::buildOptionsArray($config);
-        
+
         // Check that non-empty values are present
         $this->assertContains('--delete-after', $result);
         $this->assertContains('--recursive', $result);
         $this->assertContains('--exclude=.git', $result);
         $this->assertContains('--include=*.php', $result);
         $this->assertContains('--filter=+ /wp-content/', $result);
-        
+
         // Check that no empty values are present
         $this->assertNotContains('', $result, "Empty string found in result");
         $this->assertNotContains('--exclude=', $result, "Empty exclude found in result");
         $this->assertNotContains('--include=', $result, "Empty include found in result");
         $this->assertNotContains('--filter=', $result, "Empty filter found in result");
     }
-} 
+}

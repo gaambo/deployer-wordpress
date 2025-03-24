@@ -19,9 +19,9 @@ class RsyncTest extends TestCase
     {
         $excludes = ['*.log', '*.tmp', '.DS_Store'];
         $excludeFile = $this->fixturesDir . '/exclude.txt';
-        
+
         $result = Rsync::buildExcludes($excludes, $excludeFile);
-        
+
         $this->assertContains('--exclude=*.log', $result);
         $this->assertContains('--exclude=*.tmp', $result);
         $this->assertContains('--exclude=.DS_Store', $result);
@@ -32,9 +32,9 @@ class RsyncTest extends TestCase
     {
         $excludes = ['*.log', '*.tmp', '.DS_Store'];
         $excludeFile = '/path/to/nonexistent.txt';
-        
+
         $result = Rsync::buildExcludes($excludes, $excludeFile);
-        
+
         $this->assertContains('--exclude=*.log', $result);
         $this->assertContains('--exclude=*.tmp', $result);
         $this->assertContains('--exclude=.DS_Store', $result);
@@ -45,9 +45,9 @@ class RsyncTest extends TestCase
     {
         $includes = ['*.php', '*.js', '*.css'];
         $includeFile = $this->fixturesDir . '/include.txt';
-        
+
         $result = Rsync::buildIncludes($includes, $includeFile);
-        
+
         $this->assertContains('--include=*.php', $result);
         $this->assertContains('--include=*.js', $result);
         $this->assertContains('--include=*.css', $result);
@@ -58,9 +58,9 @@ class RsyncTest extends TestCase
     {
         $includes = ['*.php', '*.js', '*.css'];
         $includeFile = '/path/to/nonexistent.txt';
-        
+
         $result = Rsync::buildIncludes($includes, $includeFile);
-        
+
         $this->assertContains('--include=*.php', $result);
         $this->assertContains('--include=*.js', $result);
         $this->assertContains('--include=*.css', $result);
@@ -72,9 +72,9 @@ class RsyncTest extends TestCase
         $filters = ['+ /wp-content/', '- /wp-content/uploads/*'];
         $filterFile = $this->fixturesDir . '/filter.txt';
         $filterPerDir = '.deployfilter';
-        
+
         $result = Rsync::buildFilter($filters, $filterFile, $filterPerDir);
-        
+
         $this->assertContains('--filter=+ /wp-content/', $result);
         $this->assertContains('--filter=- /wp-content/uploads/*', $result);
         $this->assertContains('--filter=merge ' . $filterFile, $result);
@@ -86,9 +86,9 @@ class RsyncTest extends TestCase
         $filters = ['+ /wp-content/', '- /wp-content/uploads/*'];
         $filterFile = '/path/to/nonexistent.txt';
         $filterPerDir = '.deployfilter';
-        
+
         $result = Rsync::buildFilter($filters, $filterFile, $filterPerDir);
-        
+
         $this->assertContains('--filter=+ /wp-content/', $result);
         $this->assertContains('--filter=- /wp-content/uploads/*', $result);
         $this->assertNotContains('--filter=merge ' . $filterFile, $result);
@@ -147,4 +147,4 @@ class RsyncTest extends TestCase
         $result = Rsync::buildFilter([]);
         $this->assertEmpty($result);
     }
-} 
+}

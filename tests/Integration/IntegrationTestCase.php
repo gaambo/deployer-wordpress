@@ -36,7 +36,7 @@ abstract class IntegrationTestCase extends TestCase
 
         // Create a localhost instance for testing
         $this->host = new Localhost();
-        
+
         // Push a new context with our host
         Context::push(new Context($this->host));
     }
@@ -45,10 +45,10 @@ abstract class IntegrationTestCase extends TestCase
     {
         // Pop the context to clean up
         Context::pop();
-        
+
         // Clean up the Deployer instance
         unset($this->deployer);
-        
+
         parent::tearDown();
     }
-} 
+}

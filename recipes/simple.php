@@ -1,7 +1,7 @@
 <?php
 
 /**
- * An simple Deployer recipe to be used with vanilla WordPress installations
+ * A simple Deployer recipe to be used with vanilla WordPress installations
  * Which pushes code into a hardcoded release_path (no directories per release and no symlinks).
  * For more Information see README.md
  */

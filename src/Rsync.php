@@ -4,25 +4,45 @@ namespace Gaambo\DeployerWordpress;
 
 use function Deployer\get;
 
+/**
+ * @phpstan-type RsyncConfig array{
+ *      exclude?: array<int, string>,
+ *      'exclude-file'?: string|false,
+ *      include?: array<int, string>,
+ *      'include-file'?: string|false,
+ *      filter?: array<int, string>,
+ *      'filter-file'?: string|false,
+ *      'filter-perdir'?: string|false,
+ *      options?: array<int, string>
+ * }
+ *
+ * @phpstan-type RsyncOptions list<string>
+ *
+ */
 class Rsync
 {
     /**
-     * Build rsync options array
+     * Builds a comprehensive array of rsync command options
+     * by merging default (set in `rsync` config) and custom configurations.
      * Takes a full config array and builds the different command-line arguments to be passed to rsync
-     * Combines all config-build functions of this file
+     * Combines all config-build functions of this file.
      *
-     * @param array $config
-     *  $config = [
-     *      'exclude' => (array) Array of paths/files to exclude
-     *      'exclude-file' => (string) Path to a exclude file to pass to rsync
-     *      'include' => (array) Array of paths/files to include
-     *      'include-file' => (string) Path to a include file to pass to rsync
-     *      'filter' => (array) Array of rsync filters
-     *      'filter-file' => (string) Path to a filterFile in rsync filter syntax
-     *      'filter-perdir' => (string) Filename to be used on a per directory basis for rsync filtering
-     *      'options' => (array) Array of options/flags to be passed to rsync - do not include dashes!
-     *  ]
-     * @return array
+     * @example
+     * // Using default configuration
+     * $options = buildRsyncOptions();
+     * // Returns ['--delete-after', '--exclude=.git', '--exclude=deploy.php']
+     *
+     * @example
+     * // With custom configuration
+     * $options = buildRsyncOptions([
+     *     'exclude' => ['.git', 'node_modules'],
+     *     'include' => ['dist'],
+     *     'options' => ['archive', 'verbose']
+     * ]);
+     * // Returns ['--archive', '--verbose', '--include=dist', '--exclude=.git', '--exclude=node_modules']
+     *
+     * @param RsyncConfig $config Custom rsync configuration.
+     * @return RsyncOptions Array of formatted rsync command options with empty values filtered out
      */
     public static function buildOptionsArray(array $config = []): array
     {
@@ -39,7 +59,7 @@ class Rsync
                 'filter' => [],
                 'filter-file' => false,
                 'filter-perdir' => false,
-                'options' => ['delete-after'], // needed so deployfilter files are send and delete is checked afterwards
+                'options' => ['delete-after'], // needed so deployfilter files are send and delete is checked afterward
             ];
         }
 
@@ -64,11 +84,22 @@ class Rsync
     }
 
     /**
-     * Build rsync options and flags
-     * Does not use escapeshellarg, because Rsync class from deployer uses it and that would destroy the options
+     * Builds an array of rsync option arguments by prefixing each option with '--'.
+     * Does not use escapeshellarg, because Rsync class from deployer uses it and that would destroy the options.
      *
-     * @param array $options Array of options/flags to be passed to rsync - do not include dashes!
-     * @return array Options as command-line arguments which can be passed to rsync
+     * @example
+     * // Returns ['--archive', '--verbose', '--compress']
+     * buildOptions(['archive', 'verbose', 'compress']);
+     *
+     * @example
+     * // Returns ['--dry-run', '--itemize-changes']
+     * buildOptions(['dry-run', 'itemize-changes']);
+     *
+     * @param list<string> $options Array of rsync option names without the '--' prefix
+     *                             (e.g. ['archive', 'verbose', 'compress'])
+     *
+     * @return list<string> Array of formatted option arguments where each element
+     *                     has the format '--{option_name}'
      */
     public static function buildOptions(array $options): array
     {
@@ -81,12 +112,22 @@ class Rsync
     }
 
     /**
-     * Build includes command-line arguments from array/file
+     * Builds an array of rsync include arguments based on provided include patterns and include file.
      * Does not use escapeshellarg, because Rsync class from deployer uses it and that would destroy the options
+     * @example
+     * // Returns ['--include=*.php', '--include=/config/']
+     * buildIncludes(['*.php', '/config/']);
      *
-     * @param array $includes Array of paths/files to include
-     * @param string|null $includeFile Path to a include file to pass to rsync
-     * @return array Includes as command-line arguments which can be passed to rsync
+     * @example
+     * // Returns ['--include=*.php', '--include-from=/path/to/include-list.txt']
+     * buildIncludes(['*.php'], '/path/to/include-list.txt');
+     *
+     * @param list<string> $includes Array of include patterns to be applied (e.g. ["*.php", "/config/"])
+     * @param string|null $includeFile Path to a file containing include patterns (e.g. "/path/to/include-list.txt")
+     *
+     * @return list<string> Array where each element is one of:
+     *                     - '--include={include_pattern}' for each entry in $includes
+     *                     - '--include-from={include_file_path}' if $includeFile is valid
      */
     public static function buildIncludes(array $includes = [], ?string $includeFile = null): array
     {
@@ -103,12 +144,23 @@ class Rsync
     }
 
     /**
-     * Build excludes command-line arguments from array/file
+     * Builds an array of rsync exclude arguments based on provided exclude patterns and exclude file.
      * Does not use escapeshellarg, because Rsync class from deployer uses it and that would destroy the options
      *
-     * @param array $excludes Array of paths/files to exclude
-     * @param string|null $excludeFile Path to a exclude file to pass to rsync
-     * @return array Excludes as command-line arguments which can be passed to rsync
+     * @example
+     * // Returns ['--exclude=*.tmp', '--exclude=/cache/']
+     * buildExcludes(['*.tmp', '/cache/']);
+     *
+     * @example
+     * // Returns ['--exclude=*.tmp', '--exclude-from=/path/to/exclude-list.txt']
+     * buildExcludes(['*.tmp'], '/path/to/exclude-list.txt');
+     *
+     * @param list<string> $excludes Array of exclude patterns to be applied (e.g. ["*.tmp", "/cache/"])
+     * @param string|null $excludeFile Path to a file containing exclude patterns (e.g. "/path/to/exclude-list.txt")
+     *
+     * @return list<string> Array where each element is one of:
+     *                     - '--exclude={exclude_pattern}' for each entry in $excludes
+     *                     - '--exclude-from={exclude_file_path}' if $excludeFile is valid
      */
     public static function buildExcludes(array $excludes = [], ?string $excludeFile = null): array
     {
@@ -125,13 +177,25 @@ class Rsync
     }
 
     /**
-     * Build filter command-line arguments from array/file/filePerDir
+     * Builds an array of rsync filter arguments based on provided filters and filter files.
      * Does not use escapeshellarg, because Rsync class from deployer uses it and that would destroy the options
      *
-     * @param array $filters Array of rsync filters
-     * @param string|null $filterFile Path to a filterFile in rsync filter syntax
-     * @param string|null $filterPerDir Filename to be used on a per directory basis for rsync filtering
-     * @return array Filters as command-line arguments which can be passed to rsync
+     * @example
+     * // Returns ['--filter=exclude=/tmp', '--filter=include=/var']
+     * buildFilter(['exclude=/tmp', 'include=/var']);
+     *
+     * @example
+     * // Returns ['--filter=exclude=/tmp', '--filter=merge /path/to/rules.txt', '--filter=dir-merge .rsync-filter']
+     * buildFilter(['exclude=/tmp'], '/path/to/rules.txt', '.rsync-filter');
+     *
+     * @param list<string> $filters Array of filter patterns to be applied (e.g. ["exclude=/path", "include=/other"])
+     * @param string|null $filterFile Path to a filter file to be merged (e.g. "/path/to/filter-rules.txt")
+     * @param string|null $filterPerDir Name of per-directory filter files to be merged (e.g. ".rsync-filter")
+     *
+     * @return list<string> Array where each element is one of:
+     *                     - '--filter={filter_pattern}' for each entry in $filters
+     *                     - '--filter=merge {filter_file_path}' if $filterFile is valid
+     *                     - '--filter=dir-merge {filter_per_dir}' if $filterPerDir is provided
      */
     public static function buildFilter(
         array $filters = [],
@@ -143,10 +207,10 @@ class Rsync
             $filtersStrings[] = '--filter=' . $filter;
         }
         if (!empty($filterFile) && file_exists($filterFile) && is_file($filterFile) && is_readable($filterFile)) {
-            $filtersStrings[] = "--filter=merge " . $filterFile . "";
+            $filtersStrings[] = "--filter=merge " . $filterFile;
         }
         if (!empty($filterPerDir)) {
-            $filtersStrings[] = "--filter=dir-merge " . $filterPerDir . "";
+            $filtersStrings[] = "--filter=dir-merge " . $filterPerDir;
         }
         return $filtersStrings;
     }
