@@ -40,7 +40,7 @@ jobs:
         # Install latest patch of the specified version.
         run: composer require --no-update deployer/deployer:"${{ matrix.deployer }}.*"
 
-      # Run PHPStan
+      # Run PHPStan so we check compatibility with the specified Deployer version.
       - name: Run PHPStan
         run: composer run-script phpstan
 
