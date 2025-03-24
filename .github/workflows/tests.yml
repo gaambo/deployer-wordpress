@@ -7,7 +7,6 @@ on:
 
 jobs:
   tests:
-    name: Run PHPUnit Tests
     runs-on: ubuntu-latest
     timeout-minutes: 10
     strategy:
@@ -15,9 +14,8 @@ jobs:
         php: ['8.1', '8.2', '8.3', '8.4']
         # TODO: Add 8.0 when released.
         deployer: ['^7.3', '^7.4', '^7.5']
-        include:
-          - name: Deployer ${{ matrix.deployer }} on PHP ${{ matrix.php }}
       fail-fast: false
+    name: Tests forDeployer ${{ matrix.deployer }} on PHP ${{ matrix.php }}
 
     steps:
       # Checkout the repository
