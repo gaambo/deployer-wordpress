@@ -10,5 +10,5 @@ hosts:
     public_url: https://test.dev
     deploy_path: "~"
     release_path: "{{deploy_path}}/public_html" # fixed directory, no symlinks
-    dump_path: ~/data/dumps
+    dbdump/path: ~/data/dumps
     backup_path: ~/data/backups

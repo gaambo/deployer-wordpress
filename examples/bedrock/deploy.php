@@ -33,7 +33,7 @@ localhost()
     ->set('themes/dir', 'web/app/themes')
     ->set('plugins/dir', 'web/app/plugins')
     ->set('wp/dir', 'web/wp')
-    ->set('dump_path', __DIR__ . '/data/db_dumps')
+    ->set('dbdump/path', __DIR__ . '/data/db_dumps')
     ->set('backup_path', __DIR__ . '/data/backups');
 
 set('packages', [

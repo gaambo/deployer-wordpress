@@ -14,5 +14,5 @@ hosts:
     themes/dir: web/app/themes
     plugins/dir: web/app/plugins
     wp/dir: web/wp
-    dump_path: ~/data/dumps
+    dbdump/path: ~/data/dumps
     backup_path: ~/data/backups

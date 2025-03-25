@@ -15,7 +15,7 @@ use function Deployer\set;
 use function Deployer\task;
 use function Deployer\test;
 
-require_once __DIR__ . '/common.php';
+require __DIR__ . '/common.php';
 
 add('recipes', ['simple-wp']);
 

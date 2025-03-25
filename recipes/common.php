@@ -32,18 +32,27 @@ use function Deployer\which;
 
 // Deployer binary sets the include path, so this should work.
 
-$deployerPath = 'vendor/deployer/deployer/';
-require_once $deployerPath . 'recipe/common.php';
+$commonRecipePaths = [
+    __DIR__ . '/../vendor/deployer/deployer/recipe/common.php', // Development/testing
+    __DIR__ . '/../deployer/deployer/recipe/common.php' // Installed via composer
+];
+
+foreach ($commonRecipePaths as $recipePath) {
+    if (file_exists($recipePath)) {
+        require $recipePath;
+        break;
+    }
+}
 
 // Include task definitions
-require_once __DIR__ . '/../tasks/database.php';
-require_once __DIR__ . '/../tasks/files.php';
-require_once __DIR__ . '/../tasks/mu-plugins.php';
-require_once __DIR__ . '/../tasks/packages.php';
-require_once __DIR__ . '/../tasks/plugins.php';
-require_once __DIR__ . '/../tasks/themes.php';
-require_once __DIR__ . '/../tasks/uploads.php';
-require_once __DIR__ . '/../tasks/wp.php';
+require __DIR__ . '/../tasks/database.php';
+require __DIR__ . '/../tasks/files.php';
+require __DIR__ . '/../tasks/mu-plugins.php';
+require __DIR__ . '/../tasks/packages.php';
+require __DIR__ . '/../tasks/plugins.php';
+require __DIR__ . '/../tasks/themes.php';
+require __DIR__ . '/../tasks/uploads.php';
+require __DIR__ . '/../tasks/wp.php';
 
 // BINARIES
 set('bin/npm', function () {

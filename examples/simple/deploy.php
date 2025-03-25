@@ -26,7 +26,7 @@ localhost()
     ->set('current_path', function () {
         return Localhost::getConfig('release_path');
     })
-    ->set('dump_path', __DIR__ . '/data/db_dumps')
+    ->set('dbdump/path', __DIR__ . '/data/db_dumps')
     ->set('backup_path', __DIR__ . '/data/backups');
 
 set('packages', [

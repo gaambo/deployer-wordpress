@@ -7,10 +7,14 @@
     <testsuite name="Integration">
       <directory>tests/Integration</directory>
     </testsuite>
+    <testsuite name="Functional">
+      <directory>tests/Functional</directory>
+    </testsuite>
   </testsuites>
   <source>
     <include>
       <directory suffix=".php">src</directory>
+      <directory suffix=".php">tasks</directory>
     </include>
     <exclude>
       <directory suffix=".php">tests</directory>

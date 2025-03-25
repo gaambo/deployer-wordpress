@@ -46,4 +46,4 @@ jobs:
 
       # Run PHPUnit tests
       - name: Run PHPUnit tests
-        run: composer run-script test 
+        run: composer run-script test
