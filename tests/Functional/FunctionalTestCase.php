@@ -30,15 +30,17 @@ abstract class FunctionalTestCase extends TestCase
     protected const RECIPE_PATH = __DIR__ . '/../Fixtures/recipes/common.php';
     protected Deployer $deployer;
     protected ApplicationTester $tester;
-    protected Host $localHost;
 
     // Test environment paths
+    protected Host $localHost;
     protected Host $remoteHost;
     protected string $testDir;
     protected string $localDir;
+    protected string $localReleaseDir;
+    protected string $remoteDir;
+    protected string $remoteReleaseDir;
 
     // Mocked services
-    protected string $remoteDir;
     protected Client|MockObject $sshClient;
     protected ProcessRunner $originalProcessRunner;
 
@@ -73,13 +75,19 @@ abstract class FunctionalTestCase extends TestCase
     private function createTestDirectories(): void
     {
         $this->testDir = __TEMP_DIR__ . '/' . uniqid();
+
+        // These are the deploy_path.
         $this->localDir = $this->testDir . '/local';
         $this->remoteDir = $this->testDir . '/remote';
 
+        // Fixed directory, no symlinks. Just like in example deploy.yml
+        $this->localReleaseDir = $this->localDir . '/public_html';
+        $this->remoteReleaseDir = $this->remoteDir . '/public_html';
+
         mkdir($this->localDir, 0755, true);
-        mkdir($this->localDir . '/current', 0755, true);
+        mkdir($this->localReleaseDir, 0755, true);
         mkdir($this->remoteDir, 0755, true);
-        mkdir($this->remoteDir . '/current', 0755, true);
+        mkdir($this->remoteReleaseDir, 0755, true);
     }
 
     /**
@@ -88,18 +96,21 @@ abstract class FunctionalTestCase extends TestCase
     private function setUpHosts(): void
     {
         // Local host setup
+        // This mirrors the setup in examples/simple/deploy.php
         $this->localHost = new Localhost();
         $this->localHost->set('deploy_path', $this->localDir);
-        $this->localHost->set('current_path', $this->localDir . '/current');
-        $this->localHost->set('release_or_current_path', $this->localDir . '/current');
+        $this->localHost->set('release_path', $this->localReleaseDir);
+        $this->localHost->set('dbdump/path', $this->localDir . '/data/db_dumps');
+        $this->localHost->set('backup_path', $this->localDir . '/data/backups');
         $this->localHost->set('bin/wp', 'wp');
         $this->localHost->set('bin/php', 'php');
 
-        // Remote host setup (using Localhost for testing)
+        // Remote host setup (using Localhost for testing so rsync runs on the same host)
         $this->remoteHost = new Localhost('testremote');
         $this->remoteHost->set('deploy_path', $this->remoteDir);
-        $this->remoteHost->set('current_path', $this->remoteDir . '/current');
-        $this->remoteHost->set('release_or_current_path', $this->remoteDir . '/current');
+        $this->remoteHost->set('release_path', $this->remoteReleaseDir);
+        $this->remoteHost->set('dbdump/path', $this->remoteDir . '/data/db_dumps');
+        $this->remoteHost->set('backup_path', $this->remoteDir . '/data/backups');
         $this->remoteHost->set('bin/wp', 'wp');
         $this->remoteHost->set('bin/php', 'php');
 

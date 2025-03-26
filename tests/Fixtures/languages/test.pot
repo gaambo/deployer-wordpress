@@ -1,0 +1,29 @@
+# Copyright (C) 2025 Fabian Todt
+# This file is distributed under the GPLv3+.
+msgid ""
+msgstr ""
+"Project-Id-Version: Dummy Plugin 1.0.0\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2025-03-26T08:12:34+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.11.0\n"
+"X-Domain: dummy-plugin\n"
+
+#. Plugin Name of the plugin
+#: dummy-plugin.php
+msgid "Dummy Plugin"
+msgstr ""
+
+#. Description of the plugin
+#: dummy-plugin.php
+msgid "A dummy test plugin"
+msgstr ""
+
+#. Author of the plugin
+#: dummy-plugin.php
+msgid "Fabian Todt"
+msgstr ""

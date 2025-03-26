@@ -45,9 +45,9 @@
     "tests:functional": "DO_NOT_TRACK=true vendor/bin/phpunit --testsuite Functional",
     "tests:functional:coverage": "DO_NOT_TRACK=true XDEBUG_MODE=coverage vendor/bin/phpunit --testsuite Functional --coverage-text",
     "tests": [
-      "@test:unit",
-      "@test:integration",
-      "@test:functional"
+      "@tests:unit",
+      "@tests:integration",
+      "@tests:functional"
     ],
     "tests:coverage": "DO_NOT_TRACK=true XDEBUG_MODE=coverage vendor/bin/phpunit --coverage-text",
     "precommit": [
@@ -55,7 +55,7 @@
       "@phpcs",
       "@phpstan",
       "@composer validate",
-      "@test"
+      "@tests"
     ]
   },
   "config": {

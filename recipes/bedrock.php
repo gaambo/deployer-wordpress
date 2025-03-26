@@ -24,23 +24,6 @@ require __DIR__ . '/common.php';
 
 add('recipes', ['bedrock-wp']);
 
-// Use fixed release_path always
-set('release_or_current_path', function () {
-    return get('release_path');
-});
-
-// Use a dummy current_path because deployer checks if it's a symlink
-set('current_path', function () {
-    if (test('[ ! -f {{deploy_path}}/.dep/current ]')) {
-        run('{{bin/symlink}} {{release_path}} {{deploy_path}}/.dep/current');
-    }
-    return '{{deploy_path}}/.dep/current';
-});
-
-// Do not use shared dirs
-set('shared_files', []);
-set('shared_dirs', []);
-
 // Tasks
 task('app:push', function () {
     $rsyncOptions = Rsync::buildOptionsArray();

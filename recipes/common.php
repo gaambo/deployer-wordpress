@@ -47,6 +47,7 @@ foreach ($commonRecipePaths as $recipePath) {
 // Include task definitions
 require __DIR__ . '/../tasks/database.php';
 require __DIR__ . '/../tasks/files.php';
+require __DIR__ . '/../tasks/languages.php';
 require __DIR__ . '/../tasks/mu-plugins.php';
 require __DIR__ . '/../tasks/packages.php';
 require __DIR__ . '/../tasks/plugins.php';
@@ -109,6 +110,23 @@ set('bin/composer', function () {
 });
 
 // PATHS & FILES CONFIGURATION
+
+// Use fixed release_path always
+set('release_or_current_path', function () {
+    return '{{release_path}}'; // Do not use get() to stay in same context.
+});
+
+// Use a dummy current_path because deployer checks if it's a symlink
+set('current_path', function () {
+    if (test('[ ! -f {{deploy_path}}/.dep/current ]')) {
+        run('{{bin/symlink}} {{release_path}} {{deploy_path}}/.dep/current');
+    }
+    return '{{deploy_path}}/.dep/current';
+});
+
+// Do not use shared dirs
+set('shared_files', []);
+set('shared_dirs', []);
 
 // if you want to further define options for rsyncing files
 // just look at the source in `Files.php` and `Rsync.php`

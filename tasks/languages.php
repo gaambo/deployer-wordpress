@@ -18,6 +18,7 @@ use Gaambo\DeployerWordpress\Rsync;
 
 use function Deployer\download;
 use function Deployer\get;
+use function Deployer\run;
 use function Deployer\task;
 
 /**
@@ -51,6 +52,7 @@ task('languages:pull', function () {
     $rsyncOptions = Rsync::buildOptionsArray([
         'filter' => get("languages/filter"),
     ]);
+    run('mkdir -p {{release_or_current_path}}/{{languages/dir}}'); // Always ensure remote directory exists.
     Files::pullFiles('{{languages/dir}}', Localhost::getConfig('languages/dir'), $rsyncOptions);
 })->desc('Pull languages from remote to local');
 

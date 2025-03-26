@@ -4,6 +4,7 @@ namespace Gaambo\DeployerWordpress;
 
 use function Deployer\download;
 use function Deployer\run;
+use function Deployer\runLocally;
 use function Deployer\upload;
 
 /**
@@ -20,7 +21,8 @@ class Files
      */
     public static function pushFiles(string $localPath, string $remotePath, array $rsyncOptions = []): void
     {
-        $localPath = Localhost::getConfig('current_path') . '/' . $localPath;
+        $localPath = Localhost::getConfig('release_or_current_path') . '/' . $localPath;
+        run("mkdir -p {{release_or_current_path}}/$remotePath"); // Always ensure remote directory exists
         upload($localPath . '/', '{{release_or_current_path}}/' . $remotePath . '/', ['options' => $rsyncOptions]);
     }
 
@@ -33,7 +35,8 @@ class Files
      */
     public static function pullFiles(string $remotePath, string $localPath, array $rsyncOptions = []): void
     {
-        $localPath = Localhost::getConfig('current_path') . '/' . $localPath;
+        $localPath = Localhost::getConfig('release_or_current_path') . '/' . $localPath;
+        runLocally("mkdir -p $localPath"); // Always ensure directory exists.
         download('{{release_or_current_path}}/' . $remotePath . '/', $localPath . '/', ['options' => $rsyncOptions]);
     }
 
