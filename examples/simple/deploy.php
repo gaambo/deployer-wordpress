@@ -19,14 +19,9 @@ import('deploy.yml');
 // OPTIONAL: overwrite localhost config.
 localhost()
     ->set('public_url', "{{local_url}}")
-    ->set('deploy_path', __DIR__)
-    ->set('release_path', __DIR__ . '/public')
-    // set current_path to hardcoded release_path on local so release_or_current_path works;
-    // {{release_path}} does not work here?
-    ->set('current_path', function () {
-        return Localhost::getConfig('release_path');
-    })
-    ->set('dbdump/path', __DIR__ . '/data/db_dumps')
+    ->set('project_path', __DIR__)
+    ->set('current_path', 'public') // The public doc root as kind of the currents release path.
+    ->set('dbdump_path', __DIR__ . '/data/db_dumps')
     ->set('backup_path', __DIR__ . '/data/backups');
 
 set('packages', [

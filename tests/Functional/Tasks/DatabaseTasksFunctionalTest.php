@@ -67,8 +67,8 @@ class DatabaseTasksFunctionalTest extends FunctionalTestCase
         $customRemotePath = $this->remoteDir . '/custom/dumps';
         $customLocalPath = $this->localDir . '/custom/dumps';
 
-        $this->remoteHost->set('dbdump/path', $customRemotePath);
-        $this->localHost->set('dbdump/path', $customLocalPath);
+        $this->remoteHost->set('dbdump_path', $customRemotePath);
+        $this->localHost->set('dbdump_path', $customLocalPath);
 
         // Create custom dump directories
         mkdir($customRemotePath, 0755, true);
@@ -184,7 +184,7 @@ class DatabaseTasksFunctionalTest extends FunctionalTestCase
     {
         // Set invalid dump path (non-writable directory)
         $invalidPath = '/root/invalid/path';
-        $this->remoteHost->set('dbdump/path', $invalidPath);
+        $this->remoteHost->set('dbdump_path', $invalidPath);
 
         // Run the backup task and expect it to fail
         $this->mockSuccessfulDbExport();
@@ -231,8 +231,8 @@ class DatabaseTasksFunctionalTest extends FunctionalTestCase
         $customRemotePath = $this->remoteDir . '/custom/dumps';
         $customLocalPath = $this->localDir . '/custom/dumps';
 
-        $this->remoteHost->set('dbdump/path', $customRemotePath);
-        $this->localHost->set('dbdump/path', $customLocalPath);
+        $this->remoteHost->set('dbdump_path', $customRemotePath);
+        $this->localHost->set('dbdump_path', $customLocalPath);
 
         // Create custom dump directories
         mkdir($customRemotePath, 0755, true);
@@ -336,7 +336,7 @@ class DatabaseTasksFunctionalTest extends FunctionalTestCase
     {
         // Set invalid dump path (non-writable directory)
         $invalidPath = '/root/invalid/path';
-        $this->localHost->set('dbdump/path', $invalidPath);
+        $this->localHost->set('dbdump_path', $invalidPath);
 
         // Run the backup task and expect it to fail
         $this->mockSuccessfulDbExport();
@@ -606,8 +606,8 @@ class DatabaseTasksFunctionalTest extends FunctionalTestCase
         parent::setUp();
 
         // Set up required configuration
-        $this->localHost->set('dbdump/path', $this->localDir . '/dumps');
-        $this->remoteHost->set('dbdump/path', $this->remoteDir . '/dumps');
+        $this->localHost->set('dbdump_path', $this->localDir . '/dumps');
+        $this->remoteHost->set('dbdump_path', $this->remoteDir . '/dumps');
 
         // Create dumps directory
         mkdir($this->remoteDir . '/dumps', 0755, true);

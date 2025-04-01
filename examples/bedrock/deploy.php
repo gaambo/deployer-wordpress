@@ -19,21 +19,16 @@ import('deploy.yml');
 // OPTIONAL: overwrite localhost config.
 localhost()
     ->set('public_url', "{{local_url}}")
-    ->set('deploy_path', __DIR__)
-    // Root project directory, for app:push to work.
-    ->set('release_path', __DIR__)
-    // set current_path to hardcoded release_path on local so release_or_current_path works;
-    // {{release_path}} does not work here?
-    ->set('current_path', function () {
-        return Localhost::getConfig('release_path');
-    })
+    ->set('project_path', __DIR__)
+    ->set('current_path', __DIR__)
     // Bedrock dirs
+    ->set('uploads/path', '{{current_path}}')
     ->set('uploads/dir', 'web/app/uploads')
     ->set('mu-plugins/dir', 'web/app/mu-plugins')
     ->set('themes/dir', 'web/app/themes')
     ->set('plugins/dir', 'web/app/plugins')
     ->set('wp/dir', 'web/wp')
-    ->set('dbdump/path', __DIR__ . '/data/db_dumps')
+    ->set('dbdump_path', __DIR__ . '/data/db_dumps')
     ->set('backup_path', __DIR__ . '/data/backups');
 
 set('packages', [

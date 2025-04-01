@@ -16,7 +16,7 @@ class LanguageTasksFunctionalTest extends FunctionalTestCase
         parent::setUp();
 
         // Set up temporary directories
-        $this->localLanguagesDir = $this->localReleaseDir . '/wp-content/languages';
+        $this->localLanguagesDir = $this->localDocRootDir . '/wp-content/languages';
         $this->remoteLanguagesDir = $this->remoteReleaseDir . '/wp-content/languages';
         $this->localBackupDir = $this->localDir . '/backups';
         $this->remoteBackupDir = $this->remoteDir . '/backups';

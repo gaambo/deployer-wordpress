@@ -3,7 +3,6 @@
 namespace Gaambo\DeployerWordpress;
 
 use function Deployer\run;
-use function Deployer\runLocally;
 
 /**
  * WP CLI utility class
@@ -12,7 +11,6 @@ use function Deployer\runLocally;
 class WPCLI
 {
     private const BINARY_DOWNLOAD = 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar';
-    private const DEFAULT_PATH = '{{release_or_current_path}}';
 
     /**
      * Run a WP CLI command
@@ -21,8 +19,11 @@ class WPCLI
      * @param string $arguments Additional arguments to pass to WP-CLI
      * @return void
      */
-    public static function runCommand(string $command, ?string $path = self::DEFAULT_PATH, string $arguments = ''): void
-    {
+    public static function runCommand(
+        string $command,
+        ?string $path = '{{release_or_current_path}}',
+        string $arguments = ''
+    ): void {
         $cmd = "{{bin/wp}} $command $arguments";
         if ($path) {
             run("cd $path && $cmd");
@@ -34,20 +35,20 @@ class WPCLI
     /**
      * Run a WP CLI command locally
      * @param string $command The command to run (without wp prefix)
-     * @param string|null $path The path to run the command in (defaults to {{release_or_current_path}})
+     * @param string|null $path The path to run the command in (defaults to null on local host)
      * @param string $arguments Additional arguments to pass to WP-CLI
      * @return void
      */
     public static function runCommandLocally(
         string $command,
-        ?string $path = self::DEFAULT_PATH,
+        ?string $path = null,
         string $arguments = ''
     ): void {
         $localWp = Localhost::getConfig('bin/wp');
         if ($path) {
-            runLocally("cd $path && $localWp $command $arguments");
+            Localhost::run("cd $path && $localWp $command $arguments");
         } else {
-            runLocally("$localWp $command $arguments");
+            Localhost::run("$localWp $command $arguments");
         }
     }
 

@@ -4,7 +4,6 @@ namespace Gaambo\DeployerWordpress;
 
 use function Deployer\download;
 use function Deployer\run;
-use function Deployer\runLocally;
 use function Deployer\upload;
 
 /**
@@ -13,30 +12,33 @@ use function Deployer\upload;
 class Files
 {
     /**
-     * Push files from local to remote
-     * @param string $localPath Local path to push from
-     * @param string $remotePath Remote path to push to
+     * Push files from local to remote. Always works from the localhosts current_path directory.
+     * If you want to upload files outside of current_path, use upload() directly.
+     *
+     * @param string $localPath Local path to push from, relative to localhosts current_path.
+     * @param string $remotePath Remote path to push to, relative to remote hosts release_or_current_path.
      * @param RsyncOptions $rsyncOptions Rsync options array
      * @return void
      */
     public static function pushFiles(string $localPath, string $remotePath, array $rsyncOptions = []): void
     {
-        $localPath = Localhost::getConfig('release_or_current_path') . '/' . $localPath;
-        run("mkdir -p {{release_or_current_path}}/$remotePath"); // Always ensure remote directory exists
+        $localPath = Localhost::getConfig('current_path') . '/' . $localPath;
+        run("mkdir -p {{release_or_current_path}}/$remotePath"); // Always ensure remote directory exists.
         upload($localPath . '/', '{{release_or_current_path}}/' . $remotePath . '/', ['options' => $rsyncOptions]);
     }
 
     /**
-     * Pull files from remote to local
-     * @param string $remotePath Remote path to pull from
-     * @param string $localPath Local path to pull to
+     * Pull files from remote to local. Always works from the localhosts current_path directory.
+     * If you want to download files outside of current_path, use download() directly.
+     * @param string $remotePath Remote path to pull from, relative to remote hosts release_or_current_path.
+     * @param string $localPath Local path to pull to, relative to localhosts current_path.
      * @param RsyncOptions $rsyncOptions Rsync options array
      * @return void
      */
     public static function pullFiles(string $remotePath, string $localPath, array $rsyncOptions = []): void
     {
-        $localPath = Localhost::getConfig('release_or_current_path') . '/' . $localPath;
-        runLocally("mkdir -p $localPath"); // Always ensure directory exists.
+        $localPath = Localhost::getConfig('current_path') . '/' . $localPath;
+        Localhost::run("mkdir -p $localPath"); // Always ensure directory exists.
         download('{{release_or_current_path}}/' . $remotePath . '/', $localPath . '/', ['options' => $rsyncOptions]);
     }
 

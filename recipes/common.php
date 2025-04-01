@@ -124,10 +124,6 @@ set('current_path', function () {
     return '{{deploy_path}}/.dep/current';
 });
 
-// Do not use shared dirs
-set('shared_files', []);
-set('shared_dirs', []);
-
 // if you want to further define options for rsyncing files
 // just look at the source in `Files.php` and `Rsync.php`
 // and use the Rsync::buildOptionsArray and Files::push/pull methods
@@ -186,8 +182,12 @@ set('languages/filter', []); // rsync filter syntax
 set('zip_options', '-x "_backup_*.zip" -x **/node_modules/**\* -x **/vendor/**\*');
 
 // SHARED FILES
-set('shared_files', ['wp-config.php', 'wp-config-local.php']);
-set('shared_dirs', ['{{uploads/dir}}']);
+// Do not use shared dirs
+set('shared_files', []);
+set('shared_dirs', []);
+# If you are using symlinked deployments, enable these
+// set('shared_files', ['wp-config.php', 'wp-config-local.php']);
+// set('shared_dirs', ['{{uploads/dir}}']);
 set('writable_dirs', ['{{uploads/dir}}']);
 
 // The default rsync config
