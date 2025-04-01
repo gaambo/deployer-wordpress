@@ -57,7 +57,7 @@ class WpCliIntegrationTest extends IntegrationTestCase
             ->method('run')
             ->with(
                 $this->anything(), // Host object is not reliable as runLocally creates a new instance
-                'cd /var/www/current && wp post list --format=table ',
+                'wp post list --format=table ',
                 []
             );
 
@@ -346,4 +346,4 @@ class WpCliIntegrationTest extends IntegrationTestCase
         $result = WPCLI::install($installPath, $binaryName, true);
         $this->assertEquals("$installPath/$binaryName", $result);
     }
-} 
+}
