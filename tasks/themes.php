@@ -143,18 +143,6 @@ task('themes:pull', function () {
 })->desc('Pull themes from remote to local');
 
 /**
- * Sync themes between remote and local
- *
- * Combines themes:push and themes:pull tasks.
- * See individual tasks for configuration options.
- *
- * Example:
- *     dep themes:sync prod
- */
-task('themes:sync', ['themes:push', 'themes:pull'])
-    ->desc('Sync themes between environments');
-
-/**
  * Backup themes on remote host
  *
  * Creates a zip backup of remote themes and downloads it locally.

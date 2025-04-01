@@ -51,18 +51,6 @@ task('files:pull', ['wp:pull', 'uploads:pull', 'plugins:pull', 'mu-plugins:pull'
     ->desc('Pull all files from remote to local');
 
 /**
- * Sync all files between remote and local
- *
- * Combines files:push and files:pull tasks.
- * See individual tasks for configuration options.
- *
- * Example:
- *     dep files:sync prod
- */
-task('files:sync', ['files:push', 'files:pull'])
-    ->desc('Sync all files between environments');
-
-/**
  * Backup all files on remote host
  *
  * Creates a zip backup of remote WordPress files and downloads it locally.

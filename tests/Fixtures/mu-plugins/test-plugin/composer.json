@@ -1,0 +1,7 @@
+{
+    "name": "test/plugin",
+    "type": "wordpress-plugin",
+    "require": {
+        "php": ">=8.1"
+    }
+}

@@ -57,18 +57,6 @@ task('languages:pull', function () {
 })->desc('Pull languages from remote to local');
 
 /**
- * Sync languages between remote and local
- *
- * Combines languages:push and languages:pull tasks.
- * See individual tasks for configuration options.
- *
- * Example:
- *     dep languages:sync prod
- */
-task('languages:sync', ['languages:push', 'languages:pull'])
-    ->desc('Sync languages between environments');
-
-/**
  * Backup languages on remote host
  *
  * Creates a zip backup of remote languages and downloads it locally.

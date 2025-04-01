@@ -67,18 +67,6 @@ task('uploads:pull', function () {
 })->desc('Pull uploads from remote to local');
 
 /**
- * Sync uploads between remote and local
- *
- * Combines uploads:push and uploads:pull tasks.
- * See individual tasks for configuration options.
- *
- * Example:
- *     dep uploads:sync prod
- */
-task('uploads:sync', ['uploads:push', 'uploads:pull'])
-    ->desc('Sync uploads between environments');
-
-/**
  * Backup uploads on remote host
  *
  * Creates a zip backup of remote uploads and downloads it locally.

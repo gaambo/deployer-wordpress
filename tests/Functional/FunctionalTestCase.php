@@ -186,6 +186,32 @@ abstract class FunctionalTestCase extends TestCase
     }
 
     /**
+     * Helper method to recursively copy a directory
+     */
+    protected function copyDirectory(string $source, string $destination): void
+    {
+        if (!is_dir($source)) {
+            return;
+        }
+
+        foreach (
+            $iterator = new \RecursiveIteratorIterator(
+                new \RecursiveDirectoryIterator($source, \RecursiveDirectoryIterator::SKIP_DOTS),
+                \RecursiveIteratorIterator::SELF_FIRST
+            ) as $item
+        ) {
+            $relativePath = substr($item->getPathname(), strlen($source) + 1);
+            $targetPath = $destination . DIRECTORY_SEPARATOR . $relativePath;
+
+            if ($item->isDir()) {
+                mkdir($targetPath);
+            } else {
+                copy($item, $targetPath);
+            }
+        }
+    }
+
+    /**
      * Returns the full path to a fixture file
      */
     protected function getFixturePath(string $path): string

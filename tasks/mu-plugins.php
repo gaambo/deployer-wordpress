@@ -84,18 +84,6 @@ task('mu-plugins:pull', function () {
 })->desc('Pull mu-plugins from remote to local');
 
 /**
- * Sync mu-plugins between remote and local
- *
- * Combines mu-plugins:push and mu-plugins:pull tasks.
- * See individual tasks for configuration options.
- *
- * Example:
- *     dep mu-plugins:sync prod
- */
-task('mu-plugins:sync', ['mu-plugins:push', 'mu-plugins:pull'])
-    ->desc('Sync mu-plugins between environments');
-
-/**
  * Backup mu-plugins on remote host
  *
  * Creates a zip backup of remote mu-plugins and downloads it locally.

@@ -55,18 +55,6 @@ task('plugins:pull', function () {
 })->desc('Pull plugins from remote to local');
 
 /**
- * Sync plugins between remote and local
- *
- * Combines plugins:push and plugins:pull tasks.
- * See individual tasks for configuration options.
- *
- * Example:
- *     dep plugins:sync prod
- */
-task('plugins:sync', ['plugins:push', 'plugins:pull'])
-    ->desc('Sync plugins between environments');
-
-/**
  * Backup plugins on remote host
  *
  * Creates a zip backup of remote plugins and downloads it locally.

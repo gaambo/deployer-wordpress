@@ -158,18 +158,6 @@ task('packages:pull', function () {
 })->desc('Pull packages from remote to local');
 
 /**
- * Sync packages between remote and local
- *
- * Combines packages:push and packages:pull tasks.
- * See individual tasks for configuration options.
- *
- * Example:
- *     dep packages:sync prod
- */
-task('packages:sync', ['packages:push', 'packages:pull'])
-    ->desc('Sync packages between environments');
-
-/**
  * Backup packages on remote host
  *
  * Creates a zip backup of remote packages and downloads it locally.
