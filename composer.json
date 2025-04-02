@@ -49,7 +49,7 @@
       "@tests:integration",
       "@tests:functional"
     ],
-    "tests:coverage": "DO_NOT_TRACK=true XDEBUG_MODE=coverage vendor/bin/phpunit --coverage-text",
+    "tests:coverage": "DO_NOT_TRACK=true XDEBUG_MODE=coverage vendor/bin/phpunit --coverage-html=tests/coverage",
     "precommit": [
       "@lint",
       "@phpcs",
