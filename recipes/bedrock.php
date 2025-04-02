@@ -13,11 +13,8 @@ use Gaambo\DeployerWordpress\Rsync;
 
 use function Deployer\add;
 use function Deployer\after;
-use function Deployer\get;
 use function Deployer\run;
-use function Deployer\set;
 use function Deployer\task;
-use function Deployer\test;
 use function Deployer\upload;
 
 require __DIR__ . '/common.php';
@@ -36,12 +33,14 @@ task('app:push', function () {
         '.env.example',
         'wp-cli.yml',
     ], "{{release_or_current_path}}", ['options' => $rsyncOptions]);
+    run("mkdir -p {{release_or_current_path}}/web");
     upload([
         // Keep prod .htaccess with webp redirects + redirection redirects + wprocket
         // 'web/.htaccess',
         'web/index.php',
         'web/wp-config.php',
     ], "{{release_or_current_path}}/web", ['options' => $rsyncOptions]);
+    run("mkdir -p {{release_or_current_path}}/{{mu-plugins/dir}}");
     upload([
         'web/app/mu-plugins/bedrock-autoloader.php',
     ], "{{release_or_current_path}}/{{mu-plugins/dir}}", ['options' => $rsyncOptions]);

@@ -7,6 +7,7 @@ use Deployer\Deployer;
 use Deployer\Host\Host;
 use Deployer\Task\Context;
 
+use function Deployer\on;
 use function Deployer\runLocally;
 
 /**
@@ -47,16 +48,10 @@ class Localhost
      */
     public static function run(string $command, ?array $options = []): string
     {
-        // Let's build a configuration object that has all the localhost values
-        // But has the current context and global deployer context as parents to fallback.
-        $config = new Configuration();
-        $config->update(self::get()->config()->ownValues());
-        if (Context::has()) {
-            $config->bind(Context::get()->getConfig());
-        } else {
-            $config->bind(Deployer::get()->config);
-        }
-        $command = $config->parse($command);
-        return runLocally($command, $options);
+        $result = null;
+        on(self::get(), function () use ($command, $options, &$result) {
+            $result = runLocally($command, $options);
+        });
+        return $result;
     }
 }

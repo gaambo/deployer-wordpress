@@ -8,12 +8,14 @@
 namespace Gaambo\DeployerWordpress\Recipes\Common;
 
 use Deployer\Deployer;
+use Deployer\Exception\ConfigurationException;
 use Deployer\Host\Host;
 use Gaambo\DeployerWordpress\Composer;
 use Gaambo\DeployerWordpress\Localhost;
 use Gaambo\DeployerWordpress\WPCLI;
 
 use function Deployer\after;
+use function Deployer\cd;
 use function Deployer\commandExist;
 use function Deployer\currentHost;
 use function Deployer\get;
@@ -25,8 +27,10 @@ use function Deployer\output;
 use function Deployer\run;
 use function Deployer\selectedHosts;
 use function Deployer\set;
+use function Deployer\Support\escape_shell_argument;
 use function Deployer\task;
 use function Deployer\test;
+use function Deployer\timestamp;
 use function Deployer\warning;
 use function Deployer\which;
 
@@ -111,17 +115,20 @@ set('bin/composer', function () {
 
 // PATHS & FILES CONFIGURATION
 
-// Use fixed release_path always
+// Use fixed current_path always - this will be available during deploys but also in standalone-tasks.
 set('release_or_current_path', function () {
-    return '{{release_path}}'; // Do not use get() to stay in same context.
+    return '{{current_path}}'; // Do not use get() to stay in same context.
 });
 
-// Use a dummy current_path because deployer checks if it's a symlink
+/**
+ * Set the current_path to the "root" path of your project. All tasks and dirs will be relative to this.
+ */
 set('current_path', function () {
-    if (test('[ ! -f {{deploy_path}}/.dep/current ]')) {
-        run('{{bin/symlink}} {{release_path}} {{deploy_path}}/.dep/current');
-    }
-    return '{{deploy_path}}/.dep/current';
+    throw new ConfigurationException('You should configure the current_path on the host and localhost.');
+});
+
+set('release_path', function () {
+    throw new ConfigurationException('This recipe does not use (symlinked) releases. We only use current_path.');
 });
 
 // if you want to further define options for rsyncing files
@@ -237,6 +244,43 @@ task('deploy:info', function () {
         return $host->getAlias();
     }, $selectedHosts));
     info("deploying to <fg=magenta;options=bold>$hosts</>");
+});
+
+// Overwrite deploy:setup to ignore existing current_path/release_path directories. This is expected.
+task('deploy:setup', function () {
+    run(
+        <<<EOF
+            [ -d {{deploy_path}} ] || mkdir -p {{deploy_path}};
+            cd {{deploy_path}};
+            [ -d .dep ] || mkdir .dep;
+            [ -d shared ] || mkdir shared;
+            EOF
+    );
+
+    run("[ -d {{current_path}} ] || mkdir -p {{current_path}};");
+});
+
+// Overwrite deploy:release to not create symlinks.
+task('deploy:release', function () {
+    cd('{{deploy_path}}');
+
+    $releaseName = get('release_name');
+
+    // Save release_name.
+    run("echo $releaseName > .dep/latest_release");
+
+    // Metainfo.
+    $timestamp = timestamp();
+    $metainfo = [
+        'created_at' => $timestamp,
+        'release_name' => $releaseName,
+        'user' => get('user'),
+        'target' => get('target'),
+    ];
+
+    // Save metainfo about release.
+    $json = escape_shell_argument(json_encode($metainfo));
+    run("echo $json >> .dep/releases_log");
 });
 
 // Overwrite deploy:prepare to extract updating/pushing code to extra task

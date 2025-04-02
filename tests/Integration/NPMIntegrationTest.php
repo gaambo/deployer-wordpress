@@ -86,80 +86,6 @@ class NPMIntegrationTest extends IntegrationTestCase
         $this->addToAssertionCount(1); // Count the mock expectation as an assertion
     }
 
-    public function testRunInstallWithPreviousRelease(): void
-    {
-        $path = '/var/www/html';
-
-        // Set previous_release config
-        $this->deployer->config->set('previous_release', '/var/www/releases/1');
-
-        // ProcessRunner will be called 3 times:
-        // 1. test command to check if node_modules exists (wrapped in bash-if)
-        // 2. cp command to copy node_modules
-        // 3. npm install command
-        $this->processRunnerMock
-            ->expects($this->exactly(3))
-            ->method('run')
-            ->willReturnCallback(function ($host, $command) use ($path) {
-                static $callNumber = 0;
-                $callNumber++;
-
-                switch ($callNumber) {
-                    case 1:
-                        // test() wraps the command in a bash-if and checks for success via echo
-                        $this->assertStringContainsString('if [ -d /var/www/releases/1/node_modules ]; then echo +', $command);
-                        // Extract the random value from the command string
-                        if (preg_match('/echo \+([a-z]+);/', $command, $matches)) {
-                            return '+' . $matches[1];
-                        }
-                        throw new \RuntimeException('Could not extract random value from command');
-                    case 2:
-                        $this->assertEquals("cp -R /var/www/releases/1/node_modules $path", $command);
-                        return 'Copy output';
-                    case 3:
-                        $this->assertEquals("cd $path && npm install", $command);
-                        return 'NPM output';
-                }
-            });
-
-        $result = NPM::runInstall($path);
-        $this->assertEquals('NPM output', $result);
-        $this->addToAssertionCount(3); // Count the mock callback assertions
-    }
-
-    public function testRunInstallWithPreviousReleaseNoNodeModules(): void
-    {
-        $path = '/var/www/html';
-
-        // Set previous_release config
-        $this->deployer->config->set('previous_release', '/var/www/releases/1');
-
-        // ProcessRunner will be called 2 times:
-        // 1. test command to check if node_modules exists (wrapped in bash-if, returns empty)
-        // 2. npm install command
-        $this->processRunnerMock
-            ->expects($this->exactly(2))
-            ->method('run')
-            ->willReturnCallback(function ($host, $command) use ($path) {
-                static $callNumber = 0;
-                $callNumber++;
-
-                switch ($callNumber) {
-                    case 1:
-                        // test() wraps the command in a bash-if and checks for success via echo
-                        $this->assertStringContainsString('if [ -d /var/www/releases/1/node_modules ]; then echo +', $command);
-                        return '0'; // False value.
-                    case 2:
-                        $this->assertEquals("cd $path && npm install", $command);
-                        return 'NPM output';
-                }
-            });
-
-        $result = NPM::runInstall($path);
-        $this->assertEquals('NPM output', $result);
-        $this->addToAssertionCount(2); // Count the mock callback assertions
-    }
-
     /**
      * @dataProvider verbosityProvider
      */
@@ -284,41 +210,6 @@ class NPMIntegrationTest extends IntegrationTestCase
         $this->assertEquals('NPM output', $result);
     }
 
-    public function testRunInstallWithCustomPreviousReleasePath(): void
-    {
-        $path = '/var/www/html';
-        $customReleasePath = '/var/www/custom/releases/2';
-
-        // Set custom previous_release path
-        $this->deployer->config->set('previous_release', $customReleasePath);
-
-        $this->processRunnerMock
-            ->expects($this->exactly(3))
-            ->method('run')
-            ->willReturnCallback(function ($host, $command) use ($path, $customReleasePath) {
-                static $callNumber = 0;
-                $callNumber++;
-
-                switch ($callNumber) {
-                    case 1:
-                        $this->assertStringContainsString("if [ -d $customReleasePath/node_modules ]; then echo +", $command);
-                        if (preg_match('/echo \+([a-z]+);/', $command, $matches)) {
-                            return '+' . $matches[1];
-                        }
-                        throw new \RuntimeException('Could not extract random value from command');
-                    case 2:
-                        $this->assertEquals("cp -R $customReleasePath/node_modules $path", $command);
-                        return 'Copy output';
-                    case 3:
-                        $this->assertEquals("cd $path && npm install", $command);
-                        return 'NPM output';
-                }
-            });
-
-        $result = NPM::runInstall($path);
-        $this->assertEquals('NPM output', $result);
-    }
-
     public function testRunCommandWithInvalidNpmBinary(): void
     {
         $path = '/var/www/html';
@@ -333,17 +224,4 @@ class NPMIntegrationTest extends IntegrationTestCase
         $this->expectExceptionMessage('Config option "bin/npm" does not exist');
         $result = NPM::runCommand($path, $action, $arguments);
     }
-
-    public function testRunInstallWithInvalidPreviousReleasePath(): void
-    {
-        $path = '/var/www/html';
-
-        // Set invalid previous_release path (should skip copying)
-        $this->deployer->config->set('previous_release', null);
-
-        $this->expectException(ConfigurationException::class);
-        $this->expectExceptionMessage('Config option "previous_release" does not exist');
-
-        $result = NPM::runInstall($path);
-    }
-} 
+}

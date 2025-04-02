@@ -130,7 +130,6 @@ task('packages:push', function () {
         $rsyncOptions = Rsync::buildOptionsArray([
             'filter' => $package['rsync:filter'] ?? [],
         ]);
-        run("mkdir -p {{release_or_current_path}}/$remotePath");
         Files::pushFiles($packagePath, $remotePath, $rsyncOptions);
     }
 })->desc('Push packages from local to remote');

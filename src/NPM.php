@@ -48,8 +48,7 @@ class NPM
     }
 
     /**
-     * Run npm install
-     * Tries to copy node_modules from previous release if available
+     * Run npm install.
      *
      * @param string $path Path in which to run npm install
      * @param string $arguments Command-line arguments to be passed to npm
@@ -57,11 +56,6 @@ class NPM
      */
     public static function runInstall(string $path, string $arguments = ''): string
     {
-        if (has('previous_release')) {
-            if (test('[ -d {{previous_release}}/node_modules ]')) {
-                run("cp -R {{previous_release}}/node_modules $path");
-            }
-        }
         return self::runCommand($path, 'install', $arguments);
     }
 }

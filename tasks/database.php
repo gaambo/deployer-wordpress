@@ -40,13 +40,14 @@ task('db:remote:backup', function () {
     $localDumpPath = Localhost::getConfig('dbdump_path');
     $remoteDumpPath = get('dbdump_path');
     $now = date('Y-m-d_H-i', time());
-    set('dbdump/file', "db_backup-$now.sql");
+    $dumpFile = "db_backup-$now.sql";
+    set('dbdump/file', $dumpFile);
 
     run('mkdir -p ' . get('dbdump_path'));
-    WPCLI::runCommand("db export $remoteDumpPath/{{dbdump/file}} --add-drop-table", "{{release_or_current_path}}");
+    WPCLI::runCommand("db export $remoteDumpPath/$dumpFile --add-drop-table", "{{release_or_current_path}}");
 
     Localhost::run("mkdir -p $localDumpPath");
-    download("$remoteDumpPath/{{dbdump/file}}", "$localDumpPath/{{dbdump/file}}");
+    download("$remoteDumpPath/$dumpFile", "$localDumpPath/$dumpFile");
 })->desc('Create backup of remote database and download locally');
 
 /**
@@ -63,15 +64,16 @@ task('db:local:backup', function () {
     $localDumpPath = Localhost::getConfig('dbdump_path');
     $remoteDumpPath = get('dbdump_path');
     $now = date('Y-m-d_H-i', time());
-    set('dbdump/file', "db_backup-$now.sql");
+    $dumpFile = "db_backup-$now.sql";
+    set('dbdump/file', $dumpFile);
 
     Localhost::run("mkdir -p $localDumpPath");
-    WPCLI::runCommandLocally("db export $localDumpPath/{{dbdump/file}} --add-drop-table");
+    WPCLI::runCommandLocally("db export $localDumpPath/$dumpFile --add-drop-table");
 
     run('mkdir -p {{dbdump_path}}');
     upload(
-        "$localDumpPath/{{dbdump/file}}",
-        "$remoteDumpPath/{{dbdump/file}}"
+        "$localDumpPath/$dumpFile",
+        "$remoteDumpPath/$dumpFile"
     );
 })->desc('Create backup of local database and upload to remote');
 

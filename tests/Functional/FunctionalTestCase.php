@@ -108,7 +108,7 @@ abstract class FunctionalTestCase extends TestCase
         // Remote host setup (using Localhost for testing so rsync runs on the same host)
         $this->remoteHost = new Localhost('testremote');
         $this->remoteHost->set('deploy_path', $this->remoteDir);
-        $this->remoteHost->set('release_path', $this->remoteReleaseDir);
+        $this->remoteHost->set('current_path', $this->remoteReleaseDir);
         $this->remoteHost->set('dbdump_path', $this->remoteDir . '/data/db_dumps');
         $this->remoteHost->set('backup_path', $this->remoteDir . '/data/backups');
         $this->remoteHost->set('bin/wp', 'wp');

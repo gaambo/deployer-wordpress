@@ -22,7 +22,7 @@ localhost()
     ->set('project_path', __DIR__)
     ->set('current_path', __DIR__)
     // Bedrock dirs
-    ->set('uploads/path', '{{current_path}}')
+    ->set('uploads/path', '{{current_path}}') // Do not use shared directory for uploads.
     ->set('uploads/dir', 'web/app/uploads')
     ->set('mu-plugins/dir', 'web/app/mu-plugins')
     ->set('themes/dir', 'web/app/themes')

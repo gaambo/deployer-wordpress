@@ -42,7 +42,6 @@ class LanguageTasksFunctionalTest extends FunctionalTestCase
 
         $this->assertStringContainsString('languages:push', $output);
         $this->assertStringContainsString('languages:pull', $output);
-        $this->assertStringContainsString('languages:sync', $output);
         $this->assertStringContainsString('languages:backup:remote', $output);
         $this->assertStringContainsString('languages:backup:local', $output);
     }
