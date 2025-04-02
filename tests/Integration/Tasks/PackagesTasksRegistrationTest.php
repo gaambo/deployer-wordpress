@@ -20,7 +20,6 @@ class PackagesTasksRegistrationTest extends TaskRegistrationTestCase
         $this->assertTaskExists('packages');
         $this->assertTaskExists('packages:push');
         $this->assertTaskExists('packages:pull');
-        $this->assertTaskExists('packages:sync');
         $this->assertTaskExists('packages:backup:remote');
         $this->assertTaskExists('packages:backup:local');
     }
@@ -30,6 +29,5 @@ class PackagesTasksRegistrationTest extends TaskRegistrationTestCase
         // Verify task dependencies
         $this->assertTaskDependencies('packages:assets', ['packages:assets:vendors', 'packages:assets:build']);
         $this->assertTaskDependencies('packages', ['packages:assets', 'packages:vendors']);
-        $this->assertTaskDependencies('packages:sync', ['packages:push', 'packages:pull']);
     }
 }

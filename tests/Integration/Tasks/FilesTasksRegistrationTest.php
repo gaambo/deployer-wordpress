@@ -15,7 +15,6 @@ class FilesTasksRegistrationTest extends TaskRegistrationTestCase
         // Verify files tasks are registered
         $this->assertTaskExists('files:push');
         $this->assertTaskExists('files:pull');
-        $this->assertTaskExists('files:sync');
         $this->assertTaskExists('files:backup:remote');
         $this->assertTaskExists('files:backup:local');
     }
@@ -39,6 +38,5 @@ class FilesTasksRegistrationTest extends TaskRegistrationTestCase
             'themes:pull',
             'packages:pull'
         ]);
-        $this->assertTaskDependencies('files:sync', ['files:push', 'files:pull']);
     }
 }

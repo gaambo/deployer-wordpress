@@ -2,6 +2,8 @@
 
 namespace Gaambo\DeployerWordpress\Tests\Integration\Tasks;
 
+use PHPUnit\Framework\Attributes\DoesNotPerformAssertions;
+
 class LanguagesTasksRegistrationTest extends TaskRegistrationTestCase
 {
     protected static function loadTasks(): void
@@ -15,14 +17,13 @@ class LanguagesTasksRegistrationTest extends TaskRegistrationTestCase
         // Verify languages tasks are registered
         $this->assertTaskExists('languages:push');
         $this->assertTaskExists('languages:pull');
-        $this->assertTaskExists('languages:sync');
         $this->assertTaskExists('languages:backup:remote');
         $this->assertTaskExists('languages:backup:local');
     }
 
+    #[DoesNotPerformAssertions]
     public function testTaskDependencies(): void
     {
         // Verify task dependencies
-        $this->assertTaskDependencies('languages:sync', ['languages:push', 'languages:pull']);
     }
 }

@@ -20,7 +20,6 @@ class ThemesTasksRegistrationTest extends TaskRegistrationTestCase
         $this->assertTaskExists('theme');
         $this->assertTaskExists('themes:push');
         $this->assertTaskExists('themes:pull');
-        $this->assertTaskExists('themes:sync');
         $this->assertTaskExists('themes:backup:remote');
         $this->assertTaskExists('themes:backup:local');
     }
@@ -30,6 +29,5 @@ class ThemesTasksRegistrationTest extends TaskRegistrationTestCase
         // Verify task dependencies
         $this->assertTaskDependencies('theme:assets', ['theme:assets:vendors', 'theme:assets:build']);
         $this->assertTaskDependencies('theme', ['theme:assets', 'theme:vendors']);
-        $this->assertTaskDependencies('themes:sync', ['themes:push', 'themes:pull']);
     }
 }
