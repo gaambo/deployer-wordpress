@@ -38,7 +38,7 @@ use function Deployer\which;
 
 $commonRecipePaths = [
     __DIR__ . '/../vendor/deployer/deployer/recipe/common.php', // Development/testing
-    __DIR__ . '/../deployer/deployer/recipe/common.php' // Installed via composer
+    __DIR__ . '/../../../deployer/deployer/recipe/common.php' // Installed via composer
 ];
 
 foreach ($commonRecipePaths as $recipePath) {
