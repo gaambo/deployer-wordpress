@@ -123,21 +123,22 @@ task('db:remote:import', function () {
 task('db:local:import', function () {
     // Check if dump file exists
     $localDumpPath = Localhost::getConfig('dbdump_path');
-    if (!has('dbdump/file') || !testLocally("[ -f $localDumpPath/{{dbdump/file}} ]")) {
-        throw new \RuntimeException("Database dump file not found at $localDumpPath/{{dbdump/file}}");
+    $dumpFile = get('dbdump/file');
+    if (!has('dbdump/file') || !testLocally("[ -f $localDumpPath/$dumpFile ]")) {
+        throw new \RuntimeException("Database dump file not found at $localDumpPath/$dumpFile");
     }
-    $localUrl = Localhost::getConfig('public_url');
-    WPCLI::runCommandLocally("db import $localDumpPath/{{dbdump/file}}");
-    WPCLI::runCommandLocally("search-replace {{public_url}} $localUrl");
+    $remoteUrl = get('public_url');
+    WPCLI::runCommandLocally("db import $localDumpPath/$dumpFile");
+    WPCLI::runCommandLocally("search-replace $remoteUrl {{public_url}}");
 
     // If the local uploads directory is different from the remote one
     // replace all references to the remotes uploads directory with the local one
-    $localUploadsDir = Localhost::getConfig('uploads/dir');
-    if ($localUploadsDir !== get('uploads/dir')) {
-        WPCLI::runCommandLocally("search-replace {{uploads/dir}} $localUploadsDir");
+    $remoteUploadsDir = get('uploads/dir');
+    if ($remoteUploadsDir !== Localhost::getConfig('uploads/dir')) {
+        WPCLI::runCommandLocally("search-replace $remoteUploadsDir {{uploads/dir}}");
     }
 
-    Localhost::run("rm -f $localDumpPath/{{dbdump/file}}");
+    Localhost::run("rm -f $localDumpPath/$dumpFile");
 })->desc('Import database backup on local host');
 
 /**
