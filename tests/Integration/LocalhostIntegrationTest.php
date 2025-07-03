@@ -2,8 +2,8 @@
 
 namespace Gaambo\DeployerWordpress\Tests\Integration;
 
+use Deployer\Task\Context;
 use Gaambo\DeployerWordpress\Localhost;
-use PHPUnit\Framework\MockObject\MockObject;
 
 class LocalhostIntegrationTest extends IntegrationTestCase
 {
@@ -24,17 +24,45 @@ class LocalhostIntegrationTest extends IntegrationTestCase
         $this->assertNull($value);
     }
 
+    public function testGetConfigWithDynamicValue(): void
+    {
+        $this->host->set('test_key', function () {
+            return 'test_value';
+        });
+        // Test getting configuration
+        $value = Localhost::getConfig('test_key');
+        $this->assertEquals('test_value', $value);
+    }
+
+    public function testCorrectlyUsesLocalhostContextWithDynamicValues(): void
+    {
+        $this->host->set('test_key', 'test_value');
+
+        $this->host->set('dynamic_key', function () {
+            return \Deployer\get('test_key');
+        });
+        $remoteHost = new \Deployer\Host\Localhost('testremote');
+        $remoteHost->set('test_key', 'remote_value');
+        // Push a new context with the remote host
+        Context::push(new Context($remoteHost));
+
+        $value = Localhost::getConfig('dynamic_key');
+        $this->assertEquals('test_value', $value);
+
+        Context::pop();
+    }
+
     public function testGet(): void
     {
         // Test getting localhost instance
         $host = Localhost::get();
-        
+
         // Verify it's the same instance we set up in IntegrationTestCase
         $this->assertSame($this->host, $host);
-        
+
         // Verify it has the expected configuration
         $this->assertEquals('/var/www', $host->get('deploy_path'));
         $this->assertEquals('wp', $host->get('bin/wp'));
         $this->assertEquals('/var/www/current', $host->get('release_or_current_path'));
     }
-} 
+}

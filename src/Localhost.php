@@ -2,7 +2,6 @@
 
 namespace Gaambo\DeployerWordpress;
 
-use Deployer\Configuration\Configuration;
 use Deployer\Deployer;
 use Deployer\Host\Host;
 use Deployer\Task\Context;
@@ -23,7 +22,12 @@ class Localhost
      */
     public static function getConfig(string $key): mixed
     {
-        return self::get()->get($key);
+        // Switch to the localhost config, so all get() calls use that context.
+        // Useful for dynamic calculated values.
+        Context::push(new Context(self::get()));
+        $value = self::get()->get($key);
+        Context::pop();
+        return $value;
     }
 
     /**
