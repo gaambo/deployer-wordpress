@@ -601,6 +601,129 @@ class DatabaseTasksFunctionalTest extends FunctionalTestCase
         $this->assertNotEquals(0, $result, 'Task should fail when dump file is missing');
     }
 
+    /**
+     * Helper method to mock successful multisite URL replacements
+     */
+    protected function mockSuccessfulMultisiteDbImport(string $hostName): void
+    {
+        $this->mockCommands([
+            'wp db import' => function () {
+                return 'Database imported successfully';
+            },
+            'wp search-replace' => function ($host, $command) {
+                if (strpos($command, '--network --all-tables') !== false) {
+                    return 'Made some replacements across all network tables';
+                }
+                return 'Made some replacements';
+            }
+        ], $hostName);
+    }
+
+    public function testDbLocalImportHandleMultisite(): void
+    {
+        // Enable multisite
+        $this->remoteHost->set('wp/multisite', true);
+        // Set up URLs for replacement
+        $this->localHost->set('public_url', 'http://localhost');
+        $this->remoteHost->set('public_url', 'https://example.com');
+
+        // Create a dump file to import
+        $dumpFile = $this->localDir . '/dumps/db_backup.sql';
+        copy($this->getFixturePath('database/dump.sql'), $dumpFile);
+        set('dbdump/file', 'db_backup.sql');
+
+        // Mock successful multisite URL replacements
+        $this->mockSuccessfulMultisiteDbImport('localhost');
+
+        // Run the multisite import task
+        $result = $this->dep('db:local:import');
+        $output = $this->tester->getDisplay();
+        $this->assertEquals(0, $result, 'Task should succeed with valid configuration');
+    }
+
+    public function testDbLocalImportHandleMultisiteWithUrlReplaceError(): void
+    {
+        // Enable multisite
+        $this->remoteHost->set('wp/multisite', true);
+        // Set up URLs for replacement
+        $this->localHost->set('public_url', 'http://localhost');
+        $this->remoteHost->set('public_url', 'https://example.com');
+
+        // Create a dump file to import
+        $dumpFile = $this->localDir . '/dumps/db_backup.sql';
+        copy($this->getFixturePath('database/dump.sql'), $dumpFile);
+        set('dbdump/file', 'db_backup.sql');
+
+        // Mock failed URL replacement
+        $this->mockCommands([
+            'wp db import' => function () {
+                return 'Database imported successfully';
+            },
+            'wp search-replace' => function ($host, $command) {
+                if (strpos($command, '--network --all-tables') !== false) {
+                    throw new RuntimeException('Multisite URL replacement failed');
+                }
+                return 'Made some replacements';
+            }
+        ], 'localhost');
+
+        // Run the multisite import task and expect failure
+        $result = $this->dep('db:local:import');
+        $this->assertNotEquals(0, $result, 'Task should fail when URL replacement fails');
+    }
+
+    public function testDbRemoteImportHandleMultisite(): void
+    {
+        // Enable multisite
+        $this->remoteHost->set('wp/multisite', true);
+        // Set up URLs for replacement
+        $this->localHost->set('public_url', 'http://localhost');
+        $this->remoteHost->set('public_url', 'https://example.com');
+
+        // Create a dump file to import
+        $dumpFile = $this->remoteDir . '/dumps/db_backup.sql';
+        copy($this->getFixturePath('database/dump.sql'), $dumpFile);
+        set('dbdump/file', 'db_backup.sql');
+
+        // Mock successful multisite URL replacements
+        $this->mockSuccessfulMultisiteDbImport('testremote');
+
+        // Run the multisite import task
+        $result = $this->dep('db:remote:import');
+        $this->assertEquals(0, $result, 'Task should succeed with valid configuration');
+    }
+
+    public function testDbRemoteImportHandleMultisiteWithUrlReplaceError(): void
+    {
+        // Enable multisite
+        $this->remoteHost->set('wp/multisite', true);
+        // Set up URLs for replacement
+        $this->localHost->set('public_url', 'http://localhost');
+        $this->remoteHost->set('public_url', 'https://example.com');
+
+        // Create a dump file to import
+        $dumpFile = $this->remoteDir . '/dumps/db_backup.sql';
+        copy($this->getFixturePath('database/dump.sql'), $dumpFile);
+        set('dbdump/file', 'db_backup.sql');
+
+        // Mock failed URL replacement
+        $this->mockCommands([
+            'wp db import' => function () {
+                return 'Database imported successfully';
+            },
+            'wp search-replace' => function ($host, $command) {
+                if (strpos($command, '--network --all-tables') !== false) {
+                    throw new RuntimeException('Multisite URL replacement failed');
+                }
+                return 'Made some replacements';
+            }
+        ], 'testremote');
+
+        // Run the multisite import task and expect failure
+        $result = $this->dep('db:remote:import');
+        $this->assertNotEquals(0, $result, 'Task should fail when URL replacement fails');
+    }
+
     protected function setUp(): void
     {
         parent::setUp();

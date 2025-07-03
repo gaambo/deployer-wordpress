@@ -1,5 +1,6 @@
 /vendor
 /.cursor
+/.junie
 /.idea
 .DS_STORE
 .phpunit.cache

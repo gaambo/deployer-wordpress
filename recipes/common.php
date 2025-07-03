@@ -131,6 +131,18 @@ set('release_path', function () {
     throw new ConfigurationException('This recipe does not use (symlinked) releases. We only use current_path.');
 });
 
+/**
+ * A helper variable to get the host name from the url
+ */
+set('public_host', function () {
+    $url = get('public_url');
+    $host = parse_url($url, PHP_URL_HOST);
+    if (!$host) {
+        throw new ConfigurationException('Public url does not seem to be a valid url. Cannot parse host from the url.');
+    }
+    return $host;
+});
+
 // if you want to further define options for rsyncing files
 // just look at the source in `Files.php` and `Rsync.php`
 // and use the Rsync::buildOptionsArray and Files::push/pull methods
@@ -184,6 +196,9 @@ set('themes/filter', []); // rsync filter syntax
 set('theme/build_script', 'build'); // custom theme npm build script
 set('languages/dir', 'wp-content/languages'); // relative to document root
 set('languages/filter', []); // rsync filter syntax
+
+// Whether the site is a multisite and database imports/URL replacements should take that into account.
+set('wp/multisite', false);
 
 // options for zipping files for backups - passed to zip shell command
 set('zip_options', '-x "_backup_*.zip" -x **/node_modules/**\* -x **/vendor/**\*');

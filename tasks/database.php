@@ -95,8 +95,18 @@ task('db:remote:import', function () {
     }
 
     $localUrl = Localhost::getConfig('public_url');
+    $remoteUrl = get('public_url');
     WPCLI::runCommand("db import {{dbdump_path}}/{{dbdump/file}}");
-    WPCLI::runCommand("search-replace $localUrl {{public_url}}");
+
+    if (get('wp/multisite')) {
+        WPCLI::runCommand("search-replace $localUrl $remoteUrl --network --all-tables");
+
+        $localUrlHost = Localhost::getConfig('public_host');
+        $publicUrlHost = get('public_host');
+        WPCLI::runCommand("search-replace $localUrlHost $publicUrlHost --network --all-tables");
+    } else {
+        WPCLI::runCommand("search-replace $localUrl $remoteUrl");
+    }
 
     // If the local uploads directory is different from the remote one
     // replace all references to the local uploads directory with the remote one
@@ -129,7 +139,17 @@ task('db:local:import', function () {
     }
     $remoteUrl = get('public_url');
     WPCLI::runCommandLocally("db import $localDumpPath/$dumpFile");
-    WPCLI::runCommandLocally("search-replace $remoteUrl {{public_url}}");
+
+    if (get('wp/multisite')) {
+        $localUrl = Localhost::getConfig('public_url');
+        WPCLI::runCommandLocally("search-replace $remoteUrl $localUrl --network --all-tables");
+
+        $localUrlHost = Localhost::getConfig('public_host');
+        $publicUrlHost = get('public_host');
+        WPCLI::runCommandLocally("search-replace $publicUrlHost $localUrlHost --network --all-tables");
+    } else {
+        WPCLI::runCommandLocally("search-replace $remoteUrl {{public_url}}");
+    }
 
     // If the local uploads directory is different from the remote one
     // replace all references to the remotes uploads directory with the local one

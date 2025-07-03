@@ -140,16 +140,18 @@ abstract class FunctionalTestCase extends TestCase
      *
      * @param array<string, callable|int> $commandsToMock Map of command patterns to callables or return values
      */
-    protected function mockCommands(array $commandsToMock): void
+    protected function mockCommands(array $commandsToMock, ?string $hostAlias = null): void
     {
         // Set up the mock to handle specific commands
         $this->mockedRunner->expects($this->any())
             ->method('run')
-            ->willReturnCallback(function ($host, $command, $options = []) use ($commandsToMock) {
+            ->willReturnCallback(function ($host, $command, $options = []) use ($commandsToMock, $hostAlias) {
                 // Check if this command should be mocked
-                foreach ($commandsToMock as $pattern => $handler) {
-                    if (str_contains($command, $pattern)) {
-                        return is_callable($handler) ? $handler($host, $command, $options) : $handler;
+                if (!$hostAlias || $host->getAlias() === $hostAlias) {
+                    foreach ($commandsToMock as $pattern => $handler) {
+                        if (str_contains($command, $pattern)) {
+                            return is_callable($handler) ? $handler($host, $command, $options) : $handler;
+                        }
                     }
                 }
 
