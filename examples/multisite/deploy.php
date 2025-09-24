@@ -35,7 +35,8 @@ set('packages', [
     ],
     'core-functionality' => [
         'path' => '{{mu-plugins/dir}}/core-functionality',
-        'remote:path' => '{{mu-plugins/dir}}/core-functionality'
+        'remote:path' => '{{mu-plugins/dir}}/core-functionality',
+        'vendors' => true,
     ],
 ]);
 

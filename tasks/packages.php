@@ -87,6 +87,7 @@ task('packages:assets', ['packages:assets:vendors', 'packages:assets:build'])
  *
  * Configuration per package:
  * - path: Path of package relative to release_path/current_path
+ * - vendors: Whether the package has composer vendors to install
  *
  * Example:
  *     dep packages:vendors prod
@@ -94,6 +95,9 @@ task('packages:assets', ['packages:assets:vendors', 'packages:assets:build'])
 task('packages:vendors', function () {
     foreach (get('packages', []) as $package) {
         $packagePath = $package['path'];
+        if (empty($package['vendors'])) {
+            continue;
+        }
         Composer::runDefault(
             "{{release_or_current_path}}/$packagePath"
         );

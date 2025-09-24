@@ -44,11 +44,13 @@ WordPress installation types.
 2. Choose one of the [recipes](#recipes) and copy the corresponding example files (`examples/base` or
    `examples/advanced`) into your root directory - **or** write your own.
 3. Read through the recipe and customize it to your needs - here's a checklist:
-  - [ ] Check localhost configuration
-  - [ ] Set paths to your directory structure
-  - [ ] If you have a custom theme set it's name - if not remove the configuration and the theme build-tasks
-  - [ ] If you have a custom mu-plugin set it's name - if not remove the configuration and the mu-plugin build-tasks
-  - [ ] Check if the deployment flow meets your needs and maybe delete/add/overwrite tasks
+
+- [ ] Check localhost configuration
+- [ ] Set paths to your directory structure
+- [ ] If you have a custom theme set it's name - if not remove the configuration and the theme build-tasks
+- [ ] If you have a custom mu-plugin set it's name - if not remove the configuration and the mu-plugin build-tasks
+- [ ] Check if the deployment flow meets your needs and maybe delete/add/overwrite tasks
+
 4. Make your remote hosts ready for deployment (install composer, WP CLI; setup paths,...). Allthough the library checks
    for most of them and installs them.
 5. Make a **test deployment** to a test/staging server. Do not directly deploy to your production site, you may break
@@ -308,6 +310,7 @@ set('packages', [
         'remote:path' => 'path/on/remote',
         'assets' => true,
         'assets:build_script' => 'build',
+        'vendors' => true,
     ],
     // Add more packages as needed
 ]);
@@ -327,7 +330,8 @@ set('packages', [
     ],
     'core-functionality' => [
         'path' => '{{mu-plugins/dir}}/core-functionality',
-        'remote:path' => '{{mu-plugins/dir}}/core-functionality'
+        'remote:path' => '{{mu-plugins/dir}}/core-functionality',
+        'vendors' => true,
     ],
 ]);
 ```
