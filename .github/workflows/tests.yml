@@ -11,9 +11,9 @@ jobs:
     timeout-minutes: 10
     strategy:
       matrix:
-        php: ['8.1', '8.2', '8.3', '8.4']
+        php: [ '8.1', '8.2', '8.3', '8.4' ]
         # TODO: Add 8.0 when released.
-        deployer: ['7.3', '7.4', '7.5']
+        deployer: [ '7.3', '7.4', '7.5' ]
       fail-fast: false
     name: Tests for Deployer ${{ matrix.deployer }} on PHP ${{ matrix.php }}
 
@@ -46,4 +46,4 @@ jobs:
 
       # Run PHPUnit tests
       - name: Run PHPUnit tests
-        run: composer run-script test
+        run: composer run-script tests
