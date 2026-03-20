@@ -8,5 +8,11 @@ hosts:
     public_url: https://test.dev
     deploy_path: "~"
     current_path: "{{deploy_path}}/public_html" # fixed directory, no symlinks
+    # Bedrock dirs
+    uploads/dir: web/app/uploads
+    mu-plugins/dir: web/app/mu-plugins
+    themes/dir: web/app/themes
+    plugins/dir: web/app/plugins
+    wp/dir: web/wp
     dbdump_path: ~/data/dumps
     backup_path: ~/data/backups

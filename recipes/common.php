@@ -8,38 +8,294 @@
 namespace Gaambo\DeployerWordpress\Recipes\Common;
 
 use Deployer\Deployer;
+use Deployer\Exception\ConfigurationException;
+use Deployer\Host\Host;
+use Gaambo\DeployerWordpress\Composer;
+use Gaambo\DeployerWordpress\Localhost;
+use Gaambo\DeployerWordpress\WPCLI;
 
 use function Deployer\after;
+use function Deployer\cd;
+use function Deployer\commandExist;
+use function Deployer\currentHost;
 use function Deployer\get;
 use function Deployer\has;
 use function Deployer\info;
 use function Deployer\invoke;
 use function Deployer\on;
+use function Deployer\output;
 use function Deployer\run;
 use function Deployer\selectedHosts;
+use function Deployer\set;
+use function Deployer\Support\escape_shell_argument;
 use function Deployer\task;
 use function Deployer\test;
-use function Gaambo\DeployerWordpress\Utils\Localhost\getLocalhost;
+use function Deployer\timestamp;
+use function Deployer\warning;
+use function Deployer\which;
 
-$deployerPath = 'vendor/deployer/deployer/';
-require_once $deployerPath . 'recipe/common.php';
+// Deployer binary sets the include path, so this should work.
 
-require_once 'set.php';
-require_once 'tasks/database.php';
-require_once 'tasks/files.php';
-require_once 'tasks/mu-plugins.php';
-require_once 'tasks/plugins.php';
-require_once 'tasks/themes.php';
-require_once 'tasks/uploads.php';
-require_once 'tasks/wp.php';
+$commonRecipePaths = [
+    __DIR__ . '/../vendor/deployer/deployer/recipe/common.php', // Development/testing
+    __DIR__ . '/../../../deployer/deployer/recipe/common.php' // Installed via composer
+];
+
+foreach ($commonRecipePaths as $recipePath) {
+    if (file_exists($recipePath)) {
+        require $recipePath;
+        break;
+    }
+}
+
+// Include task definitions
+require __DIR__ . '/../tasks/database.php';
+require __DIR__ . '/../tasks/files.php';
+require __DIR__ . '/../tasks/languages.php';
+require __DIR__ . '/../tasks/mu-plugins.php';
+require __DIR__ . '/../tasks/packages.php';
+require __DIR__ . '/../tasks/plugins.php';
+require __DIR__ . '/../tasks/themes.php';
+require __DIR__ . '/../tasks/uploads.php';
+require __DIR__ . '/../tasks/wp.php';
+
+// BINARIES
+set('bin/npm', function () {
+    return which('npm');
+});
+
+// Path to the `php` bin.
+set('bin/php', function () {
+    if (currentHost()->hasOwn('php_version')) {
+        return '/usr/bin/php{{php_version}}';
+    }
+    return which('php');
+});
+
+// can be overwritten if you eg. use wpcli in a docker container
+set('bin/wp', function () {
+    $installPath = '{{deploy_path}}/.dep';
+    $binaryFile = 'wp-cli.phar';
+
+    if (test("[ -f $installPath/$binaryFile ]")) {
+        return "{{bin/php}} $installPath/$binaryFile";
+    }
+
+    if (commandExist('wp')) {
+        return '{{bin/php}} ' . which('wp');
+    }
+
+    warning("WP-CLI binary wasn't found. Installing latest WP-CLI to $installPath/$binaryFile.");
+    WPCLI::install($installPath, $binaryFile);
+    return "{{bin/php}} $installPath/$binaryFile";
+});
+
+set('composer_action', 'install');
+set('composer_options', '--verbose --prefer-dist --no-progress --no-interaction --no-dev --optimize-autoloader');
+
+// Returns Composer binary path in found. Otherwise, try to install latest
+// composer version to `.dep/composer.phar`. To use specific composer version
+// download desired phar and place it at `.dep/composer.phar`.
+set('bin/composer', function () {
+    $installPath = '{{deploy_path}}/.dep';
+    $binaryFile = 'composer.phar';
+
+    if (test("[ -f $installPath/$binaryFile ]")) {
+        return "{{bin/php}} $installPath/$binaryFile";
+    }
+
+    if (commandExist('composer')) {
+        return '{{bin/php}} ' . which('composer');
+    }
+
+    warning("Composer binary wasn't found. Installing latest composer to $installPath/$binaryFile.");
+    Composer::install($installPath, $binaryFile);
+    return "{{bin/php}} $installPath/$binaryFile";
+});
+
+// PATHS & FILES CONFIGURATION
+
+// Use fixed current_path always - this will be available during deploys but also in standalone-tasks.
+set('release_or_current_path', function () {
+    return '{{current_path}}'; // Do not use get() to stay in same context.
+});
+
+/**
+ * Set the current_path to the "root" path of your project. All tasks and dirs will be relative to this.
+ */
+set('current_path', function () {
+    throw new ConfigurationException('You should configure the current_path on the host and localhost.');
+});
+
+set('release_path', function () {
+    throw new ConfigurationException('This recipe does not use (symlinked) releases. We only use current_path.');
+});
+
+/**
+ * A helper variable to get the host name from the url
+ */
+set('public_host', function () {
+    $url = get('public_url');
+    $host = parse_url($url, PHP_URL_HOST);
+    if (!$host) {
+        throw new ConfigurationException('Public url does not seem to be a valid url. Cannot parse host from the url.');
+    }
+    return $host;
+});
+
+// if you want to further define options for rsyncing files
+// just look at the source in `Files.php` and `Rsync.php`
+// and use the Rsync::buildOptionsArray and Files::push/pull methods
+set('wp/dir', ''); // relative to document root
+// config files which should be protected - add to shared_files as well
+set('wp/configFiles', ['wp-config.php', 'wp-config-local.php']);
+// set all wp-config files to 600 - which means plugins/WordPress can modify it
+// alternative set it to 400 to disallow edits via WordPress
+set('wp/configFiles/permissions', '600');
+set('wp/filter', [ // Contains all WordPress core files excluding uploads, themes, plugins, mu-plugins, languages.
+    '+ /wp-content/',
+    '- /wp-content/mu-plugins/*',
+    '- /wp-content/plugins/*',
+    '- /wp-content/themes/*',
+    '- /wp-content/uploads/*',
+    '- /wp-content/languages/*',
+    '- /wp-content/upgrade',
+    '- /wp-content/cache',
+    '+ /wp-content/**', // all other files in wp-content
+    '+ /wp-admin/',
+    '+ /wp-admin/**',
+    '+ /wp-includes/',
+    '+ /wp-includes/**',
+    '+ wp-activate.php',
+    '+ wp-blog-header.php',
+    '+ wp-comments-post.php',
+    '+ wp-config-sample.php',
+    '+ wp-config.php',
+    '- wp-config-local.php', // should be required in wp-config.php
+    '+ wp-cron.php',
+    '+ wp-links-opml.php',
+    '+ wp-load.php',
+    '+ wp-login.php',
+    '+ wp-mail.php',
+    '+ wp-settings.php',
+    '+ wp-signup.php',
+    '+ wp-trackback.php',
+    '+ xmlrpc.php',
+    '+ index.php',
+    '- *'
+]);
+set('uploads/dir', 'wp-content/uploads'); // relative to document root
+set('uploads/path', '{{release_or_current_path}}'); // path in front of uploads directory
+set('uploads/filter', []); // rsync filter syntax
+set('mu-plugins/dir', 'wp-content/mu-plugins'); // relative to document root
+set('mu-plugins/filter', []); // rsync filter syntax
+set('plugins/dir', 'wp-content/plugins'); // relative to document root
+set('plugins/filter', []); // rsync filter syntax
+set('themes/dir', 'wp-content/themes'); // relative to document root
+set('themes/filter', []); // rsync filter syntax
+set('theme/build_script', 'build'); // custom theme npm build script
+set('languages/dir', 'wp-content/languages'); // relative to document root
+set('languages/filter', []); // rsync filter syntax
+
+// Whether the site is a multisite and database imports/URL replacements should take that into account.
+set('wp/multisite', false);
+
+// options for zipping files for backups - passed to zip shell command
+set('zip_options', '-x "_backup_*.zip" -x **/node_modules/**\* -x **/vendor/**\*');
+
+// SHARED FILES
+// Do not use shared dirs
+set('shared_files', []);
+set('shared_dirs', []);
+# If you are using symlinked deployments, enable these
+// set('shared_files', ['wp-config.php', 'wp-config-local.php']);
+// set('shared_dirs', ['{{uploads/dir}}']);
+set('writable_dirs', ['{{uploads/dir}}']);
+
+// The default rsync config
+// used by all *:push/*:pull tasks and in `src/utils/rsync.php:buildOptionsArray`
+set('rsync', function () {
+    $config = [
+        'exclude'      => [], // do NOT exclude .deployfilter files - remote should be aware of them
+        'exclude-file' => false,
+        'include'      => [],
+        'include-file' => false,
+        'filter'       => [],
+        'filter-file'  => false,
+        // Allows specifying (=excluding/including/filtering) files to sync per directory in a `.deployfilter` file
+        // See README directory for examples
+        'filter-perdir' => '.deployfilter',
+        'flags'        => 'rz', // Recursive, with compress
+        'options'      => ['delete-after'], // needed so deployfilter files are send and delete is checked afterward
+        'timeout'      => 60,
+        'progress_bar' => true,
+    ];
+
+    if (output()->isVerbose()) {
+        $config['options'][] = 'verbose';
+    }
+    if (output()->isVeryVerbose()) {
+        $config['options'][] = 'verbose';
+    }
+    if (output()->isDebug()) {
+        $config['options'][] = 'verbose';
+    }
+
+    return $config;
+});
+// https://github.com/deployphp/deployer/issues/3139
+set('rsync_src', __DIR__);
+
+set('release_name', function () {
+    return date('YmdHis'); // you could also use the composer.json version here
+});
+
+set('writable_mode', 'chown');
 
 // Overwrite deploy:info task to show host instead of branch
 task('deploy:info', function () {
     $selectedHosts = selectedHosts();
-    $hosts =  implode(',', array_map(function (\Deployer\Host\Host $host) {
+    $hosts =  implode(',', array_map(function (Host $host) {
         return $host->getAlias();
     }, $selectedHosts));
     info("deploying to <fg=magenta;options=bold>$hosts</>");
+});
+
+// Overwrite deploy:setup to ignore existing current_path/release_path directories. This is expected.
+task('deploy:setup', function () {
+    run(
+        <<<EOF
+            [ -d {{deploy_path}} ] || mkdir -p {{deploy_path}};
+            cd {{deploy_path}};
+            [ -d .dep ] || mkdir .dep;
+            [ -d shared ] || mkdir shared;
+            EOF
+    );
+
+    run("[ -d {{current_path}} ] || mkdir -p {{current_path}};");
+});
+
+// Overwrite deploy:release to not create symlinks.
+task('deploy:release', function () {
+    cd('{{deploy_path}}');
+
+    $releaseName = get('release_name');
+
+    // Save release_name.
+    run("echo $releaseName > .dep/latest_release");
+
+    // Metainfo.
+    $timestamp = timestamp();
+    $metainfo = [
+        'created_at' => $timestamp,
+        'release_name' => $releaseName,
+        'user' => get('user'),
+        'target' => get('target'),
+    ];
+
+    // Save metainfo about release.
+    $json = escape_shell_argument(json_encode($metainfo));
+    run("echo $json >> .dep/releases_log");
 });
 
 // Overwrite deploy:prepare to extract updating/pushing code to extra task
@@ -50,12 +306,12 @@ task('deploy:prepare', [
     'deploy:release'
 ])->desc('Prepares a new release');
 
-// Build theme assets via npm locally
+// Build package assets via npm locally
 task('deploy:build_assets', function () {
-    on(getLocalhost(), function () {
-        if (has('theme/name')) {
-            invoke('theme:assets:vendors');
-            invoke('theme:assets:build');
+    on(Localhost::get(), function () {
+        if (has('packages')) {
+            invoke('packages:assets:vendors');
+            invoke('packages:assets:build');
         }
     });
 })->once();
@@ -63,7 +319,7 @@ task('deploy:build_assets', function () {
 // Overwrite deployment with rsync (instead of git)
 Deployer::get()->tasks->remove('deploy:check_remote');
 Deployer::get()->tasks->remove('deploy:update_code');
-// Push all files (incl 'wp:push', 'uploads:push', 'plugins:push', 'mu-plugins:push', 'themes:push')
+// Push all files (incl 'wp:push', 'uploads:push', 'plugins:push', 'mu-plugins:push', 'themes:push', 'packages:push')
 task('deploy:update_code', ['files:push'])
     ->desc('Pushes local code to the remote hosts');
 
@@ -95,7 +351,8 @@ after('deploy:failed', 'deploy:unlock');
  */
 task('cache:clear', function () {
     // TODO: overwrite, maybe clear cache via wpcli
-    // run("cd {{release_or_current_path}} && {{bin/wp}} rocket clean --confirm");
+    // WPCLI::runCommand("rocket clean --confirm", "{{release_or_current_path}}");
+    // WPCLI::runCommand("cache flush", "{{release_or_current_path}}");
 });
 
 /**
@@ -105,7 +362,7 @@ task('cache:clear', function () {
  * Does not support writable_mode configuration - always uses this
  */
 task('deploy:writable', function () {
-    if (has('http_user')) {
+    if (has('http_user') && get('writable_mode') === 'chown') {
         run("cd {{release_or_current_path}} && chown -R {{http_user}} .");
     }
     // set all directories to 755

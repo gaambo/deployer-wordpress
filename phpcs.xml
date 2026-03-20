@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<ruleset name="Project Ruleset">
+
+    <!-- Use PSR-12 coding standard -->
+    <rule ref="PSR12"/>
+
+    <!-- Directories to include -->
+    <file>./src</file>
+    <file>./tasks</file>
+    <file>./recipes</file>
+    <file>./examples</file>
+
+    <arg value="sp"/>
+    <arg name="colors"/>
+
+    <!-- Ignore vendor directory -->
+    <exclude-pattern>vendor/*</exclude-pattern>
+
+    <!-- Add any custom rules or exclusions here -->
+
+</ruleset>

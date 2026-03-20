@@ -3,7 +3,7 @@
 use Gaambo\DeployerWordpress\Localhost;
 
 require_once __DIR__ . '/vendor/autoload.php';
-require_once __DIR__ . '/vendor/gaambo/deployer-wordpress/recipes/simple.php';
+require_once __DIR__ . '/vendor/gaambo/deployer-wordpress/recipes/bedrock.php';
 
 use function Deployer\has;
 use function Deployer\import;
@@ -20,7 +20,14 @@ import('deploy.yml');
 localhost()
     ->set('public_url', "{{local_url}}")
     ->set('project_path', __DIR__)
-    ->set('current_path', 'public') // The public doc root as kind of the currents release path.
+    ->set('current_path', __DIR__)
+    // Bedrock dirs
+    ->set('uploads/path', '{{current_path}}') // Do not use shared directory for uploads.
+    ->set('uploads/dir', 'web/app/uploads')
+    ->set('mu-plugins/dir', 'web/app/mu-plugins')
+    ->set('themes/dir', 'web/app/themes')
+    ->set('plugins/dir', 'web/app/plugins')
+    ->set('wp/dir', 'web/wp')
     ->set('dbdump_path', __DIR__ . '/data/db_dumps')
     ->set('backup_path', __DIR__ . '/data/backups');
 
@@ -34,7 +41,6 @@ set('packages', [
     'core-functionality' => [
         'path' => '{{mu-plugins/dir}}/core-functionality',
         'remote:path' => '{{mu-plugins/dir}}/core-functionality',
-        'vendors' => true,
     ],
 ]);
 

@@ -1,0 +1,55 @@
+name: Code Quality
+
+on:
+  push:
+  pull_request:
+  # Allow manually triggering the workflow.
+  workflow_dispatch:
+
+jobs:
+  code-quality:
+    name: Run Code Quality Checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      matrix:
+        php: ['8.1', '8.2', '8.3', '8.4']
+      fail-fast: false
+
+    steps:
+      # Checkout the repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Setup PHP with Composer and cs2pr
+      - name: Setup PHP and tools
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          tools: composer:v2, cs2pr
+
+      # Validate composer.json
+      - name: Validate composer.json
+        run: composer validate --strict
+
+      # Install dependencies with caching
+      - name: Install Composer dependencies
+        uses: ramsey/composer-install@v3
+        with:
+          composer-options: '--prefer-dist --no-progress'
+
+      # Run PHP syntax linting
+      - name: Run PHP syntax linting
+        run: composer run-script lint
+
+      # Run PHP CodeSniffer with GitHub annotations
+      - name: Run PHP CodeSniffer
+        run: |
+          composer run-script phpcs -- --standard=phpcs.xml --report-checkstyle=./phpcs-report.xml
+          cs2pr ./phpcs-report.xml
+
+      # Run PHPStan with GitHub annotations
+      - name: Run PHPStan
+        run: |
+          composer run-script phpstan -- --error-format=checkstyle > phpstan-report.xml
+          cs2pr ./phpstan-report.xml

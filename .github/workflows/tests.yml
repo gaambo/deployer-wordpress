@@ -1,4 +1,4 @@
-name: Pull Request Tests
+name: Tests
 
 on:
   pull_request:
@@ -7,19 +7,43 @@ on:
 
 jobs:
   tests:
-    name: Run PHPUnit Tests
     runs-on: ubuntu-latest
     timeout-minutes: 10
     strategy:
       matrix:
-        php: ['8.1', '8.2', '8.3', '8.4']
+        php: [ '8.1', '8.2', '8.3', '8.4' ]
         # TODO: Add 8.0 when released.
-        deployer: ['^7.3', '^7.4', '^7.5']
-        include:
-          - name: Deployer ${{ matrix.deployer }} on PHP ${{ matrix.php }}
+        deployer: [ '7.3', '7.4', '7.5' ]
       fail-fast: false
+    name: Tests for Deployer ${{ matrix.deployer }} on PHP ${{ matrix.php }}
 
     steps:
       # Checkout the repository
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      # Setup PHP with Composer
+      - name: Setup PHP and tools
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          tools: composer:v2
+
+      # Install dependencies with caching
+      - name: Install Composer dependencies
+        uses: ramsey/composer-install@v3
+        with:
+          composer-options: '--prefer-dist --no-progress'
+
+      # Install specific Deployer version
+      - name: Install Deployer version
+        # Install latest patch of the specified version.
+        run: composer require --no-update deployer/deployer:"${{ matrix.deployer }}.*"
+
+      # Run PHPStan so we check compatibility with the specified Deployer version.
+      - name: Run PHPStan
+        run: composer run-script phpstan
+
+      # Run PHPUnit tests
+      - name: Run PHPUnit tests
+        run: composer run-script tests

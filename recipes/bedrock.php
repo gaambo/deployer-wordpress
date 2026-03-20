@@ -1,0 +1,67 @@
+<?php
+
+/**
+ * A Deployer recipe to be used with Roots Bedrock WordPress installations
+ * Which pushes code into a hardcoded release_path (no directories per release and no symlinks).
+ * For more Information see README.md
+ */
+
+namespace Gaambo\DeployerWordpress\Recipes\Bedrock;
+
+use Gaambo\DeployerWordpress\Composer;
+use Gaambo\DeployerWordpress\Rsync;
+
+use function Deployer\add;
+use function Deployer\after;
+use function Deployer\run;
+use function Deployer\task;
+use function Deployer\upload;
+
+require __DIR__ . '/common.php';
+
+add('recipes', ['bedrock-wp']);
+
+// Tasks
+task('app:push', function () {
+    $rsyncOptions = Rsync::buildOptionsArray();
+    run("mkdir -p {{release_or_current_path}}");
+    upload([
+        'config',
+        'scripts',
+        'composer.json',
+        'composer.lock',
+        '.env.example',
+        'wp-cli.yml',
+    ], "{{release_or_current_path}}", ['options' => $rsyncOptions]);
+    run("mkdir -p {{release_or_current_path}}/web");
+    upload([
+        // Keep prod .htaccess with webp redirects + redirection redirects + wprocket
+        // 'web/.htaccess',
+        'web/index.php',
+        'web/wp-config.php',
+    ], "{{release_or_current_path}}/web", ['options' => $rsyncOptions]);
+    run("mkdir -p {{release_or_current_path}}/{{mu-plugins/dir}}");
+    upload([
+        'web/app/mu-plugins/bedrock-autoloader.php',
+    ], "{{release_or_current_path}}/{{mu-plugins/dir}}", ['options' => $rsyncOptions]);
+});
+
+task('deploy:update_code', [
+    'app:push',
+    'packages:push',
+])->desc('Pushes local bedrock app and packages to the remote hosts');
+
+// install vendors after deploying (on remote host)
+after(
+    'deploy:update_code',
+    function () {
+        Composer::runDefault('{{release_or_current_path}}');
+    }
+);
+
+task('deploy', [
+    'deploy:prepare',
+    'deploy:build_assets',
+    'deploy:update_code',
+    'deploy:publish'
+])->desc('Deploy WordPress Site');

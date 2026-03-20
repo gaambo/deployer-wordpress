@@ -1,2 +1,8 @@
-/vendor/
-/test
+/vendor
+/.cursor
+/.junie
+/.idea
+.DS_STORE
+.phpunit.cache
+.phpunit.result.cache
+tests/coverage

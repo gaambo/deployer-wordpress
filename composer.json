@@ -1,7 +1,6 @@
 {
   "name": "gaambo/deployer-wordpress",
   "description": "Deployer tasks for deploying WordPress Sites",
-  "version": "3.1.0",
   "type": "library",
   "license": "MIT",
   "homepage": "https://github.com/gaambo/deployer-wordpress",
@@ -11,14 +10,55 @@
       "email": "fabian@fabiantodt.at"
     }
   ],
-  "require-dev": {},
+  "require-dev": {
+    "phpstan/phpstan": "^2.1",
+    "phpunit/phpunit": "^10.5",
+    "squizlabs/php_codesniffer": "^3.11",
+    "symfony/console": "^6.4",
+    "symfony/process": "^6.4"
+  },
   "require": {
-    "php": "^8.0|^7.3",
+    "php": "^8.1",
     "deployer/deployer": "^7.3"
   },
   "autoload": {
-    "files": [
-      "autoload.php"
+    "psr-4": {
+      "Gaambo\\DeployerWordpress\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Gaambo\\DeployerWordpress\\Tests\\": "tests/",
+      "Deployer\\": "vendor/deployer/deployer/src/"
+    }
+  },
+  "scripts": {
+    "phpcs": "vendor/bin/phpcs -s",
+    "phpcs:fix": "vendor/bin/phpcbf",
+    "phpstan": "vendor/bin/phpstan analyse --memory-limit 1G",
+    "lint": "find . -type f -name '*.php' -not -path './vendor/*' -exec php -l {} \\;",
+    "phpunit": "DO_NOT_TRACK=true vendor/bin/phpunit",
+    "tests:unit": "DO_NOT_TRACK=true vendor/bin/phpunit --testsuite Unit",
+    "tests:unit:coverage": "DO_NOT_TRACK=true XDEBUG_MODE=coverage vendor/bin/phpunit --testsuite Unit --coverage-text",
+    "tests:integration": "DO_NOT_TRACK=true vendor/bin/phpunit --testsuite Integration",
+    "tests:integration:coverage": "DO_NOT_TRACK=true XDEBUG_MODE=coverage vendor/bin/phpunit --testsuite Integration --coverage-text",
+    "tests:functional": "DO_NOT_TRACK=true vendor/bin/phpunit --testsuite Functional",
+    "tests:functional:coverage": "DO_NOT_TRACK=true XDEBUG_MODE=coverage vendor/bin/phpunit --testsuite Functional --coverage-text",
+    "tests": [
+      "@tests:unit",
+      "@tests:integration",
+      "@tests:functional"
+    ],
+    "tests:coverage": "DO_NOT_TRACK=true XDEBUG_MODE=coverage vendor/bin/phpunit --coverage-html=tests/coverage",
+    "precommit": [
+      "@lint",
+      "@phpcs",
+      "@phpstan",
+      "@composer validate",
+      "@tests"
     ]
+  },
+  "config": {
+    "sort-packages": true
   }
 }

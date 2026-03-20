@@ -1,0 +1,5 @@
+Test Mu-Plugin
+=============
+
+This is a test mu-plugin file for functional testing purposes.
+It contains some sample text that will be used to verify file transfers.

@@ -24,6 +24,8 @@ localhost()
     ->set('dbdump_path', __DIR__ . '/data/db_dumps')
     ->set('backup_path', __DIR__ . '/data/backups');
 
+set('wp/multisite', true);
+
 set('packages', [
     'theme' => [
         'path' => '{{themes/dir}}/custom-theme',
