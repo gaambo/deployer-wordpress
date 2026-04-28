@@ -21,6 +21,9 @@ class PackagesTasksFunctionalTest extends FunctionalTestCase
         // Create directories
         mkdir($this->localMuPluginsDir, 0755, true);
         mkdir($this->remoteMuPluginsDir, 0755, true);
+
+        // Set default npm configuration
+        $this->deployer->config->set('bin/npm', 'npm');
     }
 
     public function testListAvailableTasks(): void
@@ -80,6 +83,7 @@ class PackagesTasksFunctionalTest extends FunctionalTestCase
 
         // Run the task
         $result = $this->dep('packages:assets:vendors');
+        $output = $this->tester->getDisplay();
         $this->assertEquals(0, $result);
     }
 
