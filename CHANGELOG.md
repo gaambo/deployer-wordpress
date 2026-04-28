@@ -1,5 +1,9 @@
 # Changelog
 
+## v4.0.1 - 2026-04-28
+
+- Update composer packages
+
 ## v4.0.0 - 2025-03-20
 
 v4 is a major refactor focusing on simpler, rsync-based deployments with better developer experience.
