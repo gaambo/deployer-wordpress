@@ -6,6 +6,9 @@ on:
   # Allow manually triggering the workflow.
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   code-quality:
     name: Run Code Quality Checks
@@ -17,38 +20,31 @@ jobs:
       fail-fast: false
 
     steps:
-      # Checkout the repository
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      # Setup PHP with Composer and cs2pr
       - name: Setup PHP and tools
-        uses: shivammathur/setup-php@v2
+        uses: shivammathur/setup-php@7c071dfe9dc99bdf297fa79cb49ea005b9fcadbc # v2.37.1
         with:
           php-version: ${{ matrix.php }}
           tools: composer:v2, cs2pr
 
-      # Validate composer.json
       - name: Validate composer.json
         run: composer validate --strict
 
-      # Install dependencies with caching
       - name: Install Composer dependencies
-        uses: ramsey/composer-install@v3
+        uses: ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda # v4.0.0
         with:
           composer-options: '--prefer-dist --no-progress'
 
-      # Run PHP syntax linting
       - name: Run PHP syntax linting
         run: composer run-script lint
 
-      # Run PHP CodeSniffer with GitHub annotations
       - name: Run PHP CodeSniffer
         run: |
           composer run-script phpcs -- --standard=phpcs.xml --report-checkstyle=./phpcs-report.xml
           cs2pr ./phpcs-report.xml
 
-      # Run PHPStan with GitHub annotations
       - name: Run PHPStan
         run: |
           composer run-script phpstan -- --error-format=checkstyle > phpstan-report.xml

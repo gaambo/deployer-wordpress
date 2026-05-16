@@ -59,6 +59,18 @@
     ]
   },
   "config": {
+    "allow-plugins": false,
+    "preferred-install": {
+      "*": "dist"
+    },
+    "policy": {
+      "advisories": {
+        "audit": "report"
+      },
+      "abandoned": {
+        "audit": "report"
+      }
+    },
     "sort-packages": true
   }
 }

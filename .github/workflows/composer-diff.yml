@@ -1,4 +1,4 @@
-name: Composer Lock Diff
+name: Composer Dependency Updates
 
 on:
   pull_request:
@@ -6,27 +6,41 @@ on:
       - 'composer.json'
       - 'composer.lock'
 
+permissions:
+  contents: read
+  pull-requests: write
+
 jobs:
   composer-diff:
     name: Composer Lock Diff
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      # Checkout the repository
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
-          fetch-depth: 0
+          fetch-depth: 0 # Required for IonBazan/composer-diff-action
 
-      # Generate composer.lock diff
+      - name: Setup PHP and tools
+        uses: shivammathur/setup-php@7c071dfe9dc99bdf297fa79cb49ea005b9fcadbc # v2.37.1
+
+      - name: Audit Composer dependencies
+        run: composer audit --abandoned=report
+
       - name: Generate composer.lock diff
         id: composer-diff
-        uses: IonBazan/composer-diff-action@v1
+        uses: IonBazan/composer-diff-action@3140157575f6a67799cc80248ae35f5fb303ab15 # v1.2.0
 
-      # Post diff as sticky comment
       - name: Post diff as sticky comment
-        uses: marocchino/sticky-pull-request-comment@v2
+        uses: marocchino/sticky-pull-request-comment@0ea0beb66eb9baf113663a64ec522f60e49231c0 # v3.0.4
+        # An empty diff result will break this action.
+        if: ${{ steps.composer_diff.outputs.composer_diff_exit_code != 0 }}
         with:
+          header: composer-diff # Creates a collapsed comment with the report
           message: |
-            ## Composer Package Changes
-            ${{ steps.composer-diff.outputs.diff }} 
+            <details>
+            <summary>Composer package changes</summary>
+
+            ${{ steps.composer_diff.outputs.composer_diff }}
+
+            </details>
