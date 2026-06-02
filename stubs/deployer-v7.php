@@ -1,9 +1,10 @@
 <?php
 
 /**
- * PHPStan stubs for Deployer v7 symbols that were removed in v8.
- * PHPStan runs against the installed version (v8), so v7-only functions are
- * declared here so the v7 compatibility code paths still type-check.
+ * PHPStan stubs for Deployer symbols that differ between v7 and v8.
+ *
+ * PHPStan analyses against the Deployer version installed in the current environment, so we
+ * declare functions that may be missing depending on whether v7 or v8 is installed.
  */
 
 namespace Deployer\Support {
