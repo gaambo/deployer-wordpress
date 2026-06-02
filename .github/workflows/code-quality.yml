@@ -52,9 +52,6 @@ jobs:
       - name: Validate composer.json
         run: composer validate --strict
 
-      - name: Audit Composer packages
-        run: composer audit --locked
-
       - name: Set Deployer version constraint
         env:
           DEPLOYER_VERSION: ${{ matrix.deployer }}
@@ -67,6 +64,9 @@ jobs:
         with:
           dependency-versions: highest
           composer-options: '--prefer-dist --no-progress'
+
+      - name: Audit Composer packages
+        run: composer audit
 
       - name: Run PHP syntax linting
         run: composer run-script lint
