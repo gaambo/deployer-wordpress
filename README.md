@@ -210,6 +210,20 @@ follows PSR-2 and Deployer best practices.
 
 The library includes a comprehensive test suite with unit, integration, and functional tests.
 
-- Run `composer phpunit` to execute all tests.
+- Run `composer precommit` before submitting a PR — it runs lint, code style, PHPStan, and all tests.
 - Functional tests use a mocked environment to verify rsync commands and file operations without real remote
   connections.
+
+The library supports both Deployer v7 and v8. Test against both before submitting:
+
+```bash
+# Switch to Deployer v7
+composer require --no-update deployer/deployer:"7.5.*"
+composer update deployer/deployer --with-dependencies
+composer precommit
+
+# Switch back to v8
+composer require --no-update deployer/deployer:"^7.3 || ^8.0"
+composer update deployer/deployer --with-dependencies
+composer precommit
+```

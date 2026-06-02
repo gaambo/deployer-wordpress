@@ -5,7 +5,14 @@ parameters:
         - tasks
         - recipes
         - examples
+        - phpstan
     scanDirectories:
         - vendor/deployer/deployer
     bootstrapFiles:
         - stubs/deployer-v7.php
+
+services:
+    -
+        class: Gaambo\DeployerWordpress\PHPStan\DeployerVersionCompatExtension
+        tags:
+            - phpstan.ignoreErrorExtension

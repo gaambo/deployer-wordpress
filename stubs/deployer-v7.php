@@ -7,11 +7,24 @@
  */
 
 namespace Deployer\Support {
+    if (!function_exists('Deployer\\Support\\escape_shell_argument')) {
+        function escape_shell_argument(string $argument): string
+        {
+            return "'" . str_replace("'", "'\\''", $argument) . "'";
+        }
+    }
+}
+
+namespace Deployer {
     /**
-     * Escape a shell argument (replaced by Deployer\quote in v8).
+     * Shell-quote a string (added in Deployer v8, not present in v7).
+     * Declared here so v7 analysis resolves the symbol.
+     * Guard against redeclaration when v8 is installed and already defines it.
      */
-    function escape_shell_argument(string $argument): string
-    {
-        return "'" . str_replace("'", "'\\''", $argument) . "'";
+    if (!function_exists('Deployer\\quote')) {
+        function quote(string $arg): string
+        {
+            return escapeshellarg($arg);
+        }
     }
 }

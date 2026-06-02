@@ -30,6 +30,7 @@
   "autoload-dev": {
     "psr-4": {
       "Gaambo\\DeployerWordpress\\Tests\\": "tests/",
+      "Gaambo\\DeployerWordpress\\PHPStan\\": "phpstan/",
       "Deployer\\": "vendor/deployer/deployer/src/"
     }
   },
