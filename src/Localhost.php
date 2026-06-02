@@ -47,14 +47,41 @@ class Localhost
      * does not use our Localhost instance.
      *
      * @param string $command Command to run on localhost.
-     * @param string[]|null $options Array of options will override passed named arguments.
+     * @param array{
+     *     cwd?:string|null,
+     *     timeout?:int|null,
+     *     idleTimeout?:int|null,
+     *     env?:array<string,string>|null,
+     *     secrets?:array<string,mixed>|null,
+     *     nothrow?:bool,
+     *     forceOutput?:bool,
+     *     shell?:string|null
+     * }|null $options
+     *   v8 named parameters (timeout, env, nothrow, forceOutput, shell).
+     *   Ignored on v7 since no callers pass options.
      * @return string
      */
-    public static function run(string $command, ?array $options = []): string
+    public static function run(string $command, ?array $options = null): string
     {
         $result = null;
         on(self::get(), function () use ($command, $options, &$result) {
-            $result = runLocally($command, $options);
+            // Deployer v7/v8 compat: v8 uses named parameters; v7 used an options array.
+            // No callers pass $options, so v7 always falls through to runLocally($command).
+            if ($options !== null && Utils::isDeployerVersion('>=', '8.0.0')) {
+                $result = runLocally(
+                    $command,
+                    cwd: $options['cwd'] ?? null,
+                    timeout: $options['timeout'] ?? null,
+                    idleTimeout: $options['idleTimeout'] ?? null,
+                    secrets: $options['secrets'] ?? null,
+                    env: $options['env'] ?? null,
+                    forceOutput: $options['forceOutput'] ?? false,
+                    nothrow: $options['nothrow'] ?? false,
+                    shell: $options['shell'] ?? null,
+                );
+            } else {
+                $result = runLocally($command);
+            }
         });
         return $result;
     }

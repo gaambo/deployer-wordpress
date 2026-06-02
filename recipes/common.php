@@ -12,6 +12,7 @@ use Deployer\Exception\ConfigurationException;
 use Deployer\Host\Host;
 use Gaambo\DeployerWordpress\Composer;
 use Gaambo\DeployerWordpress\Localhost;
+use Gaambo\DeployerWordpress\Utils;
 use Gaambo\DeployerWordpress\WPCLI;
 
 use function Deployer\after;
@@ -27,7 +28,6 @@ use function Deployer\output;
 use function Deployer\run;
 use function Deployer\selectedHosts;
 use function Deployer\set;
-use function Deployer\Support\escape_shell_argument;
 use function Deployer\task;
 use function Deployer\test;
 use function Deployer\timestamp;
@@ -294,7 +294,7 @@ task('deploy:release', function () {
     ];
 
     // Save metainfo about release.
-    $json = escape_shell_argument(json_encode($metainfo));
+    $json = Utils::quote(json_encode($metainfo));
     run("echo $json >> .dep/releases_log");
 });
 

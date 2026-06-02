@@ -6,4 +6,5 @@
 /phpcs.xml export-ignore
 /phpstan.neon export-ignore
 /phpunit.xml export-ignore
-/tests/ export-ignore 
+/stubs/ export-ignore
+/tests/ export-ignore

@@ -7,3 +7,5 @@ parameters:
         - examples
     scanDirectories:
         - vendor/deployer/deployer
+    bootstrapFiles:
+        - stubs/deployer-v7.php
