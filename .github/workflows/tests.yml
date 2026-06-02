@@ -20,6 +20,9 @@ jobs:
       matrix:
         php: [ '8.2', '8.3', '8.4', '8.5' ]
         deployer: [ '7.3', '7.4', '7.5', '8.0' ]
+        exclude:
+          - php: '8.2'
+            deployer: '8.0'
       fail-fast: false
     name: Tests for Deployer ${{ matrix.deployer }} on PHP ${{ matrix.php }}
 
