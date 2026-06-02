@@ -6,20 +6,28 @@ on:
       - 'composer.json'
       - 'composer.lock'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
-  pull-requests: write
 
 jobs:
   composer-diff:
     name: Composer Lock Diff
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: write # needed for sticky-pull-request-comment to post/update PR comments
     steps:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 0 # Required for IonBazan/composer-diff-action
+          # Do not store git credentials in .git -> could be leaked/exposed by infected/malicious action.
+          persist-credentials: false
 
       - name: Setup PHP and tools
         uses: shivammathur/setup-php@7c071dfe9dc99bdf297fa79cb49ea005b9fcadbc # v2.37.1
@@ -27,8 +35,8 @@ jobs:
           php-version: 8.3
           tools: composer:v2
 
-      - name: Audit Composer dependencies
-        run: composer audit --abandoned=report
+      - name: Audit Composer packages
+        run: composer audit --locked --abandoned=report
 
       - name: Generate composer.lock diff
         id: composer-diff
@@ -44,6 +52,6 @@ jobs:
             <details>
             <summary>Composer package changes</summary>
 
-            ${{ steps.composer-diff.outputs.composer_diff }}
+              ${{ steps.composer-diff.outputs.composer_diff }}
 
             </details>
