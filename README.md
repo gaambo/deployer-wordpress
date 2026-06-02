@@ -214,7 +214,7 @@ The library includes a comprehensive test suite with unit, integration, and func
 - Functional tests use a mocked environment to verify rsync commands and file operations without real remote
   connections.
 
-The library supports both Deployer v7 and v8. Test against both before submitting:
+The library supports both Deployer v7 and v8. Test against both before submitting (note: Deployer v7 requires PHP 8.2 or 8.3 — it is incompatible with PHP 8.4+):
 
 ```bash
 # Switch to Deployer v7
