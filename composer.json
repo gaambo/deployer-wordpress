@@ -18,7 +18,7 @@
     "symfony/process": "^6.4"
   },
   "require": {
-    "php": "^8.1",
+    "php": "^8.2",
     "deployer/deployer": "^7.3"
   },
   "autoload": {
