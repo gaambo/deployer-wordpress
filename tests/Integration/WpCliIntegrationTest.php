@@ -51,30 +51,30 @@ class WpCliIntegrationTest extends IntegrationTestCase
 
     public function testRunCommandLocally(): void
     {
-        // Note: We can't test for the host object because runLocally creates a new host instance
+        $expectedCommand = 'wp post list --format=table ';
+        // Note: We can't test for the host object because runLocally creates a new host instance.
         $this->processRunnerMock
             ->expects($this->once())
             ->method('run')
-            ->with(
-                $this->anything(), // Host object is not reliable as runLocally creates a new instance
-                'wp post list --format=table ',
-                []
-            );
+            ->willReturnCallback(function ($host, $command) use ($expectedCommand) {
+                $this->assertEquals($expectedCommand, $command);
+                return '';
+            });
 
         WPCLI::runCommandLocally('post list --format=table');
     }
 
     public function testRunCommandLocallyWithoutPath(): void
     {
-        // Note: We can't test for the host object because runLocally creates a new host instance
+        $expectedCommand = 'wp post list --format=table ';
+        // Note: We can't test for the host object because runLocally creates a new host instance.
         $this->processRunnerMock
             ->expects($this->once())
             ->method('run')
-            ->with(
-                $this->anything(), // Host object is not reliable as runLocally creates a new instance
-                'wp post list --format=table ',
-                []
-            );
+            ->willReturnCallback(function ($host, $command) use ($expectedCommand) {
+                $this->assertEquals($expectedCommand, $command);
+                return '';
+            });
 
         WPCLI::runCommandLocally('post list --format=table', false);
     }
@@ -227,11 +227,10 @@ class WpCliIntegrationTest extends IntegrationTestCase
         $this->processRunnerMock
             ->expects($this->once())
             ->method('run')
-            ->with(
-                $this->anything(),
-                $expectedCommand,
-                []
-            );
+            ->willReturnCallback(function ($host, $command) use ($expectedCommand) {
+                $this->assertEquals($expectedCommand, $command);
+                return '';
+            });
 
         WPCLI::runCommandLocally($command, $path, $arguments);
     }
@@ -270,11 +269,10 @@ class WpCliIntegrationTest extends IntegrationTestCase
         $this->processRunnerMock
             ->expects($this->once())
             ->method('run')
-            ->with(
-                $this->anything(),
-                $expectedCommand,
-                []
-            );
+            ->willReturnCallback(function ($host, $command) use ($expectedCommand) {
+                $this->assertEquals($expectedCommand, $command);
+                return '';
+            });
 
         WPCLI::runCommandLocally($command, $path, $arguments);
     }
@@ -311,11 +309,10 @@ class WpCliIntegrationTest extends IntegrationTestCase
         $this->processRunnerMock
             ->expects($this->once())
             ->method('run')
-            ->with(
-                $this->anything(),
-                $expectedCommand,
-                []
-            );
+            ->willReturnCallback(function ($host, $command) use ($expectedCommand) {
+                $this->assertEquals($expectedCommand, $command);
+                return '';
+            });
 
         WPCLI::runCommandLocally($command, $path, $arguments);
     }

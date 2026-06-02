@@ -191,7 +191,9 @@ class DatabaseTasksFunctionalTest extends FunctionalTestCase
         $result = $this->dep('db:remote:backup');
         $this->assertNotEquals(0, $result, 'Task should fail with invalid dump path');
         $output = $this->tester->getDisplay();
-        $this->assertStringContainsString('Task db:remote:backup failed', $output);
+        // Deployer v7/v8 compat: v7 says "Task db:remote:backup failed", v8 says "error in ...".
+        $this->assertStringContainsString('db:remote:backup', $output);
+        $this->assertMatchesRegularExpression('/failed|error/i', $output, 'Output should indicate failure (v7: "failed", v8: "error")');
 
         // Verify no dump files were created
         $remoteDumpFiles = glob($this->remoteDir . '/dumps/db_backup-*.sql');
@@ -343,7 +345,9 @@ class DatabaseTasksFunctionalTest extends FunctionalTestCase
         $result = $this->dep('db:local:backup');
         $this->assertNotEquals(0, $result, 'Task should fail with invalid dump path');
         $output = $this->tester->getDisplay();
-        $this->assertStringContainsString('Task db:local:backup failed', $output);
+        // Deployer v7/v8 compat: v7 says "Task db:local:backup failed", v8 says "error in ...".
+        $this->assertStringContainsString('db:local:backup', $output);
+        $this->assertMatchesRegularExpression('/failed|error/i', $output, 'Output should indicate failure (v7: "failed", v8: "error")');
 
         // Verify no dump files were created
         $localDumpFiles = glob($this->localDir . '/dumps/db_backup-*.sql');

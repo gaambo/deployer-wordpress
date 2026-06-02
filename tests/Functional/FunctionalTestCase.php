@@ -10,6 +10,7 @@ use Deployer\Host\Host;
 use Deployer\Host\Localhost;
 use Deployer\Utility\Rsync;
 use Exception;
+use Gaambo\DeployerWordpress\Utils;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Application;
@@ -160,8 +161,11 @@ abstract class FunctionalTestCase extends TestCase
             });
 
         // Use a closure factory, because the original runner needs dependencies.
+        // Deployer v7/v8 compat: constructor changed from ProcessRunner($pop, $logger) to ProcessRunner($logger).
         $this->deployer['processRunner'] = function ($c) {
-            $this->originalProcessRunner = new ProcessRunner($c['pop'], $c['logger']);
+            $this->originalProcessRunner = Utils::isDeployerVersion('>=', '8.0.0')
+                ? new ProcessRunner($c['logger'])             // v8
+                : new ProcessRunner($c['pop'], $c['logger']); // v7
             return $this->mockedRunner;
         };
     }

@@ -18,9 +18,16 @@ jobs:
     timeout-minutes: 10
     strategy:
       matrix:
-        php: [ '8.2', '8.3', '8.4', '8.5' ]
-        # TODO: Add 8.0 when released.
-        deployer: [ '7.3', '7.4', '7.5' ]
+        include:
+          - { php: '8.2', deployer: '7.3' }
+          - { php: '8.2', deployer: '7.4' }
+          - { php: '8.2', deployer: '7.5' }
+          - { php: '8.3', deployer: '7.3' }
+          - { php: '8.3', deployer: '7.4' }
+          - { php: '8.3', deployer: '7.5' }
+          - { php: '8.3', deployer: '8.0' }
+          - { php: '8.4', deployer: '8.0' }
+          - { php: '8.5', deployer: '8.0' }
       fail-fast: false
     name: Tests for Deployer ${{ matrix.deployer }} on PHP ${{ matrix.php }}
 
@@ -37,18 +44,21 @@ jobs:
           php-version: ${{ matrix.php }}
           tools: composer:v2
 
-      # Install dependencies with caching
-      - name: Install Composer dependencies
-        uses: ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda # v4.0.0
-        with:
-          composer-options: '--prefer-dist --no-progress'
-
-      # Install specific Deployer version
-      - name: Install Deployer version
-        # Install latest patch of the specified version.
+      # Pin the Deployer version constraint before installing, so the install
+      # step resolves the right version (and fails fast on invalid combos like
+      # PHP 8.2 + Deployer 8 which requires PHP ^8.3).
+      - name: Set Deployer version constraint
         env:
           DEPLOYER_VERSION: ${{ matrix.deployer }}
         run: composer require --no-update deployer/deployer:"${DEPLOYER_VERSION}.*"
+
+      # Install dependencies with caching — uses `composer update` (highest)
+      # so the pinned deployer constraint above is actually resolved.
+      - name: Install Composer dependencies
+        uses: ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda # v4.0.0
+        with:
+          dependency-versions: highest
+          composer-options: '--prefer-dist --no-progress'
 
       # Run PHPStan so we check compatibility with the specified Deployer version.
       - name: Run PHPStan
