@@ -51,10 +51,24 @@ class DatabaseTasksFunctionalTest extends FunctionalTestCase
                     $dumpFile = $matches[1];
                 } else {
                     // Determine if this is a local or remote command based on the host
-                    $dumpFile = $host->getHostname() === 'local'
+                    $dumpFile = $host->getAlias() === 'localhost'
                         ? $this->localDir . '/dumps/db_backup_' . date('Y-m-d_H-i') . '.sql'
                         : $this->remoteDir . '/dumps/db_backup_' . date('Y-m-d_H-i') . '.sql';
                 }
+
+                // Resolve relative dump paths against the WP-CLI working directory.
+                if (!str_starts_with($dumpFile, '/') && !str_starts_with($dumpFile, '~')) {
+                    $basePath = $host->getAlias() === 'localhost'
+                        ? $this->localHost->get('current_path')
+                        : $this->remoteHost->get('release_or_current_path');
+                    $dumpFile = rtrim($basePath, '/') . '/' . $dumpFile;
+                }
+
+                $dumpDir = dirname($dumpFile);
+                if (!is_dir($dumpDir)) {
+                    mkdir($dumpDir, 0755, true);
+                }
+
                 copy($this->getFixturePath('database/dump.sql'), $dumpFile);
                 return 'Database exported successfully';
             }

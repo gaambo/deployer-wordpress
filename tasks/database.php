@@ -45,7 +45,7 @@ task('db:remote:backup', function () {
     $resolvedRemoteDumpPath = Files::resolvePath($remoteDumpPath, get('release_or_current_path'));
 
     run("mkdir -p $resolvedRemoteDumpPath");
-    WPCLI::runCommand("db export $resolvedRemoteDumpPath/$dumpFile --add-drop-table", "{{release_or_current_path}}");
+    WPCLI::runCommand("db export $remoteDumpPath/$dumpFile --add-drop-table", "{{release_or_current_path}}");
 
     Files::pullFile("$remoteDumpPath/$dumpFile", "$localDumpPath/$dumpFile");
 })->desc('Create backup of remote database and download locally');
@@ -70,7 +70,10 @@ task('db:local:backup', function () {
     $resolvedLocalDumpPath = Files::resolvePath($localDumpPath, Localhost::getConfig('current_path'));
 
     Localhost::run("mkdir -p $resolvedLocalDumpPath");
-    WPCLI::runCommandLocally("db export $resolvedLocalDumpPath/$dumpFile --add-drop-table");
+    WPCLI::runCommandLocally(
+        "db export $localDumpPath/$dumpFile --add-drop-table",
+        Localhost::getConfig('current_path')
+    );
 
     Files::pushFile("$localDumpPath/$dumpFile", "$remoteDumpPath/$dumpFile");
 })->desc('Create backup of local database and upload to remote');
@@ -98,7 +101,7 @@ task('db:remote:import', function () {
 
     $localUrl = Localhost::getConfig('public_url');
     $remoteUrl = get('public_url');
-    WPCLI::runCommand("db import $resolvedRemoteDumpPath/$dumpFile");
+    WPCLI::runCommand("db import $remoteDumpPath/$dumpFile");
 
     if (get('wp/multisite')) {
         WPCLI::runCommand("search-replace $localUrl $remoteUrl --network --all-tables");
@@ -142,7 +145,7 @@ task('db:local:import', function () {
         throw new \RuntimeException("Database dump file not found at $resolvedLocalDumpPath/$dumpFile");
     }
     $remoteUrl = get('public_url');
-    WPCLI::runCommandLocally("db import $resolvedLocalDumpPath/$dumpFile");
+    WPCLI::runCommandLocally("db import $localDumpPath/$dumpFile", Localhost::getConfig('current_path'));
 
     if (get('wp/multisite')) {
         $localUrl = Localhost::getConfig('public_url');
