@@ -605,6 +605,140 @@ class DatabaseTasksFunctionalTest extends FunctionalTestCase
         $this->assertNotEquals(0, $result, 'Task should fail when dump file is missing');
     }
 
+    public function testDbRemoteBackupWithRelativeDumpPath(): void
+    {
+        // Set relative dump paths
+        $this->localHost->set('dbdump_path', 'data/db_dumps');
+        $this->remoteHost->set('dbdump_path', 'data/db_dumps');
+
+        // Create resolved dump directories
+        $resolvedLocalPath = $this->localDocRootDir . '/data/db_dumps';
+        $resolvedRemotePath = $this->remoteReleaseDir . '/data/db_dumps';
+        mkdir($resolvedLocalPath, 0755, true);
+        mkdir($resolvedRemotePath, 0755, true);
+
+        // Mock successful WP-CLI export
+        $this->mockSuccessfulDbExport();
+
+        // Run the backup task
+        $result = $this->dep('db:remote:backup');
+        $this->assertEquals(0, $result);
+
+        // Verify dump file was created in resolved remote directory
+        $remoteDumpFiles = glob($resolvedRemotePath . '/db_backup-*.sql');
+        $this->assertCount(1, $remoteDumpFiles, 'Remote dump file should be created in resolved relative path');
+
+        // Verify dump file was downloaded to resolved local directory
+        $localDumpFiles = glob($resolvedLocalPath . '/db_backup-*.sql');
+        $this->assertCount(1, $localDumpFiles, 'Local dump file should be downloaded to resolved relative path');
+
+        // Verify file contents match fixture
+        $fixtureContent = file_get_contents($this->getFixturePath('database/dump.sql'));
+        $remoteContent = file_get_contents($remoteDumpFiles[0]);
+        $localContent = file_get_contents($localDumpFiles[0]);
+
+        $this->assertEquals($fixtureContent, $remoteContent, 'Remote dump file should match fixture');
+        $this->assertEquals($fixtureContent, $localContent, 'Local dump file should match fixture');
+    }
+
+    public function testDbLocalBackupWithRelativeDumpPath(): void
+    {
+        // Set relative dump paths
+        $this->localHost->set('dbdump_path', 'data/db_dumps');
+        $this->remoteHost->set('dbdump_path', 'data/db_dumps');
+
+        // Create resolved dump directories
+        $resolvedLocalPath = $this->localDocRootDir . '/data/db_dumps';
+        $resolvedRemotePath = $this->remoteReleaseDir . '/data/db_dumps';
+        mkdir($resolvedLocalPath, 0755, true);
+        mkdir($resolvedRemotePath, 0755, true);
+
+        // Mock successful WP-CLI export
+        $this->mockSuccessfulDbExport();
+
+        // Run the backup task
+        $result = $this->dep('db:local:backup');
+        $this->assertEquals(0, $result);
+
+        // Verify dump file was created in resolved local directory
+        $localDumpFiles = glob($resolvedLocalPath . '/db_backup-*.sql');
+        $this->assertCount(1, $localDumpFiles, 'Local dump file should be created in resolved relative path');
+
+        // Verify dump file was uploaded to resolved remote directory
+        $remoteDumpFiles = glob($resolvedRemotePath . '/db_backup-*.sql');
+        $this->assertCount(1, $remoteDumpFiles, 'Remote dump file should be uploaded to resolved relative path');
+
+        // Verify file contents match fixture
+        $fixtureContent = file_get_contents($this->getFixturePath('database/dump.sql'));
+        $localContent = file_get_contents($localDumpFiles[0]);
+        $remoteContent = file_get_contents($remoteDumpFiles[0]);
+
+        $this->assertEquals($fixtureContent, $localContent, 'Local dump file should match fixture');
+        $this->assertEquals($fixtureContent, $remoteContent, 'Remote dump file should match fixture');
+    }
+
+    public function testDbPushWithRelativeDumpPath(): void
+    {
+        // Set relative dump paths
+        $this->localHost->set('dbdump_path', 'data/db_dumps');
+        $this->remoteHost->set('dbdump_path', 'data/db_dumps');
+        $this->localHost->set('public_url', 'http://localhost');
+        $this->remoteHost->set('public_url', 'https://example.com');
+
+        // Create resolved dump directories
+        $resolvedLocalPath = $this->localDocRootDir . '/data/db_dumps';
+        $resolvedRemotePath = $this->remoteReleaseDir . '/data/db_dumps';
+        mkdir($resolvedLocalPath, 0755, true);
+        mkdir($resolvedRemotePath, 0755, true);
+
+        // Mock successful WP-CLI export, import and URL replacement
+        $this->mockSuccessfulDbExport();
+        $this->mockSuccessfulDbImport();
+
+        // Run the push task
+        $result = $this->dep('db:push');
+        $this->assertEquals(0, $result);
+
+        // Verify remote dump file was imported and cleaned up
+        $remoteDumpFiles = glob($resolvedRemotePath . '/db_backup-*.sql');
+        $this->assertCount(0, $remoteDumpFiles, 'Remote dump file should be removed after import');
+
+        // Verify local dump file was created
+        $localDumpFiles = glob($resolvedLocalPath . '/db_backup-*.sql');
+        $this->assertCount(1, $localDumpFiles, 'Local dump file should remain after push');
+    }
+
+    public function testDbPullWithRelativeDumpPath(): void
+    {
+        // Set relative dump paths
+        $this->localHost->set('dbdump_path', 'data/db_dumps');
+        $this->remoteHost->set('dbdump_path', 'data/db_dumps');
+        $this->localHost->set('public_url', 'http://localhost');
+        $this->remoteHost->set('public_url', 'https://example.com');
+
+        // Create resolved dump directories
+        $resolvedLocalPath = $this->localDocRootDir . '/data/db_dumps';
+        $resolvedRemotePath = $this->remoteReleaseDir . '/data/db_dumps';
+        mkdir($resolvedLocalPath, 0755, true);
+        mkdir($resolvedRemotePath, 0755, true);
+
+        // Mock successful WP-CLI export, import and URL replacement
+        $this->mockSuccessfulDbExport();
+        $this->mockSuccessfulDbImport();
+
+        // Run the pull task
+        $result = $this->dep('db:pull');
+        $this->assertEquals(0, $result);
+
+        // Verify local dump file was imported and cleaned up
+        $localDumpFiles = glob($resolvedLocalPath . '/db_backup-*.sql');
+        $this->assertCount(0, $localDumpFiles, 'Local dump file should be removed after import');
+
+        // Verify remote dump file remains
+        $remoteDumpFiles = glob($resolvedRemotePath . '/db_backup-*.sql');
+        $this->assertCount(1, $remoteDumpFiles, 'Remote dump file should remain after pull');
+    }
+
     /**
      * Helper method to mock successful multisite URL replacements
      */

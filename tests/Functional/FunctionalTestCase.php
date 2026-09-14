@@ -49,6 +49,13 @@ abstract class FunctionalTestCase extends TestCase
     protected ProcessRunner|MockObject $mockedRunner;
     protected Rsync|MockObject|null $rsyncMock = null;
 
+    /**
+     * Accumulated map of command patterns to callables/return values for the mocked process runner.
+     *
+     * @var array<string, callable|int>
+     */
+    private array $mockedCommands = [];
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -137,19 +144,24 @@ abstract class FunctionalTestCase extends TestCase
     }
 
     /**
-     * Helper to mock specific commands while passing others through
+     * Helper to mock specific commands while passing others through.
+     *
+     * Multiple calls accumulate mocked commands; later patterns for the same
+     * command take precedence.
      *
      * @param array<string, callable|int> $commandsToMock Map of command patterns to callables or return values
      */
     protected function mockCommands(array $commandsToMock, ?string $hostAlias = null): void
     {
+        $this->mockedCommands = array_merge($this->mockedCommands, $commandsToMock);
+
         // Set up the mock to handle specific commands
         $this->mockedRunner->expects($this->any())
             ->method('run')
-            ->willReturnCallback(function ($host, $command, $options = []) use ($commandsToMock, $hostAlias) {
+            ->willReturnCallback(function ($host, $command, $options = []) use ($hostAlias) {
                 // Check if this command should be mocked
                 if (!$hostAlias || $host->getAlias() === $hostAlias) {
-                    foreach ($commandsToMock as $pattern => $handler) {
+                    foreach ($this->mockedCommands as $pattern => $handler) {
                         if (str_contains($command, $pattern)) {
                             return is_callable($handler) ? $handler($host, $command, $options) : $handler;
                         }

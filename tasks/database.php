@@ -13,10 +13,10 @@
 
 namespace Gaambo\DeployerWordpress\Tasks;
 
+use Gaambo\DeployerWordpress\Files;
 use Gaambo\DeployerWordpress\Localhost;
 use Gaambo\DeployerWordpress\WPCLI;
 
-use function Deployer\download;
 use function Deployer\get;
 use function Deployer\has;
 use function Deployer\run;
@@ -24,7 +24,6 @@ use function Deployer\set;
 use function Deployer\task;
 use function Deployer\test;
 use function Deployer\testLocally;
-use function Deployer\upload;
 
 /**
  * Create backup of remote database and download locally
@@ -43,11 +42,12 @@ task('db:remote:backup', function () {
     $dumpFile = "db_backup-$now.sql";
     set('dbdump/file', $dumpFile);
 
-    run('mkdir -p ' . get('dbdump_path'));
-    WPCLI::runCommand("db export $remoteDumpPath/$dumpFile --add-drop-table", "{{release_or_current_path}}");
+    $resolvedRemoteDumpPath = Files::resolvePath($remoteDumpPath, get('release_or_current_path'));
 
-    Localhost::run("mkdir -p $localDumpPath");
-    download("$remoteDumpPath/$dumpFile", "$localDumpPath/$dumpFile");
+    run("mkdir -p $resolvedRemoteDumpPath");
+    WPCLI::runCommand("db export $resolvedRemoteDumpPath/$dumpFile --add-drop-table", "{{release_or_current_path}}");
+
+    Files::pullFile("$remoteDumpPath/$dumpFile", "$localDumpPath/$dumpFile");
 })->desc('Create backup of remote database and download locally');
 
 /**
@@ -67,14 +67,12 @@ task('db:local:backup', function () {
     $dumpFile = "db_backup-$now.sql";
     set('dbdump/file', $dumpFile);
 
-    Localhost::run("mkdir -p $localDumpPath");
-    WPCLI::runCommandLocally("db export $localDumpPath/$dumpFile --add-drop-table");
+    $resolvedLocalDumpPath = Files::resolvePath($localDumpPath, Localhost::getConfig('current_path'));
 
-    run('mkdir -p {{dbdump_path}}');
-    upload(
-        "$localDumpPath/$dumpFile",
-        "$remoteDumpPath/$dumpFile"
-    );
+    Localhost::run("mkdir -p $resolvedLocalDumpPath");
+    WPCLI::runCommandLocally("db export $resolvedLocalDumpPath/$dumpFile --add-drop-table");
+
+    Files::pushFile("$localDumpPath/$dumpFile", "$remoteDumpPath/$dumpFile");
 })->desc('Create backup of local database and upload to remote');
 
 /**
@@ -89,14 +87,18 @@ task('db:local:backup', function () {
  *     dep db:remote:import prod
  */
 task('db:remote:import', function () {
+    $remoteDumpPath = get('dbdump_path');
+    $resolvedRemoteDumpPath = Files::resolvePath($remoteDumpPath, get('release_or_current_path'));
+    $dumpFile = get('dbdump/file');
+
     // Check if dump file exists
-    if (!has('dbdump/file') || !test('[ -f {{dbdump_path}}/{{dbdump/file}} ]')) {
-        throw new \RuntimeException('Database dump file not found at {{dbdump_path}}/{{dbdump/file}}');
+    if (!has('dbdump/file') || !test("[ -f $resolvedRemoteDumpPath/$dumpFile ]")) {
+        throw new \RuntimeException("Database dump file not found at $resolvedRemoteDumpPath/$dumpFile");
     }
 
     $localUrl = Localhost::getConfig('public_url');
     $remoteUrl = get('public_url');
-    WPCLI::runCommand("db import {{dbdump_path}}/{{dbdump/file}}");
+    WPCLI::runCommand("db import $resolvedRemoteDumpPath/$dumpFile");
 
     if (get('wp/multisite')) {
         WPCLI::runCommand("search-replace $localUrl $remoteUrl --network --all-tables");
@@ -115,7 +117,7 @@ task('db:remote:import', function () {
         WPCLI::runCommand("search-replace $localUploadsDir {{uploads/dir}}");
     }
 
-    run('rm -f {{dbdump_path}}/{{dbdump/file}}');
+    run("rm -f $resolvedRemoteDumpPath/$dumpFile");
 })->desc('Import database backup on remote host');
 
 /**
@@ -131,14 +133,16 @@ task('db:remote:import', function () {
  *     dep db:local:import prod
  */
 task('db:local:import', function () {
-    // Check if dump file exists
     $localDumpPath = Localhost::getConfig('dbdump_path');
+    $resolvedLocalDumpPath = Files::resolvePath($localDumpPath, Localhost::getConfig('current_path'));
     $dumpFile = get('dbdump/file');
-    if (!has('dbdump/file') || !testLocally("[ -f $localDumpPath/$dumpFile ]")) {
-        throw new \RuntimeException("Database dump file not found at $localDumpPath/$dumpFile");
+
+    // Check if dump file exists
+    if (!has('dbdump/file') || !testLocally("[ -f $resolvedLocalDumpPath/$dumpFile ]")) {
+        throw new \RuntimeException("Database dump file not found at $resolvedLocalDumpPath/$dumpFile");
     }
     $remoteUrl = get('public_url');
-    WPCLI::runCommandLocally("db import $localDumpPath/$dumpFile");
+    WPCLI::runCommandLocally("db import $resolvedLocalDumpPath/$dumpFile");
 
     if (get('wp/multisite')) {
         $localUrl = Localhost::getConfig('public_url');
@@ -158,7 +162,7 @@ task('db:local:import', function () {
         WPCLI::runCommandLocally("search-replace $remoteUploadsDir {{uploads/dir}}");
     }
 
-    Localhost::run("rm -f $localDumpPath/$dumpFile");
+    Localhost::run("rm -f $resolvedLocalDumpPath/$dumpFile");
 })->desc('Import database backup on local host');
 
 /**

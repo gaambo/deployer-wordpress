@@ -3,6 +3,7 @@
 namespace Gaambo\DeployerWordpress;
 
 use function Deployer\download;
+use function Deployer\get;
 use function Deployer\run;
 use function Deployer\runLocally;
 use function Deployer\upload;
@@ -13,34 +14,120 @@ use function Deployer\upload;
 class Files
 {
     /**
-     * Push files from local to remote. Always works from the localhosts current_path directory.
-     * If you want to upload files outside of current_path, use upload() directly.
+     * Resolve a path against a base path.
      *
-     * @param string $localPath Local path to push from, relative to localhosts current_path.
-     * @param string $remotePath Remote path to push to, relative to remote hosts release_or_current_path.
+     * Absolute paths (starting with "/") and home-relative paths (starting with "~")
+     * are returned unchanged. Relative paths are resolved against the given base path.
+     *
+     * This maybe a naive check, but it should be good enough for our use cases.
+     *
+     * @param string $path Path to resolve.
+     * @param string $basePath Base path for relative paths.
+     * @return string Resolved path.
+     */
+    public static function resolvePath(string $path, string $basePath): string
+    {
+        if (str_starts_with($path, '/') || str_starts_with($path, '~')) {
+            return $path;
+        }
+
+        return rtrim($basePath, '/') . '/' . $path;
+    }
+
+    /**
+     * Push files from local to remote.
+     *
+     * Relative paths are resolved against localhosts current_path (local) or the
+     * remote hosts release_or_current_path (remote). Absolute and home-relative
+     * paths are used unchanged.
+     *
+     * @param string $localPath Local path to push from.
+     * @param string $remotePath Remote path to push to.
      * @param RsyncOptions $rsyncOptions Rsync options array
      * @return void
      */
     public static function pushFiles(string $localPath, string $remotePath, array $rsyncOptions = []): void
     {
-        $localPath = Localhost::getConfig('current_path') . '/' . $localPath;
-        run("mkdir -p {{release_or_current_path}}/$remotePath"); // Always ensure remote directory exists.
-        upload($localPath . '/', '{{release_or_current_path}}/' . $remotePath . '/', ['options' => $rsyncOptions]);
+        $localBasePath = Localhost::getConfig('current_path');
+        $remoteBasePath = get('release_or_current_path');
+
+        $localPath = self::resolvePath($localPath, $localBasePath);
+        $remotePath = self::resolvePath($remotePath, $remoteBasePath);
+
+        run("mkdir -p $remotePath"); // Always ensure remote directory exists.
+        upload($localPath . '/', $remotePath . '/', ['options' => $rsyncOptions]);
     }
 
     /**
-     * Pull files from remote to local. Always works from the localhosts current_path directory.
-     * If you want to download files outside of current_path, use download() directly.
-     * @param string $remotePath Remote path to pull from, relative to remote hosts release_or_current_path.
-     * @param string $localPath Local path to pull to, relative to localhosts current_path.
+     * Pull files from remote to local.
+     *
+     * Relative paths are resolved against the remote hosts release_or_current_path
+     * (remote) or localhosts current_path (local). Absolute and home-relative
+     * paths are used unchanged.
+     *
+     * @param string $remotePath Remote path to pull from.
+     * @param string $localPath Local path to pull to.
      * @param RsyncOptions $rsyncOptions Rsync options array
      * @return void
      */
     public static function pullFiles(string $remotePath, string $localPath, array $rsyncOptions = []): void
     {
-        $localPath = Localhost::getConfig('current_path') . '/' . $localPath;
-        runLocally("mkdir -p $localPath"); // Always ensure directory exists.
-        download('{{release_or_current_path}}/' . $remotePath . '/', $localPath . '/', ['options' => $rsyncOptions]);
+        $localBasePath = Localhost::getConfig('current_path');
+        $remoteBasePath = get('release_or_current_path');
+
+        $localPath = self::resolvePath($localPath, $localBasePath);
+        $remotePath = self::resolvePath($remotePath, $remoteBasePath);
+
+        runLocally("mkdir -p $localPath"); // Always ensure local directory exists.
+        download($remotePath . '/', $localPath . '/', ['options' => $rsyncOptions]);
+    }
+
+    /**
+     * Push a single file from local to remote.
+     *
+     * Relative paths are resolved against localhosts current_path (local) or the
+     * remote hosts release_or_current_path (remote). Absolute and home-relative
+     * paths are used unchanged.
+     *
+     * @param string $localPath Local file path to push.
+     * @param string $remotePath Remote file path to push to.
+     * @param RsyncOptions $rsyncOptions Rsync options array
+     * @return void
+     */
+    public static function pushFile(string $localPath, string $remotePath, array $rsyncOptions = []): void
+    {
+        $localBasePath = Localhost::getConfig('current_path');
+        $remoteBasePath = get('release_or_current_path');
+
+        $localPath = self::resolvePath($localPath, $localBasePath);
+        $remotePath = self::resolvePath($remotePath, $remoteBasePath);
+
+        run('mkdir -p ' . dirname($remotePath)); // Always ensure remote directory exists.
+        upload($localPath, $remotePath, ['options' => $rsyncOptions]);
+    }
+
+    /**
+     * Pull a single file from remote to local.
+     *
+     * Relative paths are resolved against the remote hosts release_or_current_path
+     * (remote) or localhosts current_path (local). Absolute and home-relative
+     * paths are used unchanged.
+     *
+     * @param string $remotePath Remote file path to pull.
+     * @param string $localPath Local file path to pull to.
+     * @param RsyncOptions $rsyncOptions Rsync options array
+     * @return void
+     */
+    public static function pullFile(string $remotePath, string $localPath, array $rsyncOptions = []): void
+    {
+        $localBasePath = Localhost::getConfig('current_path');
+        $remoteBasePath = get('release_or_current_path');
+
+        $localPath = self::resolvePath($localPath, $localBasePath);
+        $remotePath = self::resolvePath($remotePath, $remoteBasePath);
+
+        runLocally('mkdir -p ' . dirname($localPath)); // Always ensure local directory exists.
+        download($remotePath, $localPath, ['options' => $rsyncOptions]);
     }
 
     /**

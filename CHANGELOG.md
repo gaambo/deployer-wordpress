@@ -1,5 +1,25 @@
 # Changelog
 
+## Unreleased
+
+### Breaking Changes
+
+- **`Files` path resolution**: Paths passed to `Files::pushFiles()` / `Files::pullFiles()` that begin with `/` are now
+  treated as absolute rather than project-relative. Relative paths continue to resolve against `current_path` (local)
+  or `release_or_current_path` (remote).
+
+### Added
+
+- `Files::pushFile()` and `Files::pullFile()` helpers for transferring individual files with the same path resolution
+  semantics as directory transfers.
+- `Files::resolvePath()` helper to resolve a path against a base path, leaving absolute and `~`-relative paths unchanged.
+
+### Fixed
+
+- Database dump paths are now resolved consistently for WP-CLI export/import and file transfers. Relative `dbdump_path`
+  values now resolve against the project directory (`current_path` / `release_or_current_path`) on both sides, instead
+  of being interpreted relative to the SSH home directory during transfers.
+
 ## v4.0.1 - 2026-04-28
 
 - Update composer packages
