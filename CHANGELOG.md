@@ -7,6 +7,8 @@
 - **`Files` path resolution**: Paths passed to `Files::pushFiles()` / `Files::pullFiles()` that begin with `/` are now
   treated as absolute rather than project-relative. Relative paths continue to resolve against `current_path` (local)
   or `release_or_current_path` (remote).
+- **Database dump paths**: Relative `dbdump_path` values now resolve against `deploy_path` instead of `current_path`.
+  Localhost must define `deploy_path`; the unused `project_path` example setting has been removed.
 
 ### Added
 
@@ -16,9 +18,8 @@
 
 ### Fixed
 
-- Database dump paths are now resolved consistently for WP-CLI export/import and file transfers. Relative `dbdump_path`
-  values now resolve against the project directory (`current_path` / `release_or_current_path`) on both sides, instead
-  of being interpreted relative to the SSH home directory during transfers.
+- Database dump paths are now resolved consistently against `deploy_path` for WP-CLI export/import and file transfers,
+  instead of being interpreted relative to different working directories.
 
 ## v4.0.1 - 2026-04-28
 

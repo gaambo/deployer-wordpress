@@ -19,8 +19,8 @@ import('deploy.yml');
 // OPTIONAL: overwrite localhost config.
 localhost()
     ->set('public_url', "{{local_url}}")
-    ->set('project_path', __DIR__)
-    ->set('current_path', __DIR__)
+    ->set('deploy_path', __DIR__)
+    ->set('current_path', '{{deploy_path}}')
     // Bedrock dirs
     ->set('uploads/path', '{{current_path}}') // Do not use shared directory for uploads.
     ->set('uploads/dir', 'web/app/uploads')
@@ -28,7 +28,7 @@ localhost()
     ->set('themes/dir', 'web/app/themes')
     ->set('plugins/dir', 'web/app/plugins')
     ->set('wp/dir', 'web/wp')
-    ->set('dbdump_path', __DIR__ . '/data/db_dumps')
+    ->set('dbdump_path', 'data/db_dumps')
     ->set('backup_path', __DIR__ . '/data/backups');
 
 set('packages', [

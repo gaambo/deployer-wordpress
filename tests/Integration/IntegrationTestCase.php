@@ -39,6 +39,7 @@ abstract class IntegrationTestCase extends TestCase
         $this->host = new Localhost();
         $this->host->set('deploy_path', '/var/www');
         $this->host->set('bin/wp', 'wp');
+        $this->host->set('current_path', '/var/www/current');
         $this->host->set('release_or_current_path', '/var/www/current');
         $this->deployer->hosts->set('localhost', $this->host);
 

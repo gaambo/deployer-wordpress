@@ -47,6 +47,11 @@ class DatabaseTasksFunctionalTest extends FunctionalTestCase
     {
         $this->mockCommands([
             "$wpBinary db export" => function ($host, $command) use ($wpBinary) {
+                $wpWorkingPath = $host->getAlias() === 'localhost'
+                    ? $this->localHost->get('current_path')
+                    : $this->remoteHost->get('release_or_current_path');
+                $this->assertStringStartsWith("cd $wpWorkingPath &&", $command);
+
                 if (preg_match('/db export (.*?db_backup-\d{4}-\d{2}-\d{2}_\d{2}-\d{2}\.sql)(?:\s|$)/', $command, $matches)) {
                     $dumpFile = $matches[1];
                 } else {
@@ -58,10 +63,7 @@ class DatabaseTasksFunctionalTest extends FunctionalTestCase
 
                 // Resolve relative dump paths against the WP-CLI working directory.
                 if (!str_starts_with($dumpFile, '/') && !str_starts_with($dumpFile, '~')) {
-                    $basePath = $host->getAlias() === 'localhost'
-                        ? $this->localHost->get('current_path')
-                        : $this->remoteHost->get('release_or_current_path');
-                    $dumpFile = rtrim($basePath, '/') . '/' . $dumpFile;
+                    $dumpFile = rtrim($wpWorkingPath, '/') . '/' . $dumpFile;
                 }
 
                 $dumpDir = dirname($dumpFile);
@@ -400,7 +402,12 @@ class DatabaseTasksFunctionalTest extends FunctionalTestCase
     protected function mockSuccessfulDbImport(): void
     {
         $this->mockCommands([
-            'wp db import' => function () {
+            'wp db import' => function ($host, $command) {
+                $wpWorkingPath = $host->getAlias() === 'localhost'
+                    ? $this->localHost->get('current_path')
+                    : $this->remoteHost->get('release_or_current_path');
+                $this->assertStringStartsWith("cd $wpWorkingPath &&", $command);
+
                 return 'Database imported successfully';
             },
             'wp search-replace' => function () {
@@ -626,8 +633,8 @@ class DatabaseTasksFunctionalTest extends FunctionalTestCase
         $this->remoteHost->set('dbdump_path', 'data/db_dumps');
 
         // Create resolved dump directories
-        $resolvedLocalPath = $this->localDocRootDir . '/data/db_dumps';
-        $resolvedRemotePath = $this->remoteReleaseDir . '/data/db_dumps';
+        $resolvedLocalPath = $this->localDir . '/data/db_dumps';
+        $resolvedRemotePath = $this->remoteDir . '/data/db_dumps';
         mkdir($resolvedLocalPath, 0755, true);
         mkdir($resolvedRemotePath, 0755, true);
 
@@ -662,8 +669,8 @@ class DatabaseTasksFunctionalTest extends FunctionalTestCase
         $this->remoteHost->set('dbdump_path', 'data/db_dumps');
 
         // Create resolved dump directories
-        $resolvedLocalPath = $this->localDocRootDir . '/data/db_dumps';
-        $resolvedRemotePath = $this->remoteReleaseDir . '/data/db_dumps';
+        $resolvedLocalPath = $this->localDir . '/data/db_dumps';
+        $resolvedRemotePath = $this->remoteDir . '/data/db_dumps';
         mkdir($resolvedLocalPath, 0755, true);
         mkdir($resolvedRemotePath, 0755, true);
 
@@ -700,8 +707,8 @@ class DatabaseTasksFunctionalTest extends FunctionalTestCase
         $this->remoteHost->set('public_url', 'https://example.com');
 
         // Create resolved dump directories
-        $resolvedLocalPath = $this->localDocRootDir . '/data/db_dumps';
-        $resolvedRemotePath = $this->remoteReleaseDir . '/data/db_dumps';
+        $resolvedLocalPath = $this->localDir . '/data/db_dumps';
+        $resolvedRemotePath = $this->remoteDir . '/data/db_dumps';
         mkdir($resolvedLocalPath, 0755, true);
         mkdir($resolvedRemotePath, 0755, true);
 
@@ -731,8 +738,8 @@ class DatabaseTasksFunctionalTest extends FunctionalTestCase
         $this->remoteHost->set('public_url', 'https://example.com');
 
         // Create resolved dump directories
-        $resolvedLocalPath = $this->localDocRootDir . '/data/db_dumps';
-        $resolvedRemotePath = $this->remoteReleaseDir . '/data/db_dumps';
+        $resolvedLocalPath = $this->localDir . '/data/db_dumps';
+        $resolvedRemotePath = $this->remoteDir . '/data/db_dumps';
         mkdir($resolvedLocalPath, 0755, true);
         mkdir($resolvedRemotePath, 0755, true);
 

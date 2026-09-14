@@ -106,7 +106,7 @@ abstract class FunctionalTestCase extends TestCase
         // Local host setup
         // This mirrors the setup in examples/simple/deploy.php
         $this->localHost = new Localhost();
-        $this->localHost->set('project_path', $this->localDir);
+        $this->localHost->set('deploy_path', $this->localDir);
         $this->localHost->set('current_path', $this->localDocRootDir);
         $this->localHost->set('dbdump_path', $this->localDir . '/data/db_dumps');
         $this->localHost->set('backup_path', $this->localDir . '/data/backups');

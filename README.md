@@ -75,12 +75,16 @@ Configure localhost in `deploy.php`:
 ```php
 localhost()
     ->set('public_url', 'http://wp-boilerplate.test')
-    ->set('current_path', 'public') // WordPress root
-    ->set('dbdump_path', __DIR__ . '/data/db_dumps')
+    ->set('deploy_path', __DIR__)
+    ->set('current_path', '{{deploy_path}}/public') // WordPress root
+    ->set('dbdump_path', 'data/db_dumps')
     ->set('backup_path', __DIR__ . '/data/backups');
 ```
 
 The `Localhost` utility class (`Gaambo\DeployerWordpress\Localhost`) handles switching context automatically in tasks.
+
+`deploy_path` is the project root and is used for private data such as relative database dump paths. `current_path` is
+the WordPress root. The previous `project_path` example setting was unused and has been removed.
 
 ### wp-config.php (Recommendation)
 

@@ -19,9 +19,9 @@ import('deploy.yml');
 // OPTIONAL: overwrite localhost config.
 localhost()
     ->set('public_url', "{{local_url}}")
-    ->set('project_path', __DIR__)
-    ->set('current_path', 'public') // The public doc root as kind of the currents release path.
-    ->set('dbdump_path', __DIR__ . '/data/db_dumps')
+    ->set('deploy_path', __DIR__)
+    ->set('current_path', '{{deploy_path}}/public') // The public doc root as kind of the currents release path.
+    ->set('dbdump_path', 'data/db_dumps')
     ->set('backup_path', __DIR__ . '/data/backups');
 
 set('packages', [

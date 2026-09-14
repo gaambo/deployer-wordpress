@@ -51,7 +51,7 @@ class WpCliIntegrationTest extends IntegrationTestCase
 
     public function testRunCommandLocally(): void
     {
-        $expectedCommand = 'wp post list --format=table ';
+        $expectedCommand = 'cd /var/www/current && wp post list --format=table ';
         // Note: We can't test for the host object because runLocally creates a new host instance.
         $this->processRunnerMock
             ->expects($this->once())

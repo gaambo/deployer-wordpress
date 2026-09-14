@@ -35,13 +35,13 @@ class WPCLI
     /**
      * Run a WP CLI command locally
      * @param string $command The command to run (without wp prefix)
-     * @param string|null $path The path to run the command in (defaults to null on local host)
+     * @param string|null $path The path to run the command in (defaults to {{current_path}})
      * @param string $arguments Additional arguments to pass to WP-CLI
      * @return void
      */
     public static function runCommandLocally(
         string $command,
-        ?string $path = null,
+        ?string $path = '{{current_path}}',
         string $arguments = ''
     ): void {
         $localWp = Localhost::getConfig('bin/wp');

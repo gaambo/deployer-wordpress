@@ -404,4 +404,4 @@ class FilesIntegrationTest extends IntegrationTestCase
         $this->assertStringContainsString("$backupDir/{$filename}_", $result);
         $this->assertStringEndsWith('.zip', $result);
     }
-} 
+}

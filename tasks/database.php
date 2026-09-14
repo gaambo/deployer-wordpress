@@ -42,12 +42,13 @@ task('db:remote:backup', function () {
     $dumpFile = "db_backup-$now.sql";
     set('dbdump/file', $dumpFile);
 
-    $resolvedRemoteDumpPath = Files::resolvePath($remoteDumpPath, get('release_or_current_path'));
+    $resolvedLocalDumpPath = Files::resolvePath($localDumpPath, Localhost::getConfig('deploy_path'));
+    $resolvedRemoteDumpPath = Files::resolvePath($remoteDumpPath, get('deploy_path'));
 
     run("mkdir -p $resolvedRemoteDumpPath");
-    WPCLI::runCommand("db export $remoteDumpPath/$dumpFile --add-drop-table", "{{release_or_current_path}}");
+    WPCLI::runCommand("db export $resolvedRemoteDumpPath/$dumpFile --add-drop-table");
 
-    Files::pullFile("$remoteDumpPath/$dumpFile", "$localDumpPath/$dumpFile");
+    Files::pullFile("$resolvedRemoteDumpPath/$dumpFile", "$resolvedLocalDumpPath/$dumpFile");
 })->desc('Create backup of remote database and download locally');
 
 /**
@@ -67,15 +68,17 @@ task('db:local:backup', function () {
     $dumpFile = "db_backup-$now.sql";
     set('dbdump/file', $dumpFile);
 
-    $resolvedLocalDumpPath = Files::resolvePath($localDumpPath, Localhost::getConfig('current_path'));
+    $localDeployPath = Localhost::getConfig('deploy_path');
+    $resolvedLocalDumpPath = Files::resolvePath($localDumpPath, $localDeployPath);
+    $resolvedRemoteDumpPath = Files::resolvePath($remoteDumpPath, get('deploy_path'));
 
     Localhost::run("mkdir -p $resolvedLocalDumpPath");
     WPCLI::runCommandLocally(
-        "db export $localDumpPath/$dumpFile --add-drop-table",
+        "db export $resolvedLocalDumpPath/$dumpFile --add-drop-table",
         Localhost::getConfig('current_path')
     );
 
-    Files::pushFile("$localDumpPath/$dumpFile", "$remoteDumpPath/$dumpFile");
+    Files::pushFile("$resolvedLocalDumpPath/$dumpFile", "$resolvedRemoteDumpPath/$dumpFile");
 })->desc('Create backup of local database and upload to remote');
 
 /**
@@ -91,7 +94,7 @@ task('db:local:backup', function () {
  */
 task('db:remote:import', function () {
     $remoteDumpPath = get('dbdump_path');
-    $resolvedRemoteDumpPath = Files::resolvePath($remoteDumpPath, get('release_or_current_path'));
+    $resolvedRemoteDumpPath = Files::resolvePath($remoteDumpPath, get('deploy_path'));
     $dumpFile = get('dbdump/file');
 
     // Check if dump file exists
@@ -101,7 +104,7 @@ task('db:remote:import', function () {
 
     $localUrl = Localhost::getConfig('public_url');
     $remoteUrl = get('public_url');
-    WPCLI::runCommand("db import $remoteDumpPath/$dumpFile");
+    WPCLI::runCommand("db import $resolvedRemoteDumpPath/$dumpFile");
 
     if (get('wp/multisite')) {
         WPCLI::runCommand("search-replace $localUrl $remoteUrl --network --all-tables");
@@ -137,7 +140,8 @@ task('db:remote:import', function () {
  */
 task('db:local:import', function () {
     $localDumpPath = Localhost::getConfig('dbdump_path');
-    $resolvedLocalDumpPath = Files::resolvePath($localDumpPath, Localhost::getConfig('current_path'));
+    $localDeployPath = Localhost::getConfig('deploy_path');
+    $resolvedLocalDumpPath = Files::resolvePath($localDumpPath, $localDeployPath);
     $dumpFile = get('dbdump/file');
 
     // Check if dump file exists
@@ -145,7 +149,10 @@ task('db:local:import', function () {
         throw new \RuntimeException("Database dump file not found at $resolvedLocalDumpPath/$dumpFile");
     }
     $remoteUrl = get('public_url');
-    WPCLI::runCommandLocally("db import $localDumpPath/$dumpFile", Localhost::getConfig('current_path'));
+    WPCLI::runCommandLocally(
+        "db import $resolvedLocalDumpPath/$dumpFile",
+        Localhost::getConfig('current_path')
+    );
 
     if (get('wp/multisite')) {
         $localUrl = Localhost::getConfig('public_url');
