@@ -6,6 +6,7 @@ use Deployer\Deployer;
 use Deployer\Host\Host;
 use Deployer\Host\Localhost;
 use Deployer\Task\Context;
+use Gaambo\DeployerWordpress\Utils;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Application;
@@ -61,5 +62,15 @@ abstract class IntegrationTestCase extends TestCase
     protected function runCwd(mixed $options): ?string
     {
         return is_array($options) ? ($options['cwd'] ?? null) : $options->cwd;
+    }
+
+    protected function runShell(mixed $options): ?string
+    {
+        return is_array($options) ? ($options['shell'] ?? null) : $options->shell;
+    }
+
+    protected function ddevShell(string $path): string
+    {
+        return 'ddev exec --dir ' . Utils::quote($path) . ' bash -s';
     }
 }

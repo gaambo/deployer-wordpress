@@ -92,31 +92,41 @@ Local application commands run natively by default. To run runtime-aware command
 inside DDEV, attach a runtime to localhost:
 
 ```php
-use Gaambo\DeployerWordpress\DdevRuntime;
+use Gaambo\DeployerWordpress\Runtime\DdevRuntimeHost;
+
+use function Gaambo\DeployerWordpress\runtime;
 
 localhost()
     ->set('deploy_path', __DIR__)
     ->set('current_path', '{{deploy_path}}/public')
-    ->set('runtime', new DdevRuntime('/var/www/html'));
+    ->set('runtime', runtime(DdevRuntimeHost::class));
 ```
 
-Host paths below `deploy_path` are mapped to the DDEV project root. If the DDEV host mount starts somewhere other than
-`deploy_path`, configure it explicitly:
+Host paths below localhost's `deploy_path` are mapped to `/var/www/html` in DDEV. Change the DDEV path on the runtime
+host when needed:
 
 ```php
-new DdevRuntime('/var/www/html', projectRoot: '/custom/host/project');
+localhost()->set(
+    'runtime',
+    runtime(DdevRuntimeHost::class)->set('ddev_deploy_path', '/srv/app')
+);
 ```
 
-DDEV uses `wp`, `composer`, `npm`, and `php` inside the container by default. Runtime-specific values can be overridden
-without changing localhost or remote binaries:
+Runtime hosts require Deployer 8 or newer.
+
+The runtime inherits localhost configuration. Lazy values such as `bin/wp`, `bin/composer`, `bin/npm`, and `bin/php`
+resolve inside DDEV and are cached on the runtime host. Override them without changing localhost or remote hosts:
 
 ```php
-new DdevRuntime('/var/www/html', config: ['bin/wp' => '/custom/bin/wp']);
+localhost()->set(
+    'runtime',
+    runtime(DdevRuntimeHost::class)->set('bin/wp', '/custom/bin/wp')
+);
 ```
 
-Custom application commands can use `Runtime::run()`. `Runtime::within()` also makes calls to `Localhost::run()` use the
-configured runtime for the duration of its callback. Host filesystem operations should continue to call
-`Localhost::run()` outside that callback.
+Custom application commands can use `Gaambo\DeployerWordpress\Runtime\Runtime::run()`. `Runtime::within()` also makes
+calls to `Localhost::run()` use the configured runtime for the duration of its callback. Host filesystem operations
+should continue to call `Localhost::run()` outside that callback.
 
 ### wp-config.php (Recommendation)
 

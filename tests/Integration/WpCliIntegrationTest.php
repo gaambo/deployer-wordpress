@@ -2,9 +2,11 @@
 
 namespace Gaambo\DeployerWordpress\Tests\Integration;
 
-use Gaambo\DeployerWordpress\DdevRuntime;
+use Gaambo\DeployerWordpress\Runtime\DdevRuntimeHost;
 use Gaambo\DeployerWordpress\WPCLI;
 use PHPUnit\Framework\MockObject\MockObject;
+
+use function Gaambo\DeployerWordpress\runtime;
 
 class WpCliIntegrationTest extends IntegrationTestCase
 {
@@ -83,7 +85,7 @@ class WpCliIntegrationTest extends IntegrationTestCase
 
     public function testRunCommandLocallyMapsOnlyExplicitRuntimePaths(): void
     {
-        $this->host->set('runtime', new DdevRuntime('/var/www/html'));
+        $this->host->set('runtime', runtime(DdevRuntimeHost::class));
         $hostDumpPath = '/var/www/data/dumps/site.sql';
 
         $this->processRunnerMock
@@ -91,11 +93,11 @@ class WpCliIntegrationTest extends IntegrationTestCase
             ->method('run')
             ->willReturnCallback(function ($host, $command, $options) {
                 $this->assertSame(
-                    'ddev exec --dir /var/www/html/current wp db import /var/www/html/data/dumps/site.sql '
-                    . '--source=/var/www/uploads',
+                    'wp db import /var/www/html/data/dumps/site.sql --source=/var/www/uploads',
                     $command
                 );
                 $this->assertSame('/var/www', $this->runCwd($options));
+                $this->assertSame($this->ddevShell('/var/www/html/current'), $this->runShell($options));
                 return '';
             });
 

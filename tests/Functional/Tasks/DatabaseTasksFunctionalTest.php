@@ -2,9 +2,11 @@
 
 namespace Gaambo\DeployerWordpress\Tests\Functional\Tasks;
 
-use Gaambo\DeployerWordpress\DdevRuntime;
+use Gaambo\DeployerWordpress\Runtime\DdevRuntimeHost;
 use Gaambo\DeployerWordpress\Tests\Functional\FunctionalTestCase;
 use RuntimeException;
+
+use function Gaambo\DeployerWordpress\runtime;
 
 use function Deployer\set;
 
@@ -304,14 +306,15 @@ class DatabaseTasksFunctionalTest extends FunctionalTestCase
 
     public function testDbLocalBackupWithDdevRuntime(): void
     {
-        $this->localHost->set('runtime', new DdevRuntime('/var/www/html'));
+        $this->localHost->set('runtime', runtime(DdevRuntimeHost::class));
         $this->mockCommands([
-            'ddev exec' => function ($host, $command, $options) {
-                $this->assertStringStartsWith(
-                    'ddev exec --dir /var/www/html/public_html wp db export /var/www/html/dumps/',
-                    $command
-                );
+            'wp db export' => function ($host, $command, $options) {
+                $this->assertStringStartsWith('wp db export /var/www/html/dumps/', $command);
                 $this->assertSame($this->localDir, $this->runCwd($options));
+                $this->assertSame(
+                    $this->ddevShell('/var/www/html/public_html'),
+                    $this->runShell($options)
+                );
                 preg_match('/db export \/var\/www\/html\/dumps\/(db_backup-[^ ]+\.sql)/', $command, $matches);
                 copy($this->getFixturePath('database/dump.sql'), $this->localDir . '/dumps/' . $matches[1]);
                 return 'Database exported successfully';
@@ -589,7 +592,7 @@ class DatabaseTasksFunctionalTest extends FunctionalTestCase
 
     public function testDbLocalImportWithDdevRuntimeMapsOnlyDumpPath(): void
     {
-        $this->localHost->set('runtime', new DdevRuntime('/var/www/html'));
+        $this->localHost->set('runtime', runtime(DdevRuntimeHost::class));
         $this->localHost->set('public_url', 'http://localhost');
         $this->remoteHost->set('public_url', 'https://example.com');
         $this->localHost->set('uploads/dir', '/local/uploads');
@@ -600,9 +603,13 @@ class DatabaseTasksFunctionalTest extends FunctionalTestCase
 
         $commands = [];
         $this->mockCommands([
-            'ddev exec' => function ($host, $command, $options) use (&$commands) {
+            'wp ' => function ($host, $command, $options) use (&$commands) {
                 $commands[] = $command;
                 $this->assertSame($this->localDir, $this->runCwd($options));
+                $this->assertSame(
+                    $this->ddevShell('/var/www/html/public_html'),
+                    $this->runShell($options)
+                );
                 return '';
             },
         ]);
@@ -615,10 +622,7 @@ class DatabaseTasksFunctionalTest extends FunctionalTestCase
             'wp db import /var/www/html/dumps/db_backup.sql',
             $commands[0]
         );
-        $this->assertContains(
-            'ddev exec --dir /var/www/html/public_html wp search-replace /remote/uploads /local/uploads ',
-            $commands
-        );
+        $this->assertContains('wp search-replace /remote/uploads /local/uploads ', $commands);
     }
 
     public function testDbLocalImportWithImportError(): void

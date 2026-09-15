@@ -23,6 +23,9 @@
     "deployer/deployer": "^7.3 || ^8.0"
   },
   "autoload": {
+    "files": [
+      "src/functions.php"
+    ],
     "psr-4": {
       "Gaambo\\DeployerWordpress\\": "src/"
     }

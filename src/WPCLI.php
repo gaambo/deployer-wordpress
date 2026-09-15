@@ -2,6 +2,8 @@
 
 namespace Gaambo\DeployerWordpress;
 
+use Gaambo\DeployerWordpress\Runtime\Runtime;
+
 use function Deployer\run;
 
 /**

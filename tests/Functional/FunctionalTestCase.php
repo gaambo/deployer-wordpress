@@ -188,6 +188,16 @@ abstract class FunctionalTestCase extends TestCase
         parent::tearDown();
     }
 
+    protected function runShell(mixed $options): ?string
+    {
+        return is_array($options) ? ($options['shell'] ?? null) : $options->shell;
+    }
+
+    protected function ddevShell(string $path): string
+    {
+        return 'ddev exec --dir ' . Utils::quote($path) . ' bash -s';
+    }
+
     protected function removeDirectory(string $dir): void
     {
         if (!is_dir($dir)) {
