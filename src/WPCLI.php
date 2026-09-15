@@ -37,19 +37,22 @@ class WPCLI
      * @param string $command The command to run (without wp prefix)
      * @param string|null $path The path to run the command in (defaults to {{current_path}})
      * @param string $arguments Additional arguments to pass to WP-CLI
+     * @param array<string> $runtimePaths Host paths to map into the configured runtime.
      * @return void
      */
     public static function runCommandLocally(
         string $command,
         ?string $path = '{{current_path}}',
-        string $arguments = ''
+        string $arguments = '',
+        array $runtimePaths = []
     ): void {
-        $localWp = Localhost::getConfig('bin/wp');
-        if ($path) {
-            Localhost::run("cd $path && $localWp $command $arguments");
-        } else {
-            Localhost::run("$localWp $command $arguments");
+        foreach ($runtimePaths as $hostPath) {
+            $runtimePath = Runtime::path($hostPath);
+            $command = str_replace($hostPath, $runtimePath, $command);
+            $arguments = str_replace($hostPath, $runtimePath, $arguments);
         }
+
+        Runtime::run("{{bin/wp}} $command $arguments", ['cwd' => $path]);
     }
 
     /**

@@ -62,6 +62,30 @@ class Localhost
      */
     public static function run(string $command, ?array $options = null): string
     {
+        if (Runtime::isActive()) {
+            return Runtime::run($command, $options);
+        }
+
+        return self::runNative($command, $options);
+    }
+
+    /**
+     * Run directly on the host, bypassing runtime interception.
+     *
+     * @param string $command Command to run on localhost.
+     * @param array{
+     *     cwd?:string|null,
+     *     timeout?:int|null,
+     *     idleTimeout?:int|null,
+     *     env?:array<string,string>|null,
+     *     secrets?:array<string,string>|null,
+     *     nothrow?:bool,
+     *     forceOutput?:bool,
+     *     shell?:string|null
+     * }|null $options
+     */
+    public static function runNative(string $command, ?array $options = null): string
+    {
         $result = null;
         on(self::get(), function () use ($command, $options, &$result) {
             $runOpts = $options ?? [];

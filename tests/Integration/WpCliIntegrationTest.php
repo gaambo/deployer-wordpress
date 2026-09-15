@@ -2,6 +2,7 @@
 
 namespace Gaambo\DeployerWordpress\Tests\Integration;
 
+use Gaambo\DeployerWordpress\DdevRuntime;
 use Gaambo\DeployerWordpress\WPCLI;
 use PHPUnit\Framework\MockObject\MockObject;
 
@@ -51,13 +52,14 @@ class WpCliIntegrationTest extends IntegrationTestCase
 
     public function testRunCommandLocally(): void
     {
-        $expectedCommand = 'cd /var/www/current && wp post list --format=table ';
+        $expectedCommand = 'wp post list --format=table ';
         // Note: We can't test for the host object because runLocally creates a new host instance.
         $this->processRunnerMock
             ->expects($this->once())
             ->method('run')
-            ->willReturnCallback(function ($host, $command) use ($expectedCommand) {
+            ->willReturnCallback(function ($host, $command, $options) use ($expectedCommand) {
                 $this->assertEquals($expectedCommand, $command);
+                $this->assertSame('/var/www/current', $this->runCwd($options));
                 return '';
             });
 
@@ -77,6 +79,32 @@ class WpCliIntegrationTest extends IntegrationTestCase
             });
 
         WPCLI::runCommandLocally('post list --format=table', false);
+    }
+
+    public function testRunCommandLocallyMapsOnlyExplicitRuntimePaths(): void
+    {
+        $this->host->set('runtime', new DdevRuntime('/var/www/html'));
+        $hostDumpPath = '/var/www/data/dumps/site.sql';
+
+        $this->processRunnerMock
+            ->expects($this->once())
+            ->method('run')
+            ->willReturnCallback(function ($host, $command, $options) {
+                $this->assertSame(
+                    'ddev exec --dir /var/www/html/current wp db import /var/www/html/data/dumps/site.sql '
+                    . '--source=/var/www/uploads',
+                    $command
+                );
+                $this->assertSame('/var/www', $this->runCwd($options));
+                return '';
+            });
+
+        WPCLI::runCommandLocally(
+            "db import $hostDumpPath",
+            '/var/www/current',
+            '--source=/var/www/uploads',
+            runtimePaths: [$hostDumpPath]
+        );
     }
 
     public function testInstall(): void
@@ -222,13 +250,14 @@ class WpCliIntegrationTest extends IntegrationTestCase
         $path = '/var/www/html with spaces and special chars @#$%';
         $command = 'post list';
         $arguments = '--format=table';
-        $expectedCommand = "cd $path && wp $command $arguments";
+        $expectedCommand = "wp $command $arguments";
 
         $this->processRunnerMock
             ->expects($this->once())
             ->method('run')
-            ->willReturnCallback(function ($host, $command) use ($expectedCommand) {
+            ->willReturnCallback(function ($host, $command, $options) use ($expectedCommand, $path) {
                 $this->assertEquals($expectedCommand, $command);
+                $this->assertSame($path, $this->runCwd($options));
                 return '';
             });
 
@@ -260,7 +289,7 @@ class WpCliIntegrationTest extends IntegrationTestCase
         $path = '/var/www/html';
         $command = 'post list';
         $arguments = '--format=table';
-        $expectedCommand = "cd $path && /usr/local/bin/wp $command $arguments";
+        $expectedCommand = "/usr/local/bin/wp $command $arguments";
 
         // Set custom wp binary path for localhost
         $this->deployer->config->set('localhost.bin/wp', '/usr/local/bin/wp');
@@ -269,8 +298,9 @@ class WpCliIntegrationTest extends IntegrationTestCase
         $this->processRunnerMock
             ->expects($this->once())
             ->method('run')
-            ->willReturnCallback(function ($host, $command) use ($expectedCommand) {
+            ->willReturnCallback(function ($host, $command, $options) use ($expectedCommand, $path) {
                 $this->assertEquals($expectedCommand, $command);
+                $this->assertSame($path, $this->runCwd($options));
                 return '';
             });
 
@@ -301,7 +331,7 @@ class WpCliIntegrationTest extends IntegrationTestCase
         $path = '/var/www/html';
         $command = 'post list';
         $arguments = '--format=table';
-        $expectedCommand = "cd $path && wp $command $arguments";
+        $expectedCommand = "wp $command $arguments";
 
         // Set invalid wp binary for localhost (should fall back to default)
         $this->deployer->config->set('localhost.bin/wp', null);
@@ -309,8 +339,9 @@ class WpCliIntegrationTest extends IntegrationTestCase
         $this->processRunnerMock
             ->expects($this->once())
             ->method('run')
-            ->willReturnCallback(function ($host, $command) use ($expectedCommand) {
+            ->willReturnCallback(function ($host, $command, $options) use ($expectedCommand, $path) {
                 $this->assertEquals($expectedCommand, $command);
+                $this->assertSame($path, $this->runCwd($options));
                 return '';
             });
 

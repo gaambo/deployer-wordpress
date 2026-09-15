@@ -57,4 +57,9 @@ abstract class IntegrationTestCase extends TestCase
 
         parent::tearDown();
     }
+
+    protected function runCwd(mixed $options): ?string
+    {
+        return is_array($options) ? ($options['cwd'] ?? null) : $options->cwd;
+    }
 }

@@ -86,6 +86,38 @@ The `Localhost` utility class (`Gaambo\DeployerWordpress\Localhost`) handles swi
 `deploy_path` is the project root and is used for private data such as relative database dump paths. `current_path` is
 the WordPress root. The previous `project_path` example setting was unused and has been removed.
 
+#### Local application runtime
+
+Local application commands run natively by default. To run runtime-aware commands such as local WP-CLI database tasks
+inside DDEV, attach a runtime to localhost:
+
+```php
+use Gaambo\DeployerWordpress\DdevRuntime;
+
+localhost()
+    ->set('deploy_path', __DIR__)
+    ->set('current_path', '{{deploy_path}}/public')
+    ->set('runtime', new DdevRuntime('/var/www/html'));
+```
+
+Host paths below `deploy_path` are mapped to the DDEV project root. If the DDEV host mount starts somewhere other than
+`deploy_path`, configure it explicitly:
+
+```php
+new DdevRuntime('/var/www/html', projectRoot: '/custom/host/project');
+```
+
+DDEV uses `wp`, `composer`, `npm`, and `php` inside the container by default. Runtime-specific values can be overridden
+without changing localhost or remote binaries:
+
+```php
+new DdevRuntime('/var/www/html', config: ['bin/wp' => '/custom/bin/wp']);
+```
+
+Custom application commands can use `Runtime::run()`. `Runtime::within()` also makes calls to `Localhost::run()` use the
+configured runtime for the duration of its callback. Host filesystem operations should continue to call
+`Localhost::run()` outside that callback.
+
 ### wp-config.php (Recommendation)
 
 Keep `wp-config.php` in git and deploy it. Extract environment-specific config (database credentials, `WP_DEBUG`) into

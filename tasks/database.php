@@ -75,7 +75,8 @@ task('db:local:backup', function () {
     Localhost::run("mkdir -p $resolvedLocalDumpPath");
     WPCLI::runCommandLocally(
         "db export $resolvedLocalDumpPath/$dumpFile --add-drop-table",
-        Localhost::getConfig('current_path')
+        Localhost::getConfig('current_path'),
+        runtimePaths: ["$resolvedLocalDumpPath/$dumpFile"]
     );
 
     Files::pushFile("$resolvedLocalDumpPath/$dumpFile", "$resolvedRemoteDumpPath/$dumpFile");
@@ -151,7 +152,8 @@ task('db:local:import', function () {
     $remoteUrl = get('public_url');
     WPCLI::runCommandLocally(
         "db import $resolvedLocalDumpPath/$dumpFile",
-        Localhost::getConfig('current_path')
+        Localhost::getConfig('current_path'),
+        runtimePaths: ["$resolvedLocalDumpPath/$dumpFile"]
     );
 
     if (get('wp/multisite')) {
