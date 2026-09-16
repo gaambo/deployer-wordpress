@@ -3,9 +3,11 @@
 namespace Gaambo\DeployerWordpress\Tests\Functional\Tasks;
 
 use Gaambo\DeployerWordpress\Tests\Functional\FunctionalTestCase;
+use Gaambo\DeployerUtils\Runtime\DdevRuntimeHost;
 use RuntimeException;
 
 use function Deployer\set;
+use function Gaambo\DeployerUtils\runtime;
 
 class DatabaseTasksFunctionalTest extends FunctionalTestCase
 {
@@ -46,11 +48,15 @@ class DatabaseTasksFunctionalTest extends FunctionalTestCase
     protected function mockSuccessfulDbExport(string $wpBinary = 'wp'): void
     {
         $this->mockCommands([
-            "$wpBinary db export" => function ($host, $command) use ($wpBinary) {
+            "$wpBinary db export" => function ($host, $command, $options) use ($wpBinary) {
                 $wpWorkingPath = $host->getAlias() === 'localhost'
                     ? $this->localHost->get('current_path')
                     : $this->remoteHost->get('release_or_current_path');
-                $this->assertStringStartsWith("cd $wpWorkingPath &&", $command);
+                if ($host->getAlias() === 'localhost') {
+                    $this->assertSame($wpWorkingPath, $this->runCwd($options));
+                } else {
+                    $this->assertStringStartsWith("cd $wpWorkingPath &&", $command);
+                }
 
                 if (preg_match('/db export (.*?db_backup-\d{4}-\d{2}-\d{2}_\d{2}-\d{2}\.sql)(?:\s|$)/', $command, $matches)) {
                     $dumpFile = $matches[1];
@@ -207,9 +213,8 @@ class DatabaseTasksFunctionalTest extends FunctionalTestCase
         $result = $this->dep('db:remote:backup');
         $this->assertNotEquals(0, $result, 'Task should fail with invalid dump path');
         $output = $this->tester->getDisplay();
-        // Deployer v7/v8 compat: v7 says "Task db:remote:backup failed", v8 says "error in ...".
         $this->assertStringContainsString('db:remote:backup', $output);
-        $this->assertMatchesRegularExpression('/failed|error/i', $output, 'Output should indicate failure (v7: "failed", v8: "error")');
+        $this->assertStringContainsString('error', strtolower($output));
 
         // Verify no dump files were created
         $remoteDumpFiles = glob($this->remoteDir . '/dumps/db_backup-*.sql');
@@ -361,9 +366,8 @@ class DatabaseTasksFunctionalTest extends FunctionalTestCase
         $result = $this->dep('db:local:backup');
         $this->assertNotEquals(0, $result, 'Task should fail with invalid dump path');
         $output = $this->tester->getDisplay();
-        // Deployer v7/v8 compat: v7 says "Task db:local:backup failed", v8 says "error in ...".
         $this->assertStringContainsString('db:local:backup', $output);
-        $this->assertMatchesRegularExpression('/failed|error/i', $output, 'Output should indicate failure (v7: "failed", v8: "error")');
+        $this->assertStringContainsString('error', strtolower($output));
 
         // Verify no dump files were created
         $localDumpFiles = glob($this->localDir . '/dumps/db_backup-*.sql');
@@ -402,11 +406,15 @@ class DatabaseTasksFunctionalTest extends FunctionalTestCase
     protected function mockSuccessfulDbImport(): void
     {
         $this->mockCommands([
-            'wp db import' => function ($host, $command) {
+            'wp db import' => function ($host, $command, $options) {
                 $wpWorkingPath = $host->getAlias() === 'localhost'
                     ? $this->localHost->get('current_path')
                     : $this->remoteHost->get('release_or_current_path');
-                $this->assertStringStartsWith("cd $wpWorkingPath &&", $command);
+                if ($host->getAlias() === 'localhost') {
+                    $this->assertSame($wpWorkingPath, $this->runCwd($options));
+                } else {
+                    $this->assertStringStartsWith("cd $wpWorkingPath &&", $command);
+                }
 
                 return 'Database imported successfully';
             },
@@ -881,6 +889,55 @@ class DatabaseTasksFunctionalTest extends FunctionalTestCase
         // Run the multisite import task and expect failure
         $result = $this->dep('db:remote:import');
         $this->assertNotEquals(0, $result, 'Task should fail when URL replacement fails');
+    }
+
+    public function testDbLocalBackupWithDdevRuntime(): void
+    {
+        $this->localHost->set('runtime', runtime(DdevRuntimeHost::class));
+        $this->mockCommands([
+            'wp db export' => function ($host, $command, $options) {
+                $this->assertStringStartsWith('wp db export /var/www/html/dumps/', $command);
+                $this->assertSame($this->localDir, $this->runCwd($options));
+                $this->assertSame($this->ddevShell('/var/www/html/current'), $this->runShell($options));
+                preg_match('/db export \/var\/www\/html\/dumps\/(db_backup-[^ ]+\.sql)/', $command, $matches);
+                copy($this->getFixturePath('database/dump.sql'), $this->localDir . '/dumps/' . $matches[1]);
+                return 'Database exported successfully';
+            },
+        ]);
+
+        $result = $this->dep('db:local:backup');
+
+        $this->assertSame(0, $result);
+        $this->assertCount(1, glob($this->remoteDir . '/dumps/db_backup-*.sql'));
+    }
+
+    public function testDbLocalImportWithDdevRuntimeMapsOnlyDumpPath(): void
+    {
+        $this->localHost->set('runtime', runtime(DdevRuntimeHost::class));
+        $this->localHost->set('public_url', 'http://localhost');
+        $this->remoteHost->set('public_url', 'https://example.com');
+        $this->localHost->set('uploads/dir', '/local/uploads');
+        $this->remoteHost->set('uploads/dir', '/remote/uploads');
+        $dumpFile = $this->localDir . '/dumps/db_backup.sql';
+        copy($this->getFixturePath('database/dump.sql'), $dumpFile);
+        set('dbdump/file', 'db_backup.sql');
+
+        $commands = [];
+        $this->mockCommands([
+            'wp ' => function ($host, $command, $options) use (&$commands) {
+                $commands[] = $command;
+                $this->assertSame($this->localDir, $this->runCwd($options));
+                $this->assertSame($this->ddevShell('/var/www/html/current'), $this->runShell($options));
+                return '';
+            },
+        ]);
+
+        $result = $this->dep('db:local:import');
+
+        $this->assertSame(0, $result);
+        $this->assertFileDoesNotExist($dumpFile);
+        $this->assertStringContainsString('wp db import /var/www/html/dumps/db_backup.sql', $commands[0]);
+        $this->assertContains('wp search-replace /remote/uploads /local/uploads ', $commands);
     }
 
     protected function setUp(): void

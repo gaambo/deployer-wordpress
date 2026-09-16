@@ -10,10 +10,10 @@ namespace Gaambo\DeployerWordpress\Recipes\Common;
 use Deployer\Deployer;
 use Deployer\Exception\ConfigurationException;
 use Deployer\Host\Host;
-use Gaambo\DeployerWordpress\Composer;
-use Gaambo\DeployerWordpress\Localhost;
-use Gaambo\DeployerWordpress\Utils;
 use Gaambo\DeployerWordpress\WPCLI;
+use Gaambo\DeployerUtils\Composer;
+use Gaambo\DeployerUtils\Localhost;
+use Gaambo\DeployerUtils\Utils;
 
 use function Deployer\after;
 use function Deployer\cd;
@@ -143,9 +143,7 @@ set('public_host', function () {
     return $host;
 });
 
-// if you want to further define options for rsyncing files
-// just look at the source in `Files.php` and `Rsync.php`
-// and use the Rsync::buildOptionsArray and Files::push/pull methods
+// See the gaambo/deployer-utils README for file and rsync configuration.
 set('wp/dir', ''); // relative to document root
 // config files which should be protected - add to shared_files as well
 set('wp/configFiles', ['wp-config.php', 'wp-config-local.php']);
@@ -213,7 +211,7 @@ set('shared_dirs', []);
 set('writable_dirs', ['{{uploads/dir}}']);
 
 // The default rsync config
-// used by all *:push/*:pull tasks and in `src/utils/rsync.php:buildOptionsArray`
+// used by all *:push/*:pull tasks and Rsync::buildOptionsArray()
 set('rsync', function () {
     $config = [
         'exclude'      => [], // do NOT exclude .deployfilter files - remote should be aware of them
@@ -243,7 +241,6 @@ set('rsync', function () {
 
     return $config;
 });
-// https://github.com/deployphp/deployer/issues/3139
 set('rsync_src', __DIR__);
 
 set('release_name', function () {

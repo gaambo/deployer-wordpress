@@ -15,10 +15,10 @@
 namespace Gaambo\DeployerWordpress\Tasks;
 
 use RuntimeException;
-use Gaambo\DeployerWordpress\Files;
-use Gaambo\DeployerWordpress\Localhost;
-use Gaambo\DeployerWordpress\Rsync;
 use Gaambo\DeployerWordpress\WPCLI;
+use Gaambo\DeployerUtils\Files;
+use Gaambo\DeployerUtils\Localhost;
+use Gaambo\DeployerUtils\Rsync;
 
 use function Deployer\get;
 use function Deployer\task;

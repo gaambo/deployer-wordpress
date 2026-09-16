@@ -13,11 +13,9 @@
 
 namespace Gaambo\DeployerWordpress\Tasks;
 
-use Gaambo\DeployerWordpress\Files;
-use Gaambo\DeployerWordpress\Localhost;
-
-use function Deployer\download;
 use function Deployer\task;
+
+require __DIR__ . '/../vendor/gaambo/deployer-utils/tasks/files.php';
 
 require_once __DIR__ . '/mu-plugins.php';
 require_once __DIR__ . '/packages.php';
@@ -49,47 +47,3 @@ task('files:push', ['wp:push', 'uploads:push', 'plugins:push', 'mu-plugins:push'
  */
 task('files:pull', ['wp:pull', 'uploads:pull', 'plugins:pull', 'mu-plugins:pull', 'themes:pull', 'packages:pull'])
     ->desc('Pull all files from remote to local');
-
-/**
- * Backup all files on remote host
- *
- * Creates a zip backup of remote WordPress files and downloads it locally.
- *
- * Configuration:
- * - backup_path: Path for storing backups (required on both local and remote)
- * - release_path: Path to WordPress installation on remote
- *
- * Example:
- *     dep files:backup:remote prod
- */
-task('files:backup:remote', function () {
-    $backupFile = Files::zipFiles(
-        '{{release_or_current_path}}/',
-        '{{backup_path}}',
-        'backup_files'
-    );
-    $localBackupPath = Localhost::getConfig('backup_path');
-    download($backupFile, "$localBackupPath/");
-})->desc('Backup remote files and download locally');
-
-/**
- * Backup all files on local host
- *
- * Creates a zip backup of local WordPress files.
- *
- * Configuration:
- * - backup_path: Path for storing backups (local)
- * - current_path: Path to WordPress installation on local
- *
- * Example:
- *     dep files:backup:local prod
- */
-task('files:backup:local', function () {
-    $localPath = Localhost::getConfig('current_path');
-    $localBackupPath = Localhost::getConfig('backup_path');
-    Files::zipFiles(
-        "$localPath/",
-        $localBackupPath,
-        'backup_files'
-    );
-})->once()->desc('Backup local files');
