@@ -915,7 +915,7 @@ class DatabaseTasksFunctionalTest extends FunctionalTestCase
                 copy($this->getFixturePath('database/dump.sql'), $this->remoteDir . '/dumps/' . $matches[1]);
                 return 'Database exported successfully';
             },
-        ], 'testremote');
+        ], 'testremote:ddev');
 
         $result = $this->dep('db:remote:backup');
 
@@ -968,7 +968,7 @@ class DatabaseTasksFunctionalTest extends FunctionalTestCase
                 $this->assertSame($this->ddevShell('/var/www/html/current'), $this->runShell($options));
                 return '';
             },
-        ], 'testremote');
+        ], 'testremote:ddev');
 
         $result = $this->dep('db:remote:import');
 

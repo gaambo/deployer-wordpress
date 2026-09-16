@@ -165,7 +165,7 @@ class WpCliIntegrationTest extends IntegrationTestCase
             ->method('run')
             ->willReturnCallback(function ($executionHost, $command, RunParams $options) use ($remoteSourceHost) {
                 $this->assertNotSame($remoteSourceHost, $executionHost);
-                $this->assertSame('production', $executionHost->getAlias());
+                $this->assertSame('production:ddev', $executionHost->getAlias());
                 $this->assertSame('wp db export /var/www/html/data/dumps/site.sql ', $command);
                 $this->assertSame('', $this->runCwd($options));
                 $this->assertSame(

@@ -32,7 +32,7 @@
 - `files:push` and `files:pull` remain WordPress aggregate tasks. `files:backup:remote` and `files:backup:local` now load
   from the shared package through the explicit utils task file.
 - Until utils v1.0.0 is published, Composer uses its VCS repository with `dev-main`; `composer.lock` pins exact commit
-  `e30f746e83d6d8f9aee3d507fb618a77217e6a06`. Replace this with `gaambo/deployer-utils:^1.0` and remove the temporary
+  `d1bc0f405ec1972d77087e8814756b94d01c095e`. Replace this with `gaambo/deployer-utils:^1.0` and remove the temporary
   repository after the v1.0.0 release.
 
 ## v4.0.1 - 2026-04-28

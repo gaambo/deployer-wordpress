@@ -45,7 +45,7 @@ custom theme/plugin builds, and complex setups including Bedrock and multisite.
 4. Test on staging first, then deploy to production 🚀
 
 Until `gaambo/deployer-utils` v1.0.0 is published, this package uses its Git repository and `dev-main`. The lock file
-pins utils to `e30f746e83d6d8f9aee3d507fb618a77217e6a06`. Root projects installing this development version must also add:
+pins utils to `d1bc0f405ec1972d77087e8814756b94d01c095e`. Root projects installing this development version must also add:
 
 ```json
 {
