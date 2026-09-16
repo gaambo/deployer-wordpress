@@ -2,6 +2,7 @@
 
 namespace Gaambo\DeployerWordpress;
 
+use Gaambo\DeployerUtils\Localhost;
 use Gaambo\DeployerUtils\Runtime\Runtime;
 
 use function Deployer\run;
@@ -48,13 +49,15 @@ class WPCLI
         string $arguments = '',
         array $runtimePaths = []
     ): void {
-        foreach ($runtimePaths as $hostPath) {
-            $runtimePath = Runtime::path($hostPath);
-            $command = str_replace($hostPath, $runtimePath, $command);
-            $arguments = str_replace($hostPath, $runtimePath, $arguments);
-        }
+        Localhost::within(function () use ($command, $path, $arguments, $runtimePaths): void {
+            foreach ($runtimePaths as $hostPath) {
+                $runtimePath = Runtime::path($hostPath);
+                $command = str_replace($hostPath, $runtimePath, $command);
+                $arguments = str_replace($hostPath, $runtimePath, $arguments);
+            }
 
-        Runtime::run("{{bin/wp}} $command $arguments", ['cwd' => $path]);
+            Runtime::run("{{bin/wp}} $command $arguments", ['cwd' => $path]);
+        });
     }
 
     /**

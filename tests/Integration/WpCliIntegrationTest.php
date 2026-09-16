@@ -3,6 +3,8 @@
 namespace Gaambo\DeployerWordpress\Tests\Integration;
 
 use Deployer\ProcessRunner\ProcessRunner;
+use Deployer\Host\Host;
+use Deployer\Task\Context;
 use Gaambo\DeployerWordpress\WPCLI;
 use Gaambo\DeployerUtils\Runtime\DdevRuntimeHost;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -106,6 +108,35 @@ class WpCliIntegrationTest extends IntegrationTestCase
             '--source=/var/www/uploads',
             runtimePaths: [$hostDumpPath]
         );
+    }
+
+    public function testRunCommandLocallyUsesLocalhostFromAnotherTaskContext(): void
+    {
+        $this->host->set('runtime', runtime(DdevRuntimeHost::class));
+        $remoteHost = new Host('mi6');
+        $remoteHost->set('deploy_path', '/remote/project');
+        $remoteHost->set('runtime', runtime(DdevRuntimeHost::class));
+        Context::push(new Context($remoteHost));
+
+        try {
+            $this->processRunnerMock
+                ->expects($this->once())
+                ->method('run')
+                ->willReturnCallback(function ($host, $command, $options) {
+                    $this->assertSame('wp db import /var/www/html/data/dump.sql ', $command);
+                    $this->assertSame('/var/www', $this->runCwd($options));
+                    $this->assertSame($this->ddevShell('/var/www/html/current'), $this->runShell($options));
+                    return '';
+                });
+
+            WPCLI::runCommandLocally(
+                'db import /var/www/data/dump.sql',
+                '/var/www/current',
+                runtimePaths: ['/var/www/data/dump.sql']
+            );
+        } finally {
+            Context::pop();
+        }
     }
 
     public function testInstall(): void
