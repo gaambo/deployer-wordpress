@@ -184,6 +184,41 @@ class WpCliIntegrationTest extends IntegrationTestCase
         );
     }
 
+    public function testRunCommandResolvesWpBinaryFromRemoteDdevWorkingPath(): void
+    {
+        $remoteSourceHost = $this->remoteSourceHost();
+        $remoteSourceHost->set('runtime', runtime('ddev'));
+        $remoteSourceHost->set('bin/php', '/usr/bin/php');
+        $remoteSourceHost->set('bin/wp', function () {
+            if (\Deployer\test('[ -f {{deploy_path}}/.dep/wp-cli.phar ]')) {
+                return '{{bin/php}} {{deploy_path}}/.dep/wp-cli.phar';
+            }
+
+            return 'wp';
+        });
+        $this->sshClientMock
+            ->expects($this->exactly(2))
+            ->method('run')
+            ->willReturnCallback(function ($executionHost, $command, RunParams $options) {
+                $this->assertSame('production:ddev', $executionHost->getAlias());
+                $this->assertSame(
+                    $this->remoteDdevShell('/srv/www', '/var/www/html/current'),
+                    $this->runShell($options)
+                );
+                if (str_starts_with($command, 'if [ -f /var/www/html/.dep/wp-cli.phar ]; then echo +')) {
+                    $this->assertSame('/var/www/html', $this->runCwd($options));
+                    preg_match('/echo (\+\w+); fi$/', $command, $matches);
+                    return $matches[1];
+                }
+
+                $this->assertSame('/usr/bin/php /var/www/html/.dep/wp-cli.phar --info ', $command);
+                $this->assertSame('', $this->runCwd($options));
+                return '';
+            });
+
+        $this->onHost($remoteSourceHost, fn() => WPCLI::runCommand('--info'));
+    }
+
     public function testInstall(): void
     {
         $installPath = '/usr/local/bin';
