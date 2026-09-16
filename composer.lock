@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "5c38d1c003351838f8dbf96db3c16b40",
+    "content-hash": "90d422577390bd4005657661e3c75fe9",
     "packages": [
         {
             "name": "deployer/deployer",
@@ -73,16 +73,16 @@
         },
         {
             "name": "gaambo/deployer-utils",
-            "version": "dev-main",
+            "version": "v0.1.1",
             "source": {
                 "type": "git",
-                "url": "https://github.com/gaambo/deployer-utils",
-                "reference": "d4bcf8f432eb7879db6f816815077ea476972161"
+                "url": "https://github.com/gaambo/deployer-utils.git",
+                "reference": "0f15457bb6e5b0aea98e234e6f03f1ba8deb494b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/gaambo/deployer-utils/zipball/d4bcf8f432eb7879db6f816815077ea476972161",
-                "reference": "d4bcf8f432eb7879db6f816815077ea476972161",
+                "url": "https://api.github.com/repos/gaambo/deployer-utils/zipball/0f15457bb6e5b0aea98e234e6f03f1ba8deb494b",
+                "reference": "0f15457bb6e5b0aea98e234e6f03f1ba8deb494b",
                 "shasum": ""
             },
             "require": {
@@ -96,7 +96,6 @@
                 "symfony/console": "^7.4.0 || ^8.0.0",
                 "symfony/process": "^7.4.0 || ^8.0.0"
             },
-            "default-branch": true,
             "type": "library",
             "autoload": {
                 "files": [
@@ -106,62 +105,7 @@
                     "Gaambo\\DeployerUtils\\": "src/"
                 }
             },
-            "autoload-dev": {
-                "psr-4": {
-                    "Gaambo\\DeployerUtils\\Tests\\": "tests/",
-                    "Deployer\\": "vendor/deployer/deployer/src/"
-                }
-            },
-            "scripts": {
-                "phpcs": [
-                    "vendor/bin/phpcs -s"
-                ],
-                "phpcs:fix": [
-                    "vendor/bin/phpcbf"
-                ],
-                "phpstan": [
-                    "vendor/bin/phpstan analyse --memory-limit 1G"
-                ],
-                "lint": [
-                    "find . -type f -name '*.php' -not -path './vendor/*' -exec php -l {} \\;"
-                ],
-                "phpunit": [
-                    "DO_NOT_TRACK=true vendor/bin/phpunit"
-                ],
-                "tests:unit": [
-                    "DO_NOT_TRACK=true vendor/bin/phpunit --testsuite Unit"
-                ],
-                "tests:unit:coverage": [
-                    "DO_NOT_TRACK=true XDEBUG_MODE=coverage vendor/bin/phpunit --testsuite Unit --coverage-text"
-                ],
-                "tests:integration": [
-                    "DO_NOT_TRACK=true vendor/bin/phpunit --testsuite Integration"
-                ],
-                "tests:integration:coverage": [
-                    "DO_NOT_TRACK=true XDEBUG_MODE=coverage vendor/bin/phpunit --testsuite Integration --coverage-text"
-                ],
-                "tests:functional": [
-                    "DO_NOT_TRACK=true vendor/bin/phpunit --testsuite Functional"
-                ],
-                "tests:functional:coverage": [
-                    "DO_NOT_TRACK=true XDEBUG_MODE=coverage vendor/bin/phpunit --testsuite Functional --coverage-text"
-                ],
-                "tests": [
-                    "@tests:unit",
-                    "@tests:integration",
-                    "@tests:functional"
-                ],
-                "tests:coverage": [
-                    "DO_NOT_TRACK=true XDEBUG_MODE=coverage vendor/bin/phpunit --coverage-html=tests/coverage"
-                ],
-                "precommit": [
-                    "@lint",
-                    "@phpcs",
-                    "@phpstan",
-                    "@composer validate",
-                    "@tests"
-                ]
-            },
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
@@ -173,7 +117,11 @@
             ],
             "description": "Shared utilities for Deployer recipe packages",
             "homepage": "https://github.com/gaambo/deployer-utils",
-            "time": "2026-09-16T13:55:31+00:00"
+            "support": {
+                "issues": "https://github.com/gaambo/deployer-utils/issues",
+                "source": "https://github.com/gaambo/deployer-utils/tree/v0.1.1"
+            },
+            "time": "2026-09-16T15:22:15+00:00"
         },
         {
             "name": "maml/maml",
@@ -2927,9 +2875,7 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "gaambo/deployer-utils": 20
-    },
+    "stability-flags": {},
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {

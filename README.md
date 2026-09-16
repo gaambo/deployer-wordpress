@@ -44,22 +44,7 @@ custom theme/plugin builds, and complex setups including Bedrock and multisite.
 
 4. Test on staging first, then deploy to production 🚀
 
-Until `gaambo/deployer-utils` v1.0.0 is published, this package uses its Git repository and `dev-main`. The lock file
-pins utils to `d4bcf8f432eb7879db6f816815077ea476972161`. Root projects installing this development version must also add:
-
-```json
-{
-  "repositories": [
-    {
-      "type": "vcs",
-      "url": "https://github.com/gaambo/deployer-utils"
-    }
-  ]
-}
-```
-
-After utils v1.0.0 is released, replace the temporary VCS repository and `dev-main` constraint with
-`gaambo/deployer-utils:^1.0`.
+This package uses the public `gaambo/deployer-utils:^0.1.1` release.
 
 ## Requirements
 
