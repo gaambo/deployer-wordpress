@@ -45,7 +45,7 @@ custom theme/plugin builds, and complex setups including Bedrock and multisite.
 4. Test on staging first, then deploy to production 🚀
 
 Until `gaambo/deployer-utils` v1.0.0 is published, this package uses its Git repository and `dev-main`. The lock file
-pins utils to `17b69c6ba6ba8a179927564b55fd08a7d1e1af5f`. Root projects installing this development version must also add:
+pins utils to `e30f746e83d6d8f9aee3d507fb618a77217e6a06`. Root projects installing this development version must also add:
 
 ```json
 {
@@ -97,7 +97,8 @@ localhost()
 `deploy_path` is the project root and is used for private data such as relative database dump paths. `current_path` is
 the WordPress root. The previous `project_path` example setting was unused and has been removed.
 
-Local WP-CLI database commands honor a runtime configured on localhost and map database dump paths into it. See the
+Local and remote WP-CLI database commands honor runtimes configured on their source hosts and map database dump paths
+into them. See the
 [Deployer Utils README](https://github.com/gaambo/deployer-utils#readme) for generic localhost, runtime, Composer, npm,
 file, and rsync APIs. The old `Gaambo\DeployerWordpress` helper names remain as deprecated wrappers for migration.
 

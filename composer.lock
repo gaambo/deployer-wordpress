@@ -77,12 +77,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/gaambo/deployer-utils",
-                "reference": "9edd4405a223ad0723d771b7eee3c702bb8f9947"
+                "reference": "e30f746e83d6d8f9aee3d507fb618a77217e6a06"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/gaambo/deployer-utils/zipball/9edd4405a223ad0723d771b7eee3c702bb8f9947",
-                "reference": "9edd4405a223ad0723d771b7eee3c702bb8f9947",
+                "url": "https://api.github.com/repos/gaambo/deployer-utils/zipball/e30f746e83d6d8f9aee3d507fb618a77217e6a06",
+                "reference": "e30f746e83d6d8f9aee3d507fb618a77217e6a06",
                 "shasum": ""
             },
             "require": {
@@ -173,7 +173,7 @@
             ],
             "description": "Shared utilities for Deployer recipe packages",
             "homepage": "https://github.com/gaambo/deployer-utils",
-            "time": "2026-09-16T10:35:33+00:00"
+            "time": "2026-09-16T13:03:32+00:00"
         },
         {
             "name": "maml/maml",

@@ -13,7 +13,7 @@
 
 ### Added
 
-- Local WP-CLI and database commands can use runtimes supplied by `gaambo/deployer-utils`, including DDEV.
+- Local and remote WP-CLI and database commands can use runtimes supplied by `gaambo/deployer-utils`, including DDEV.
 - `Files::pushFile()` and `Files::pullFile()` helpers for transferring individual files with the same path resolution
   semantics as directory transfers.
 - `Files::resolvePath()` helper to resolve a path against a base path, leaving absolute and `~`-relative paths unchanged.
@@ -28,11 +28,11 @@
 - Implemented [gaambo/deployer-utils#1](https://github.com/gaambo/deployer-utils/issues/1) by moving generic Composer,
   npm, file, rsync, utility, localhost, runtime, test-support, and file-backup behavior to `gaambo/deployer-utils`.
 - WordPress tasks and recipes now use the shared helpers directly. Existing `Gaambo\DeployerWordpress` helper classes
-  and `runtime()` remain as silent deprecated wrappers.
+  remain as silent deprecated wrappers.
 - `files:push` and `files:pull` remain WordPress aggregate tasks. `files:backup:remote` and `files:backup:local` now load
   from the shared package through the explicit utils task file.
 - Until utils v1.0.0 is published, Composer uses its VCS repository with `dev-main`; `composer.lock` pins exact commit
-  `17b69c6ba6ba8a179927564b55fd08a7d1e1af5f`. Replace this with `gaambo/deployer-utils:^1.0` and remove the temporary
+  `e30f746e83d6d8f9aee3d507fb618a77217e6a06`. Replace this with `gaambo/deployer-utils:^1.0` and remove the temporary
   repository after the v1.0.0 release.
 
 ## v4.0.1 - 2026-04-28

@@ -46,7 +46,11 @@ task('db:remote:backup', function () {
     $resolvedRemoteDumpPath = Files::resolvePath($remoteDumpPath, get('deploy_path'));
 
     run("mkdir -p $resolvedRemoteDumpPath");
-    WPCLI::runCommand("db export $resolvedRemoteDumpPath/$dumpFile --add-drop-table");
+    $remoteDumpFile = "$resolvedRemoteDumpPath/$dumpFile";
+    WPCLI::runCommand(
+        "db export $remoteDumpFile --add-drop-table",
+        runtimePaths: [$remoteDumpFile]
+    );
 
     Files::pullFile("$resolvedRemoteDumpPath/$dumpFile", "$resolvedLocalDumpPath/$dumpFile");
 })->desc('Create backup of remote database and download locally');
@@ -105,7 +109,8 @@ task('db:remote:import', function () {
 
     $localUrl = Localhost::getConfig('public_url');
     $remoteUrl = get('public_url');
-    WPCLI::runCommand("db import $resolvedRemoteDumpPath/$dumpFile");
+    $remoteDumpFile = "$resolvedRemoteDumpPath/$dumpFile";
+    WPCLI::runCommand("db import $remoteDumpFile", runtimePaths: [$remoteDumpFile]);
 
     if (get('wp/multisite')) {
         WPCLI::runCommand("search-replace $localUrl $remoteUrl --network --all-tables");

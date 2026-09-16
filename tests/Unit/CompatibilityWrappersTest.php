@@ -13,10 +13,6 @@ class CompatibilityWrappersTest extends UnitTestCase
             \Gaambo\DeployerWordpress\NPM::class => \Gaambo\DeployerUtils\NPM::class,
             \Gaambo\DeployerWordpress\Rsync::class => \Gaambo\DeployerUtils\Rsync::class,
             \Gaambo\DeployerWordpress\Utils::class => \Gaambo\DeployerUtils\Utils::class,
-            \Gaambo\DeployerWordpress\Runtime\Runtime::class => \Gaambo\DeployerUtils\Runtime\Runtime::class,
-            \Gaambo\DeployerWordpress\Runtime\RuntimeHost::class => \Gaambo\DeployerUtils\Runtime\RuntimeHost::class,
-            \Gaambo\DeployerWordpress\Runtime\DdevRuntimeHost::class
-                => \Gaambo\DeployerUtils\Runtime\DdevRuntimeHost::class,
         ];
 
         foreach ($wrappers as $wrapper => $sharedClass) {

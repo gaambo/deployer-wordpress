@@ -16,23 +16,27 @@ class WPCLI
     private const BINARY_DOWNLOAD = 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar';
 
     /**
-     * Run a WP CLI command
+     * Run a WP CLI command through the current source host's runtime.
+     *
      * @param string $command The command to run (without wp prefix)
      * @param string|null $path The path to run the command in (defaults to {{release_or_current_path}})
      * @param string $arguments Additional arguments to pass to WP-CLI
+     * @param array<string> $runtimePaths Source-host paths to map into the configured runtime
      * @return void
      */
     public static function runCommand(
         string $command,
         ?string $path = '{{release_or_current_path}}',
-        string $arguments = ''
+        string $arguments = '',
+        array $runtimePaths = []
     ): void {
-        $cmd = "{{bin/wp}} $command $arguments";
-        if ($path) {
-            run("cd $path && $cmd");
-        } else {
-            run($cmd);
+        foreach ($runtimePaths as $sourcePath) {
+            $runtimePath = Runtime::path($sourcePath);
+            $command = str_replace($sourcePath, $runtimePath, $command);
+            $arguments = str_replace($sourcePath, $runtimePath, $arguments);
         }
+
+        Runtime::run("{{bin/wp}} $command $arguments", ['cwd' => $path]);
     }
 
     /**
@@ -50,13 +54,7 @@ class WPCLI
         array $runtimePaths = []
     ): void {
         Localhost::within(function () use ($command, $path, $arguments, $runtimePaths): void {
-            foreach ($runtimePaths as $hostPath) {
-                $runtimePath = Runtime::path($hostPath);
-                $command = str_replace($hostPath, $runtimePath, $command);
-                $arguments = str_replace($hostPath, $runtimePath, $arguments);
-            }
-
-            Runtime::run("{{bin/wp}} $command $arguments", ['cwd' => $path]);
+            self::runCommand($command, $path, $arguments, $runtimePaths);
         });
     }
 
