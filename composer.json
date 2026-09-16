@@ -30,9 +30,6 @@
     "gaambo/deployer-utils": "dev-main"
   },
   "autoload": {
-    "files": [
-      "src/functions.php"
-    ],
     "psr-4": {
       "Gaambo\\DeployerWordpress\\": "src/"
     }
