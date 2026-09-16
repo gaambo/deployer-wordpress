@@ -15,7 +15,11 @@ namespace Gaambo\DeployerWordpress\Tasks;
 
 use function Deployer\task;
 
-require __DIR__ . '/../vendor/gaambo/deployer-utils/tasks/files.php';
+$utilsFilesTasks = dirname(__DIR__, 3) . '/gaambo/deployer-utils/tasks/files.php';
+if (!file_exists($utilsFilesTasks)) {
+    $utilsFilesTasks = __DIR__ . '/../vendor/gaambo/deployer-utils/tasks/files.php';
+}
+require $utilsFilesTasks;
 
 require_once __DIR__ . '/mu-plugins.php';
 require_once __DIR__ . '/packages.php';
