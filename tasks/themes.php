@@ -14,11 +14,11 @@
 
 namespace Gaambo\DeployerWordpress\Tasks;
 
-use Gaambo\DeployerWordpress\Composer;
-use Gaambo\DeployerWordpress\Files;
-use Gaambo\DeployerWordpress\Localhost;
-use Gaambo\DeployerWordpress\NPM;
-use Gaambo\DeployerWordpress\Rsync;
+use Gaambo\DeployerUtils\Composer;
+use Gaambo\DeployerUtils\Files;
+use Gaambo\DeployerUtils\Localhost;
+use Gaambo\DeployerUtils\NPM;
+use Gaambo\DeployerUtils\Rsync;
 
 use function Deployer\download;
 use function Deployer\get;

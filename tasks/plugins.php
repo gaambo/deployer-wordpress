@@ -12,9 +12,9 @@
 
 namespace Gaambo\DeployerWordpress\Tasks;
 
-use Gaambo\DeployerWordpress\Files;
-use Gaambo\DeployerWordpress\Localhost;
-use Gaambo\DeployerWordpress\Rsync;
+use Gaambo\DeployerUtils\Files;
+use Gaambo\DeployerUtils\Localhost;
+use Gaambo\DeployerUtils\Rsync;
 
 use function Deployer\download;
 use function Deployer\get;

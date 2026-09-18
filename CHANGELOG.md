@@ -4,6 +4,8 @@
 
 ### Breaking Changes
 
+- PHP 8.3 or newer and Deployer 8 are now required. Deployer 7 support and compatibility code were removed.
+- Use Deployer's `quote()` directly instead of the removed `Utils::quote()` wrapper.
 - **`Files` path resolution**: Paths passed to `Files::pushFiles()` / `Files::pullFiles()` that begin with `/` are now
   treated as absolute rather than project-relative. Relative paths continue to resolve against `current_path` (local)
   or `release_or_current_path` (remote).
@@ -12,6 +14,7 @@
 
 ### Added
 
+- Local and remote WP-CLI and database commands can use runtimes supplied by `gaambo/deployer-utils`, including DDEV.
 - `Files::pushFile()` and `Files::pullFile()` helpers for transferring individual files with the same path resolution
   semantics as directory transfers.
 - `Files::resolvePath()` helper to resolve a path against a base path, leaving absolute and `~`-relative paths unchanged.
@@ -20,6 +23,16 @@
 
 - Database dump paths are now resolved consistently against `deploy_path` for WP-CLI export/import and file transfers,
   instead of being interpreted relative to different working directories.
+
+### Changed
+
+- Implemented [gaambo/deployer-utils#1](https://github.com/gaambo/deployer-utils/issues/1) by moving generic Composer,
+  npm, file, rsync, utility, localhost, runtime, test-support, and file-backup behavior to `gaambo/deployer-utils`.
+- WordPress tasks and recipes now use the shared helpers directly. Existing `Gaambo\DeployerWordpress` helper classes
+  remain as silent deprecated wrappers.
+- `files:push` and `files:pull` remain WordPress aggregate tasks. `files:backup:remote` and `files:backup:local` now load
+  from the shared package through the explicit utils task file.
+- Composer now uses the public `gaambo/deployer-utils:^0.1.1` release.
 
 ## v4.0.1 - 2026-04-28
 

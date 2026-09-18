@@ -44,10 +44,12 @@ custom theme/plugin builds, and complex setups including Bedrock and multisite.
 
 4. Test on staging first, then deploy to production 🚀
 
+This package uses the public `gaambo/deployer-utils:^0.1.1` release.
+
 ## Requirements
 
-- PHP + [Composer](https://getcomposer.org)
-- [Deployer](https://deployer.org) (automatically installed)
+- PHP 8.3 or newer and [Composer](https://getcomposer.org)
+- [Deployer 8](https://deployer.org) (automatically installed)
 - WordPress installation
 - *nix OS (Linux/macOS or [WSL](https://docs.microsoft.com/en-us/windows/wsl/install-win10) on Windows)
 - `rsync` installed
@@ -64,11 +66,7 @@ Example recipes (in `examples/`) provide configuration starting points. The libr
 vanilla, Composer, subdirectory, Bedrock, multisite) by making all paths and directories configurable. Check the example
 recipes and task source files for available options.
 
-### Localhost context
-
-Version 4 introduces a proper `Localhost` context. This ensures that when tasks run on your local machine
-(like building assets or backing up the local database), they use configuration values specifically defined for
-localhost, rather than falling back to global or remote values.
+### Localhost Context
 
 Configure localhost in `deploy.php`:
 
@@ -81,10 +79,13 @@ localhost()
     ->set('backup_path', __DIR__ . '/data/backups');
 ```
 
-The `Localhost` utility class (`Gaambo\DeployerWordpress\Localhost`) handles switching context automatically in tasks.
-
 `deploy_path` is the project root and is used for private data such as relative database dump paths. `current_path` is
 the WordPress root. The previous `project_path` example setting was unused and has been removed.
+
+Local and remote WP-CLI database commands honor runtimes configured on their source hosts and map database dump paths
+into them. See the
+[Deployer Utils README](https://github.com/gaambo/deployer-utils#readme) for generic localhost, runtime, Composer, npm,
+file, and rsync APIs. The old `Gaambo\DeployerWordpress` helper names remain as deprecated wrappers for migration.
 
 ### wp-config.php (Recommendation)
 
@@ -173,6 +174,7 @@ set('packages', [
 **File Tasks** (`tasks/files.php`)
 
 - `files:push` / `files:pull` - Sync all files (combines wp, uploads, plugins, themes, packages)
+- `files:backup:remote` / `files:backup:local` - Back up all files through the shared utils tasks
 
 **WordPress Core** (`tasks/wp.php`)
 
@@ -218,16 +220,4 @@ The library includes a comprehensive test suite with unit, integration, and func
 - Functional tests use a mocked environment to verify rsync commands and file operations without real remote
   connections.
 
-The library supports both Deployer v7 and v8. Test against both before submitting (note: Deployer v7 requires PHP 8.2 or 8.3 — it is incompatible with PHP 8.4+):
-
-```bash
-# Switch to Deployer v7
-composer require --no-update deployer/deployer:"7.5.*"
-composer update deployer/deployer --with-dependencies
-composer precommit
-
-# Switch back to v8
-composer require --no-update deployer/deployer:"^7.3 || ^8.0"
-composer update deployer/deployer --with-dependencies
-composer precommit
-```
+CI tests Deployer 8 on PHP 8.3, 8.4, and 8.5.

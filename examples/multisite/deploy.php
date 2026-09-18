@@ -1,6 +1,6 @@
 <?php
 
-use Gaambo\DeployerWordpress\Localhost;
+use Gaambo\DeployerUtils\Localhost;
 
 require_once __DIR__ . '/vendor/autoload.php';
 require_once __DIR__ . '/vendor/gaambo/deployer-wordpress/recipes/simple.php';
