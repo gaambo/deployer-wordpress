@@ -3,8 +3,9 @@
 namespace Gaambo\DeployerWordpress\Tests\Functional;
 
 use Deployer\Ssh\RunParams;
-use Gaambo\DeployerUtils\Utils;
 use Gaambo\DeployerUtils\Tests\Functional\FunctionalTestCase as BaseFunctionalTestCase;
+
+use function Deployer\quote;
 
 abstract class FunctionalTestCase extends BaseFunctionalTestCase
 {
@@ -37,6 +38,6 @@ abstract class FunctionalTestCase extends BaseFunctionalTestCase
 
     protected function ddevShell(string $path): string
     {
-        return 'ddev exec --dir ' . Utils::quote($path) . ' bash -s';
+        return 'ddev exec --dir ' . quote($path) . ' bash -s';
     }
 }

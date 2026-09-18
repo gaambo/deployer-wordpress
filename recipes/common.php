@@ -13,11 +13,11 @@ use Deployer\Host\Host;
 use Gaambo\DeployerWordpress\WPCLI;
 use Gaambo\DeployerUtils\Composer;
 use Gaambo\DeployerUtils\Localhost;
-use Gaambo\DeployerUtils\Utils;
 
 use function Deployer\after;
 use function Deployer\cd;
 use function Deployer\commandExist;
+use function Deployer\quote;
 use function Deployer\currentHost;
 use function Deployer\get;
 use function Deployer\has;
@@ -291,7 +291,7 @@ task('deploy:release', function () {
     ];
 
     // Save metainfo about release.
-    $json = Utils::quote(json_encode($metainfo));
+    $json = quote(json_encode($metainfo));
     run("echo $json >> .dep/releases_log");
 });
 

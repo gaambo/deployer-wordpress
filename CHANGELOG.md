@@ -5,6 +5,7 @@
 ### Breaking Changes
 
 - PHP 8.3 or newer and Deployer 8 are now required. Deployer 7 support and compatibility code were removed.
+- Use Deployer's `quote()` directly instead of the removed `Utils::quote()` wrapper.
 - **`Files` path resolution**: Paths passed to `Files::pushFiles()` / `Files::pullFiles()` that begin with `/` are now
   treated as absolute rather than project-relative. Relative paths continue to resolve against `current_path` (local)
   or `release_or_current_path` (remote).
