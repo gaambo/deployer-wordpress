@@ -20,7 +20,7 @@
   "require": {
     "php": "^8.3",
     "deployer/deployer": "^8.0",
-    "gaambo/deployer-utils": "^0.2.0"
+    "gaambo/deployer-utils": "^1.0.1"
   },
   "autoload": {
     "psr-4": {
@@ -56,7 +56,7 @@
       "@lint",
       "@phpcs",
       "@phpstan",
-      "@composer validate",
+      "@composer validate --strict",
       "@tests"
     ]
   },
