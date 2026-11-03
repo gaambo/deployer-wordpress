@@ -19,6 +19,7 @@
   },
   "require": {
     "php": "^8.3",
+    "composer-runtime-api": "^2.1",
     "deployer/deployer": "^8.0",
     "gaambo/deployer-utils": "^1.0.1"
   },

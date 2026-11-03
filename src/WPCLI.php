@@ -18,6 +18,10 @@ class WPCLI
     /**
      * Run a WP CLI command through the current source host's runtime.
      *
+     * Null or empty paths use Deployer's working_path (or the runtime's default directory).
+     * Runtime paths use literal replacement throughout command and arguments, not shell-token matching.
+     * Pass full file paths; avoid overlapping paths or matching text that must remain unchanged.
+     *
      * @param string $command The command to run (without wp prefix)
      * @param string|null $path The path to run the command in (defaults to {{release_or_current_path}})
      * @param string $arguments Additional arguments to pass to WP-CLI
@@ -36,11 +40,13 @@ class WPCLI
             $arguments = str_replace($sourcePath, $runtimePath, $arguments);
         }
 
-        Runtime::run("{{bin/wp}} $command $arguments", ['cwd' => $path]);
+        Runtime::run("{{bin/wp}} $command $arguments", ['cwd' => $path ?: null]);
     }
 
     /**
      * Run a WP CLI command locally
+     * Null or empty paths use Deployer's working_path (or the runtime's default directory).
+     * Runtime path replacement follows runCommand(); it does not match shell tokens.
      * @param string $command The command to run (without wp prefix)
      * @param string|null $path The path to run the command in (defaults to {{current_path}})
      * @param string $arguments Additional arguments to pass to WP-CLI

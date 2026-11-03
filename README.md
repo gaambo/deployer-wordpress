@@ -12,7 +12,7 @@ custom theme/plugin builds, and complex setups including Bedrock and multisite.
   - [Upgrading from v4](#upgrading-from-v4)
   - [Configuration](#configuration)
     - [Localhost context](#localhost-context)
-    - [wp-config.php](#wp-configphp)
+    - [wp-config.php](#wp-configphp-recommendation)
     - [Rsync filters](#rsync-filters)
   - [Tasks](#tasks)
     - [Database Tasks (`tasks/database.php`)](#database-tasks-tasksdatabasephp)
@@ -217,5 +217,7 @@ The library includes a comprehensive test suite with unit, integration, and func
   and all tests.
 - Functional tests use a mocked environment to verify rsync commands and file operations without real remote
   connections.
+- Tests load shared support classes from `deployer-utils/tests/` through `autoload-dev`. They rely on those files
+  shipping in Utils distribution archives, as documented in its shared test support API.
 
 CI tests Deployer 8 on PHP 8.3, 8.4, and 8.5.

@@ -13,12 +13,11 @@
 
 namespace Gaambo\DeployerWordpress\Tasks;
 
+use Composer\InstalledVersions;
+
 use function Deployer\task;
 
-$utilsFilesTasks = dirname(__DIR__, 3) . '/gaambo/deployer-utils/tasks/files.php';
-if (!file_exists($utilsFilesTasks)) {
-    $utilsFilesTasks = __DIR__ . '/../vendor/gaambo/deployer-utils/tasks/files.php';
-}
+$utilsFilesTasks = InstalledVersions::getInstallPath('gaambo/deployer-utils') . '/tasks/files.php';
 require $utilsFilesTasks;
 
 require_once __DIR__ . '/mu-plugins.php';

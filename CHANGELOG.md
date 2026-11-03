@@ -1,6 +1,6 @@
 # Changelog
 
-## v5.0.0
+## v5.0.0 - 2026-11-03
 
 v5 moves shared helpers to Deployer Utils and adds runtime-aware WP-CLI commands.
 
@@ -8,13 +8,16 @@ v5 moves shared helpers to Deployer Utils and adds runtime-aware WP-CLI commands
 
 - PHP 8.3 or newer and Deployer 8 are now required. Deployer 7 support and compatibility code were removed.
 - Use Deployer's `quote()` directly instead of the removed `Utils::quote()` wrapper.
+- `Utils::isDeployerVersion()`, `Utils::parseStringArray()`, and `Utils::parseStringOrNull()` were also removed.
+  Deployer 8 is now required, so remove version checks. The parsing helpers are internal to Deployer Utils' rsync
+  implementation; custom callers must handle their own value parsing.
 - **`Files` path resolution**: Paths passed to `Files::pushFiles()` / `Files::pullFiles()` that begin with `/` are now
   treated as absolute rather than project-relative. Relative paths continue to resolve against `current_path` (local)
   or `release_or_current_path` (remote).
 - **Database dump paths**: Relative `dbdump_path` values now resolve against `deploy_path` instead of `current_path`.
   Localhost must define `deploy_path`; the unused `project_path` example setting has been removed.
 - **Local WP-CLI working directory**: `WPCLI::runCommandLocally()` now defaults to localhost's `current_path`.
-  Pass a different path explicitly, or `null` to leave the working directory unset.
+  Pass a different path explicitly, or `null` to use Deployer's `working_path` or the runtime's default directory.
 - **Localhost runtime execution**: `Localhost::run()` now honors the configured runtime. Use
   `Localhost::runNative()` when a custom task must run outside it.
 
@@ -29,13 +32,15 @@ v5 moves shared helpers to Deployer Utils and adds runtime-aware WP-CLI commands
 
 - Database dump paths are now resolved consistently against `deploy_path` for WP-CLI export/import and file transfers,
   instead of being interpreted relative to different working directories.
+- Shared file-backup tasks load from Composer's installed package path, including symlinked path repositories.
+- Empty WP-CLI working-directory paths now behave like `null` rather than passing an invalid directory to the runner.
 
 ### Changed
 
 - Implemented [gaambo/deployer-utils#1](https://github.com/gaambo/deployer-utils/issues/1) by moving generic Composer,
   npm, file, rsync, utility, localhost, runtime, test-support, and file-backup behavior to `gaambo/deployer-utils`.
 - WordPress tasks and recipes now use the shared helpers directly. Existing `Gaambo\DeployerWordpress` helper classes
-  remain as silent deprecated wrappers.
+  remain as silent deprecated wrappers, except for the removed `Utils` methods listed above.
 - `files:push` and `files:pull` remain WordPress aggregate tasks. `files:backup:remote` and `files:backup:local` now load
   from the shared package through the explicit utils task file.
 - Composer now requires the stable `gaambo/deployer-utils:^1.0.1` release.
@@ -68,7 +73,8 @@ v5 moves shared helpers to Deployer Utils and adds runtime-aware WP-CLI commands
 
    Remote hosts also need `deploy_path` and `current_path`. This example stores dumps in
    `<project>/data/db_dumps`, not `<project>/public/data/db_dumps`. Use an absolute `dbdump_path` to keep an existing
-   location. Keep dumps outside the public web root.
+   location. With DDEV, even absolute dump paths must stay inside `deploy_path` so they can map into the container.
+   Keep dumps outside the public web root.
 
 3. **Check custom file transfers**: Change `/wp-content/themes` to `wp-content/themes` if you meant a path below
    the WordPress root, rather than an absolute filesystem path. File-transfer paths still use the WordPress root;
@@ -76,7 +82,8 @@ v5 moves shared helpers to Deployer Utils and adds runtime-aware WP-CLI commands
 
 4. **Update helper imports**: Move `Composer`, `Files`, `Localhost`, `NPM`, `Rsync`, and `Utils` from
    `Gaambo\DeployerWordpress` to `Gaambo\DeployerUtils`. The old imports remain deprecated wrappers without runtime
-   warnings. `WPCLI` stays in `Gaambo\DeployerWordpress`. Replace `Utils::quote($value)` with:
+   warnings, except for the removed `Utils` methods listed above. `WPCLI` stays in `Gaambo\DeployerWordpress`.
+   Replace `Utils::quote($value)` with:
 
    ```php
    use function Deployer\quote;
@@ -88,7 +95,8 @@ v5 moves shared helpers to Deployer Utils and adds runtime-aware WP-CLI commands
    WordPress `files:push` and `files:pull` aggregate tasks.
 
 5. **Check custom WP-CLI/runtime calls**: Pass an explicit working directory or `null` if a custom local WP-CLI
-   call should not use `current_path`. For custom commands containing file paths, pass host-side paths to map:
+   call should not use `current_path`. A `null` or empty path uses Deployer's `working_path`, if set, or the runtime's
+   default directory. For custom commands containing file paths, pass host-side paths to map:
 
    ```php
    WPCLI::runCommandLocally(
@@ -96,6 +104,9 @@ v5 moves shared helpers to Deployer Utils and adds runtime-aware WP-CLI commands
        runtimePaths: [$dumpFile]
    );
    ```
+
+   `runtimePaths` uses literal replacement throughout the command and arguments, not shell-token matching. Pass
+   full file paths and avoid overlapping paths or matching text that should not change.
 
    Database tasks handle this mapping automatically. Runtimes are optional; without one, commands run on the host
    as usual. For DDEV, keep dump paths below `deploy_path`. See the

@@ -66,19 +66,65 @@ class WpCliIntegrationTest extends IntegrationTestCase
         WPCLI::runCommandLocally('post list --format=table');
     }
 
-    public function testRunCommandLocallyWithoutPath(): void
+    public function testRunCommandWithEmptyPath(): void
     {
-        $expectedCommand = 'wp post list --format=table ';
-        // Note: We can't test for the host object because runLocally creates a new host instance.
+        $this->expectLocalWpCommand('wp post list ', null);
+
+        WPCLI::runCommand('post list', '');
+    }
+
+    public function testRunCommandLocallyWithEmptyPath(): void
+    {
+        $this->expectLocalWpCommand('wp post list ', null);
+
+        WPCLI::runCommandLocally('post list', '');
+    }
+
+    public function testRunCommandLocallyWithEmptyPathUsesDdevProjectRoot(): void
+    {
+        $this->host->set('runtime', runtime(DdevRuntime::class));
         $this->processRunnerMock
             ->expects($this->once())
             ->method('run')
-            ->willReturnCallback(function ($host, $command) use ($expectedCommand) {
-                $this->assertEquals($expectedCommand, $command);
+            ->willReturnCallback(function ($host, $command, RunParams $options) {
+                $this->assertSame('wp post list ', $command);
+                $this->assertSame('/var/www', $this->runCwd($options));
+                $this->assertSame($this->ddevShell('/var/www/html'), $this->runShell($options));
                 return '';
             });
 
-        WPCLI::runCommandLocally('post list --format=table', false);
+        WPCLI::runCommandLocally('post list', '');
+    }
+
+    public function testRunCommandWithoutPathKeepsRemoteWorkingPath(): void
+    {
+        $remoteSourceHost = $this->remoteSourceHost();
+        $remoteSourceHost->set('working_path', '/srv/www/custom');
+        $this->sshClientMock
+            ->expects($this->once())
+            ->method('run')
+            ->willReturnCallback(function ($host, $command, RunParams $options) {
+                $this->assertSame('wp post list ', $command);
+                $this->assertSame('/srv/www/custom', $this->runCwd($options));
+                return '';
+            });
+
+        $this->onHost($remoteSourceHost, fn() => WPCLI::runCommand('post list', null));
+    }
+
+    public function testRunCommandLocallyWithoutPath(): void
+    {
+        $expectedCommand = 'wp post list --format=table ';
+        $this->processRunnerMock
+            ->expects($this->once())
+            ->method('run')
+            ->willReturnCallback(function ($host, $command, RunParams $options) use ($expectedCommand) {
+                $this->assertEquals($expectedCommand, $command);
+                $this->assertNull($this->runCwd($options));
+                return '';
+            });
+
+        WPCLI::runCommandLocally('post list --format=table', null);
     }
 
     public function testRunCommandLocallyMapsOnlyExplicitRuntimePaths(): void
