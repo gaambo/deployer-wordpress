@@ -1,9 +1,8 @@
 # Changelog
 
-## Unreleased
+## v5.0.0
 
 v5 moves shared helpers to Deployer Utils and adds runtime-aware WP-CLI commands.
-See [Upgrading from v4 to v5](MIGRATING.md) for migration steps.
 
 ### Breaking Changes
 
@@ -42,6 +41,65 @@ See [Upgrading from v4 to v5](MIGRATING.md) for migration steps.
 - Composer now requires the stable `gaambo/deployer-utils:^1.0.1` release.
 - Updated Composer dependencies and SHA-pinned GitHub Actions.
 - `composer precommit` now runs `composer validate --strict`, matching CI.
+
+### Upgrading from v4
+
+1. **Update dependencies**: Use PHP 8.3+ and update any explicit Deployer constraint to `^8.0`.
+   Review [Deployer's upgrade guide](https://deployer.org/docs/8.x/UPGRADE) for custom tasks.
+   Run:
+
+   ```sh
+   composer require --dev gaambo/deployer-wordpress:^5.0 --with-all-dependencies
+   ```
+
+   Deployer Utils installs automatically. If you require it directly, use `^1.0.1`.
+
+2. **Set localhost paths**: Replace the unused `project_path` setting with `deploy_path` and make `current_path`
+   explicit. Adjust `public` to your layout; keep the WordPress root used by your existing simple/Bedrock recipe.
+
+   ```php
+   localhost()
+       ->set('public_url', 'https://example.test')
+       ->set('deploy_path', __DIR__)
+       ->set('current_path', '{{deploy_path}}/public')
+       ->set('dbdump_path', 'data/db_dumps')
+       ->set('backup_path', __DIR__ . '/data/backups');
+   ```
+
+   Remote hosts also need `deploy_path` and `current_path`. This example stores dumps in
+   `<project>/data/db_dumps`, not `<project>/public/data/db_dumps`. Use an absolute `dbdump_path` to keep an existing
+   location. Keep dumps outside the public web root.
+
+3. **Check custom file transfers**: Change `/wp-content/themes` to `wp-content/themes` if you meant a path below
+   the WordPress root, rather than an absolute filesystem path. File-transfer paths still use the WordPress root;
+   only relative database dump paths use `deploy_path`.
+
+4. **Update helper imports**: Move `Composer`, `Files`, `Localhost`, `NPM`, `Rsync`, and `Utils` from
+   `Gaambo\DeployerWordpress` to `Gaambo\DeployerUtils`. The old imports remain deprecated wrappers without runtime
+   warnings. `WPCLI` stays in `Gaambo\DeployerWordpress`. Replace `Utils::quote($value)` with:
+
+   ```php
+   use function Deployer\quote;
+
+   $argument = quote($value);
+   ```
+
+   Keep loading the WordPress recipes/task files; they already load the shared backup tasks and retain the
+   WordPress `files:push` and `files:pull` aggregate tasks.
+
+5. **Check custom WP-CLI/runtime calls**: Pass an explicit working directory or `null` if a custom local WP-CLI
+   call should not use `current_path`. For custom commands containing file paths, pass host-side paths to map:
+
+   ```php
+   WPCLI::runCommandLocally(
+       "db export $dumpFile",
+       runtimePaths: [$dumpFile]
+   );
+   ```
+
+   Database tasks handle this mapping automatically. Runtimes are optional; without one, commands run on the host
+   as usual. For DDEV, keep dump paths below `deploy_path`. See the
+   [Deployer Utils runtime docs](https://github.com/gaambo/deployer-utils#runtimes) for PHP/YAML setup and path mapping.
 
 ## v4.0.1 - 2026-04-28
 

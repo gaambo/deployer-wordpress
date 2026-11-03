@@ -54,7 +54,7 @@ Optional (auto-installed on remote if missing):
 
 ## Upgrading from v4
 
-See [the v4-to-v5 migration guide](MIGRATING.md) before updating existing projects.
+See [Upgrading from v4 in the changelog](CHANGELOG.md#upgrading-from-v4) before updating existing projects.
 It covers PHP/Deployer requirements, helper imports, database and file paths, and WP-CLI runtimes.
 
 ## Configuration
