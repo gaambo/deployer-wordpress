@@ -9,28 +9,20 @@ custom theme/plugin builds, and complex setups including Bedrock and multisite.
   - [Table Of Contents](#table-of-contents)
   - [Installation](#installation)
   - [Requirements](#requirements)
+  - [Upgrading from v4](#upgrading-from-v4)
   - [Configuration](#configuration)
-    - [Default Directory Structure](#default-directory-structure)
     - [Localhost context](#localhost-context)
     - [wp-config.php](#wp-configphp)
-    - [Rsync filters/excludes/includes](#rsync-filtersexcludesincludes)
+    - [Rsync filters](#rsync-filters)
   - [Tasks](#tasks)
     - [Database Tasks (`tasks/database.php`)](#database-tasks-tasksdatabasephp)
       - [Multisite support](#multisite-support)
     - [Packages system (`tasks/packages.php`)](#packages-system-taskspackagesphp)
-    - [File Tasks (`tasks/files.php`)](#file-tasks-tasksfilesphp)
-    - [WordPress Tasks (`tasks/wp.php`)](#wordpress-tasks-taskswpphp)
-    - [Language Tasks (`tasks/languages.php`)](#language-tasks-taskslanguagesphp)
-    - [Uploads Tasks (`tasks/uploads.php`)](#uploads-tasks-tasksuploadsphp)
-    - [Legacy Tasks (Themes, Plugins, MU-Plugins)](#legacy-tasks-themes-plugins-mu-plugins)
-    - [WP-CLI](#wp-cli)
-    - [Recipes](#recipes)
-      - [Simple](#simple)
-      - [Bedrock](#bedrock)
+    - [Other Task Categories](#other-task-categories)
+  - [Recipes](#recipes)
   - [Changelog](#changelog)
   - [Contributing](#contributing)
     - [Testing](#testing)
-  - [Built by](#built-by)
 
 ## Installation
 
@@ -44,7 +36,7 @@ custom theme/plugin builds, and complex setups including Bedrock and multisite.
 
 4. Test on staging first, then deploy to production 🚀
 
-This package uses the public `gaambo/deployer-utils:^0.1.1` release.
+This package requires the stable `gaambo/deployer-utils:^1.0.1` release.
 
 ## Requirements
 
@@ -59,6 +51,11 @@ Optional (auto-installed on remote if missing):
 - [WP-CLI](https://wp-cli.org/) for database tasks
 - [Composer](https://getcomposer.org) for package vendors (depending on your custom theme/plugins)
 - [Node.js/npm](https://nodejs.org/) for building assets (depending on your custom theme/plugins)
+
+## Upgrading from v4
+
+See [the v4-to-v5 migration guide](MIGRATING.md) before updating existing projects.
+It covers PHP/Deployer requirements, helper imports, database and file paths, and WP-CLI runtimes.
 
 ## Configuration
 
@@ -196,7 +193,7 @@ set('packages', [
 
 ## Recipes
 
-v4 uses `current_path` for rsync-based deployments. Symlinked releases are still possible but not the default.
+Like v4, v5 uses `current_path` for rsync-based deployments. Symlinked releases are still possible but not the default.
 
 **`recipes/simple.php`** - Standard WordPress. Rsyncs directly to `current_path`. Recommended for most projects.
 
@@ -210,13 +207,14 @@ See [CHANGELOG.md](CHANGELOG.md).
 ## Contributing
 
 Issues, feature requests, and pull requests welcome at [GitHub](https://github.com/gaambo/deployer-wordpress). Code
-follows PSR-2 and Deployer best practices.
+follows PSR-12 and Deployer best practices.
 
 ### Testing
 
 The library includes a comprehensive test suite with unit, integration, and functional tests.
 
-- Run `composer precommit` before submitting a PR — it runs lint, code style, PHPStan, and all tests.
+- Run `composer precommit` before submitting a PR — it runs lint, code style, PHPStan, strict Composer validation,
+  and all tests.
 - Functional tests use a mocked environment to verify rsync commands and file operations without real remote
   connections.
 

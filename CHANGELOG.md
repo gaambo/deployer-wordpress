@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+v5 moves shared helpers to Deployer Utils and adds runtime-aware WP-CLI commands.
+See [Upgrading from v4 to v5](MIGRATING.md) for migration steps.
+
 ### Breaking Changes
 
 - PHP 8.3 or newer and Deployer 8 are now required. Deployer 7 support and compatibility code were removed.
@@ -11,6 +14,10 @@
   or `release_or_current_path` (remote).
 - **Database dump paths**: Relative `dbdump_path` values now resolve against `deploy_path` instead of `current_path`.
   Localhost must define `deploy_path`; the unused `project_path` example setting has been removed.
+- **Local WP-CLI working directory**: `WPCLI::runCommandLocally()` now defaults to localhost's `current_path`.
+  Pass a different path explicitly, or `null` to leave the working directory unset.
+- **Localhost runtime execution**: `Localhost::run()` now honors the configured runtime. Use
+  `Localhost::runNative()` when a custom task must run outside it.
 
 ### Added
 
@@ -32,7 +39,9 @@
   remain as silent deprecated wrappers.
 - `files:push` and `files:pull` remain WordPress aggregate tasks. `files:backup:remote` and `files:backup:local` now load
   from the shared package through the explicit utils task file.
-- Composer now uses the public `gaambo/deployer-utils:^0.1.1` release.
+- Composer now requires the stable `gaambo/deployer-utils:^1.0.1` release.
+- Updated Composer dependencies and SHA-pinned GitHub Actions.
+- `composer precommit` now runs `composer validate --strict`, matching CI.
 
 ## v4.0.1 - 2026-04-28
 
