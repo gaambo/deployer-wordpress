@@ -8,8 +8,8 @@
 
 namespace Gaambo\DeployerWordpress\Recipes\Bedrock;
 
-use Gaambo\DeployerWordpress\Composer;
-use Gaambo\DeployerWordpress\Rsync;
+use Gaambo\DeployerUtils\Composer;
+use Gaambo\DeployerUtils\Rsync;
 
 use function Deployer\add;
 use function Deployer\after;

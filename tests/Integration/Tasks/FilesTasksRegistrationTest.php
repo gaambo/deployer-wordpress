@@ -39,4 +39,28 @@ class FilesTasksRegistrationTest extends TaskRegistrationTestCase
             'packages:pull'
         ]);
     }
+
+    public function testSharedBackupTasksLoadFromRelocatedTaskDirectory(): void
+    {
+        $taskDirectory = sys_get_temp_dir() . '/deployer-wordpress-tasks-' . bin2hex(random_bytes(8));
+        mkdir($taskDirectory);
+
+        try {
+            foreach (glob(__DIR__ . '/../../../tasks/*.php') as $taskFile) {
+                copy($taskFile, $taskDirectory . '/' . basename($taskFile));
+            }
+
+            require $taskDirectory . '/files.php';
+
+            $this->assertTaskExists('files:backup:remote');
+            $this->assertTaskExists('files:backup:local');
+            $this->assertTaskExists('files:push');
+            $this->assertTaskExists('files:pull');
+        } finally {
+            foreach (glob($taskDirectory . '/*.php') as $taskFile) {
+                unlink($taskFile);
+            }
+            rmdir($taskDirectory);
+        }
+    }
 }

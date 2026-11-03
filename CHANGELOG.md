@@ -1,17 +1,29 @@
 # Changelog
 
-## Unreleased
+## v5.0.0 - 2026-11-03
+
+v5 moves shared helpers to Deployer Utils and adds runtime-aware WP-CLI commands.
 
 ### Breaking Changes
 
+- PHP 8.3 or newer and Deployer 8 are now required. Deployer 7 support and compatibility code were removed.
+- Use Deployer's `quote()` directly instead of the removed `Utils::quote()` wrapper.
+- `Utils::isDeployerVersion()`, `Utils::parseStringArray()`, and `Utils::parseStringOrNull()` were also removed.
+  Deployer 8 is now required, so remove version checks. The parsing helpers are internal to Deployer Utils' rsync
+  implementation; custom callers must handle their own value parsing.
 - **`Files` path resolution**: Paths passed to `Files::pushFiles()` / `Files::pullFiles()` that begin with `/` are now
   treated as absolute rather than project-relative. Relative paths continue to resolve against `current_path` (local)
   or `release_or_current_path` (remote).
 - **Database dump paths**: Relative `dbdump_path` values now resolve against `deploy_path` instead of `current_path`.
   Localhost must define `deploy_path`; the unused `project_path` example setting has been removed.
+- **Local WP-CLI working directory**: `WPCLI::runCommandLocally()` now defaults to localhost's `current_path`.
+  Pass a different path explicitly, or `null` to use Deployer's `working_path` or the runtime's default directory.
+- **Localhost runtime execution**: `Localhost::run()` now honors the configured runtime. Use
+  `Localhost::runNative()` when a custom task must run outside it.
 
 ### Added
 
+- Local and remote WP-CLI and database commands can use runtimes supplied by `gaambo/deployer-utils`, including DDEV.
 - `Files::pushFile()` and `Files::pullFile()` helpers for transferring individual files with the same path resolution
   semantics as directory transfers.
 - `Files::resolvePath()` helper to resolve a path against a base path, leaving absolute and `~`-relative paths unchanged.
@@ -20,6 +32,85 @@
 
 - Database dump paths are now resolved consistently against `deploy_path` for WP-CLI export/import and file transfers,
   instead of being interpreted relative to different working directories.
+- Shared file-backup tasks load from Composer's installed package path, including symlinked path repositories.
+- Empty WP-CLI working-directory paths now behave like `null` rather than passing an invalid directory to the runner.
+
+### Changed
+
+- Implemented [gaambo/deployer-utils#1](https://github.com/gaambo/deployer-utils/issues/1) by moving generic Composer,
+  npm, file, rsync, utility, localhost, runtime, test-support, and file-backup behavior to `gaambo/deployer-utils`.
+- WordPress tasks and recipes now use the shared helpers directly. Existing `Gaambo\DeployerWordpress` helper classes
+  remain as silent deprecated wrappers, except for the removed `Utils` methods listed above.
+- `files:push` and `files:pull` remain WordPress aggregate tasks. `files:backup:remote` and `files:backup:local` now load
+  from the shared package through the explicit utils task file.
+- Composer now requires the stable `gaambo/deployer-utils:^1.0.1` release.
+- Updated Composer dependencies and SHA-pinned GitHub Actions.
+- `composer precommit` now runs `composer validate --strict`, matching CI.
+
+### Upgrading from v4
+
+1. **Update dependencies**: Use PHP 8.3+ and update any explicit Deployer constraint to `^8.0`.
+   Review [Deployer's upgrade guide](https://deployer.org/docs/8.x/UPGRADE) for custom tasks.
+   Run:
+
+   ```sh
+   composer require --dev gaambo/deployer-wordpress:^5.0 --with-all-dependencies
+   ```
+
+   Deployer Utils installs automatically. If you require it directly, use `^1.0.1`.
+
+2. **Set localhost paths**: Replace the unused `project_path` setting with `deploy_path` and make `current_path`
+   explicit. Adjust `public` to your layout; keep the WordPress root used by your existing simple/Bedrock recipe.
+
+   ```php
+   localhost()
+       ->set('public_url', 'https://example.test')
+       ->set('deploy_path', __DIR__)
+       ->set('current_path', '{{deploy_path}}/public')
+       ->set('dbdump_path', 'data/db_dumps')
+       ->set('backup_path', __DIR__ . '/data/backups');
+   ```
+
+   Remote hosts also need `deploy_path` and `current_path`. This example stores dumps in
+   `<project>/data/db_dumps`, not `<project>/public/data/db_dumps`. Use an absolute `dbdump_path` to keep an existing
+   location. With DDEV, even absolute dump paths must stay inside `deploy_path` so they can map into the container.
+   Keep dumps outside the public web root.
+
+3. **Check custom file transfers**: Change `/wp-content/themes` to `wp-content/themes` if you meant a path below
+   the WordPress root, rather than an absolute filesystem path. File-transfer paths still use the WordPress root;
+   only relative database dump paths use `deploy_path`.
+
+4. **Update helper imports**: Move `Composer`, `Files`, `Localhost`, `NPM`, `Rsync`, and `Utils` from
+   `Gaambo\DeployerWordpress` to `Gaambo\DeployerUtils`. The old imports remain deprecated wrappers without runtime
+   warnings, except for the removed `Utils` methods listed above. `WPCLI` stays in `Gaambo\DeployerWordpress`.
+   Replace `Utils::quote($value)` with:
+
+   ```php
+   use function Deployer\quote;
+
+   $argument = quote($value);
+   ```
+
+   Keep loading the WordPress recipes/task files; they already load the shared backup tasks and retain the
+   WordPress `files:push` and `files:pull` aggregate tasks.
+
+5. **Check custom WP-CLI/runtime calls**: Pass an explicit working directory or `null` if a custom local WP-CLI
+   call should not use `current_path`. A `null` or empty path uses Deployer's `working_path`, if set, or the runtime's
+   default directory. For custom commands containing file paths, pass host-side paths to map:
+
+   ```php
+   WPCLI::runCommandLocally(
+       "db export $dumpFile",
+       runtimePaths: [$dumpFile]
+   );
+   ```
+
+   `runtimePaths` uses literal replacement throughout the command and arguments, not shell-token matching. Pass
+   full file paths and avoid overlapping paths or matching text that should not change.
+
+   Database tasks handle this mapping automatically. Runtimes are optional; without one, commands run on the host
+   as usual. For DDEV, keep dump paths below `deploy_path`. See the
+   [Deployer Utils runtime docs](https://github.com/gaambo/deployer-utils#runtimes) for PHP/YAML setup and path mapping.
 
 ## v4.0.1 - 2026-04-28
 

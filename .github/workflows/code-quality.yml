@@ -15,7 +15,7 @@ permissions:
 
 jobs:
   code-quality:
-    name: Run Code Quality Checks (PHP ${{ matrix.php }}, Deployer ${{ matrix.deployer }})
+    name: Code Quality (PHP ${{ matrix.php }}, Deployer 8)
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
@@ -23,28 +23,19 @@ jobs:
       checks: write # needed for cs2pr to post inline annotations
     strategy:
       matrix:
-        include:
-          - { php: '8.2', deployer: '7.3' }
-          - { php: '8.2', deployer: '7.4' }
-          - { php: '8.2', deployer: '7.5' }
-          - { php: '8.3', deployer: '7.3' }
-          - { php: '8.3', deployer: '7.4' }
-          - { php: '8.3', deployer: '7.5' }
-          - { php: '8.3', deployer: '8.0' }
-          - { php: '8.4', deployer: '8.0' }
-          - { php: '8.5', deployer: '8.0' }
+        php: ['8.3', '8.4', '8.5']
       fail-fast: false
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           # Do not store git credentials in .git -> could be leaked/exposed by infected/malicious action.
           persist-credentials: false
 
       # Setup PHP with Composer and cs2pr
       - name: Setup PHP and tools
-        uses: shivammathur/setup-php@7c071dfe9dc99bdf297fa79cb49ea005b9fcadbc # v2.37.1
+        uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # v2.40.0
         with:
           php-version: ${{ matrix.php }}
           tools: composer:v2, cs2pr
@@ -52,13 +43,6 @@ jobs:
       - name: Validate composer.json
         run: composer validate --strict
 
-      - name: Set Deployer version constraint
-        env:
-          DEPLOYER_VERSION: ${{ matrix.deployer }}
-        run: composer require --no-update deployer/deployer:"${DEPLOYER_VERSION}.*"
-
-      # Install dependencies with caching — uses `composer update` (highest) so the pinned
-      # deployer constraint above is actually resolved.
       - name: Install Composer dependencies
         uses: ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda # v4.0.0
         with:

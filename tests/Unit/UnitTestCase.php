@@ -2,12 +2,8 @@
 
 namespace Gaambo\DeployerWordpress\Tests\Unit;
 
-use PHPUnit\Framework\TestCase as BaseTestCase;
+use Gaambo\DeployerUtils\Tests\Unit\UnitTestCase as BaseUnitTestCase;
 
-abstract class UnitTestCase extends BaseTestCase
+abstract class UnitTestCase extends BaseUnitTestCase
 {
-    protected function setUp(): void
-    {
-        parent::setUp();
-    }
 }

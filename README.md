@@ -9,28 +9,20 @@ custom theme/plugin builds, and complex setups including Bedrock and multisite.
   - [Table Of Contents](#table-of-contents)
   - [Installation](#installation)
   - [Requirements](#requirements)
+  - [Upgrading from v4](#upgrading-from-v4)
   - [Configuration](#configuration)
-    - [Default Directory Structure](#default-directory-structure)
     - [Localhost context](#localhost-context)
-    - [wp-config.php](#wp-configphp)
-    - [Rsync filters/excludes/includes](#rsync-filtersexcludesincludes)
+    - [wp-config.php](#wp-configphp-recommendation)
+    - [Rsync filters](#rsync-filters)
   - [Tasks](#tasks)
     - [Database Tasks (`tasks/database.php`)](#database-tasks-tasksdatabasephp)
       - [Multisite support](#multisite-support)
     - [Packages system (`tasks/packages.php`)](#packages-system-taskspackagesphp)
-    - [File Tasks (`tasks/files.php`)](#file-tasks-tasksfilesphp)
-    - [WordPress Tasks (`tasks/wp.php`)](#wordpress-tasks-taskswpphp)
-    - [Language Tasks (`tasks/languages.php`)](#language-tasks-taskslanguagesphp)
-    - [Uploads Tasks (`tasks/uploads.php`)](#uploads-tasks-tasksuploadsphp)
-    - [Legacy Tasks (Themes, Plugins, MU-Plugins)](#legacy-tasks-themes-plugins-mu-plugins)
-    - [WP-CLI](#wp-cli)
-    - [Recipes](#recipes)
-      - [Simple](#simple)
-      - [Bedrock](#bedrock)
+    - [Other Task Categories](#other-task-categories)
+  - [Recipes](#recipes)
   - [Changelog](#changelog)
   - [Contributing](#contributing)
     - [Testing](#testing)
-  - [Built by](#built-by)
 
 ## Installation
 
@@ -44,10 +36,12 @@ custom theme/plugin builds, and complex setups including Bedrock and multisite.
 
 4. Test on staging first, then deploy to production 🚀
 
+This package requires the stable `gaambo/deployer-utils:^1.0.1` release.
+
 ## Requirements
 
-- PHP + [Composer](https://getcomposer.org)
-- [Deployer](https://deployer.org) (automatically installed)
+- PHP 8.3 or newer and [Composer](https://getcomposer.org)
+- [Deployer 8](https://deployer.org) (automatically installed)
 - WordPress installation
 - *nix OS (Linux/macOS or [WSL](https://docs.microsoft.com/en-us/windows/wsl/install-win10) on Windows)
 - `rsync` installed
@@ -58,17 +52,18 @@ Optional (auto-installed on remote if missing):
 - [Composer](https://getcomposer.org) for package vendors (depending on your custom theme/plugins)
 - [Node.js/npm](https://nodejs.org/) for building assets (depending on your custom theme/plugins)
 
+## Upgrading from v4
+
+See [Upgrading from v4 in the changelog](CHANGELOG.md#upgrading-from-v4) before updating existing projects.
+It covers PHP/Deployer requirements, helper imports, database and file paths, and WP-CLI runtimes.
+
 ## Configuration
 
 Example recipes (in `examples/`) provide configuration starting points. The library works with any WordPress setup (
 vanilla, Composer, subdirectory, Bedrock, multisite) by making all paths and directories configurable. Check the example
 recipes and task source files for available options.
 
-### Localhost context
-
-Version 4 introduces a proper `Localhost` context. This ensures that when tasks run on your local machine
-(like building assets or backing up the local database), they use configuration values specifically defined for
-localhost, rather than falling back to global or remote values.
+### Localhost Context
 
 Configure localhost in `deploy.php`:
 
@@ -81,10 +76,13 @@ localhost()
     ->set('backup_path', __DIR__ . '/data/backups');
 ```
 
-The `Localhost` utility class (`Gaambo\DeployerWordpress\Localhost`) handles switching context automatically in tasks.
-
 `deploy_path` is the project root and is used for private data such as relative database dump paths. `current_path` is
 the WordPress root. The previous `project_path` example setting was unused and has been removed.
+
+Local and remote WP-CLI database commands honor runtimes configured on their source hosts and map database dump paths
+into them. See the
+[Deployer Utils README](https://github.com/gaambo/deployer-utils#readme) for generic localhost, runtime, Composer, npm,
+file, and rsync APIs. The old `Gaambo\DeployerWordpress` helper names remain as deprecated wrappers for migration.
 
 ### wp-config.php (Recommendation)
 
@@ -173,6 +171,7 @@ set('packages', [
 **File Tasks** (`tasks/files.php`)
 
 - `files:push` / `files:pull` - Sync all files (combines wp, uploads, plugins, themes, packages)
+- `files:backup:remote` / `files:backup:local` - Back up all files through the shared utils tasks
 
 **WordPress Core** (`tasks/wp.php`)
 
@@ -194,7 +193,7 @@ set('packages', [
 
 ## Recipes
 
-v4 uses `current_path` for rsync-based deployments. Symlinked releases are still possible but not the default.
+Like v4, v5 uses `current_path` for rsync-based deployments. Symlinked releases are still possible but not the default.
 
 **`recipes/simple.php`** - Standard WordPress. Rsyncs directly to `current_path`. Recommended for most projects.
 
@@ -208,26 +207,17 @@ See [CHANGELOG.md](CHANGELOG.md).
 ## Contributing
 
 Issues, feature requests, and pull requests welcome at [GitHub](https://github.com/gaambo/deployer-wordpress). Code
-follows PSR-2 and Deployer best practices.
+follows PSR-12 and Deployer best practices.
 
 ### Testing
 
 The library includes a comprehensive test suite with unit, integration, and functional tests.
 
-- Run `composer precommit` before submitting a PR — it runs lint, code style, PHPStan, and all tests.
+- Run `composer precommit` before submitting a PR — it runs lint, code style, PHPStan, strict Composer validation,
+  and all tests.
 - Functional tests use a mocked environment to verify rsync commands and file operations without real remote
   connections.
+- Tests load shared support classes from `deployer-utils/tests/` through `autoload-dev`. They rely on those files
+  shipping in Utils distribution archives, as documented in its shared test support API.
 
-The library supports both Deployer v7 and v8. Test against both before submitting (note: Deployer v7 requires PHP 8.2 or 8.3 — it is incompatible with PHP 8.4+):
-
-```bash
-# Switch to Deployer v7
-composer require --no-update deployer/deployer:"7.5.*"
-composer update deployer/deployer --with-dependencies
-composer precommit
-
-# Switch back to v8
-composer require --no-update deployer/deployer:"^7.3 || ^8.0"
-composer update deployer/deployer --with-dependencies
-composer precommit
-```
+CI tests Deployer 8 on PHP 8.3, 8.4, and 8.5.
