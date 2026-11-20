@@ -40,7 +40,7 @@ jobs:
 
       - name: Generate composer.lock diff
         id: composer-diff
-        uses: IonBazan/composer-diff-action@e2022e8718d05cc6e4e5990a06fc928c75837f76 # v2.0.0
+        uses: IonBazan/composer-diff-action@c5f5fe80e7ac2e5cd8108b32ed88a910d6639b35 # v2.1.0
         with:
           format: mdtable
 
